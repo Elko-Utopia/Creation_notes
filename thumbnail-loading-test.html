@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>缩略图加载检查测试</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+    
+    .test-section {
+      margin: 2rem 0;
+      padding: 1.5rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+    
+    .md-content.pswp-featured img {
+      max-width: 250px;
+      height: 180px;
+      object-fit: cover;
+      margin: 1rem;
+      border-radius: 8px;
+      border: 2px solid #ccc;
+      transition: all 0.3s ease;
+    }
+    
+    .image-info {
+      font-size: 0.9em;
+      color: #666;
+      margin-top: 0.5rem;
+    }
+    
+    button {
+      padding: 0.5rem 1rem;
+      margin: 0.25rem;
+      border: none;
+      border-radius: 4px;
+      background: #007acc;
+      color: white;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
+    
+    button:hover {
+      background: #005a9e;
+    }
+    
+    .status {
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 6px;
+      border-left: 4px solid #007acc;
+      background: #f0f8ff;
+    }
+    
+    .warning {
+      border-left-color: #ff9800;
+      background: #fff8e1;
+    }
+    
+    .error {
+      border-left-color: #f44336;
+      background: #ffebee;
+    }
+  </style>
+</head>
+<body>
+  <h1>🖼️ 缩略图加载检查测试</h1>
+  
+  <div class="status">
+    <strong>测试说明：</strong>
+    <ul>
+      <li>✅ 已加载图片 - 光标为pointer，可正常点击打开灯箱</li>
+      <li>⏳ 加载中图片 - 光标为wait，点击会被阻止并显示警告</li>
+      <li>❌ 加载失败图片 - 光标为not-allowed，点击被阻止</li>
+    </ul>
+  </div>
+
+  <div class="test-section">
+    <h2>控制按钮</h2>
+    <button onclick="enableMonitor()">启用完整监控</button>
+    <button onclick="testLoadingImages()">测试慢加载图片</button>
+    <button onclick="testBrokenImages()">测试损坏图片</button>
+    <button onclick="resetImages()">重置图片</button>
+    <button onclick="showImageStatus()">显示图片状态</button>
+  </div>
+
+  <div class="test-section">
+    <h2>正常图片 (应该可以点击)</h2>
+    <div class="md-content pswp-featured" id="normal-images">
+      <div>
+        <img src="/Creation_notes/portfolio1.jpg" 
+             data-full="/Creation_notes/portfolio1.jpg" 
+             alt="正常图片1">
+        <div class="image-info">状态: <span id="status-normal-1">检查中...</span></div>
+      </div>
+      <div>
+        <img src="/Creation_notes/portfolio2.jpg" 
+             data-full="/Creation_notes/portfolio2.jpg" 
+             alt="正常图片2">
+        <div class="image-info">状态: <span id="status-normal-2">检查中...</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>慢加载图片测试 (模拟网络延迟)</h2>
+    <div class="md-content pswp-featured" id="slow-images">
+      <!-- 动态生成 -->
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>损坏图片测试 (不存在的URL)</h2>
+    <div class="md-content pswp-featured" id="broken-images">
+      <!-- 动态生成 -->
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>实时状态监控</h2>
+    <div id="live-status"></div>
+  </div>
+
+  <!-- 引入脚本 -->
+  <script src="/Creation_notes/scripts/lightbox.js"></script>
+  <script src="/Creation_notes/scripts/lightbox-monitor.js"></script>
+  
+  <script>
+    function enableMonitor() {
+      LightboxMonitor.enableFull();
+      updateStatus('监控已启用，查看控制台获取详细信息');
+    }
+    
+    function testLoadingImages() {
+      const container = document.getElementById('slow-images');
+      container.innerHTML = `
+        <div>
+          <img src="https://picsum.photos/400/300?random=1&delay=3000" 
+               data-full="https://picsum.photos/800/600?random=1" 
+               alt="慢加载图片1">
+          <div class="image-info">状态: <span id="status-slow-1">加载中...</span></div>
+        </div>
+        <div>
+          <img src="https://picsum.photos/400/300?random=2&delay=5000" 
+               data-full="https://picsum.photos/800/600?random=2" 
+               alt="慢加载图片2">
+          <div class="image-info">状态: <span id="status-slow-2">加载中...</span></div>
+        </div>
+      `;
+      
+      // 重新初始化lightbox
+      setTimeout(() => {
+        if (typeof window.initLightboxAuto === 'function') {
+          window.initLightboxAuto();
+        }
+      }, 100);
+      
+      updateStatus('已添加慢加载图片，尝试点击查看阻止效果');
+    }
+    
+    function testBrokenImages() {
+      const container = document.getElementById('broken-images');
+      container.innerHTML = `
+        <div>
+          <img src="/nonexistent-image-1.jpg" 
+               data-full="/nonexistent-image-1-full.jpg" 
+               alt="损坏图片1">
+          <div class="image-info">状态: <span id="status-broken-1">加载失败</span></div>
+        </div>
+        <div>
+          <img src="/nonexistent-image-2.jpg" 
+               data-full="/nonexistent-image-2-full.jpg" 
+               alt="损坏图片2">
+          <div class="image-info">状态: <span id="status-broken-2">加载失败</span></div>
+        </div>
+      `;
+      
+      // 重新初始化lightbox
+      setTimeout(() => {
+        if (typeof window.initLightboxAuto === 'function') {
+          window.initLightboxAuto();
+        }
+      }, 100);
+      
+      updateStatus('已添加损坏图片，点击应该被阻止');
+    }
+    
+    function resetImages() {
+      document.getElementById('slow-images').innerHTML = '';
+      document.getElementById('broken-images').innerHTML = '';
+      updateStatus('已重置测试图片');
+    }
+    
+    function showImageStatus() {
+      const images = document.querySelectorAll('.md-content.pswp-featured img');
+      let statusHTML = '<h3>图片状态详情:</h3><ul>';
+      
+      images.forEach((img, index) => {
+        const loaded = img.complete && img.naturalWidth > 0;
+        const failed = img.complete && img.naturalWidth === 0;
+        const loading = !img.complete;
+        
+        let status = '';
+        if (loaded) status = '✅ 已加载';
+        else if (failed) status = '❌ 加载失败';
+        else if (loading) status = '⏳ 加载中';
+        
+        statusHTML += `
+          <li>
+            <strong>图片 ${index + 1}:</strong> ${status}<br>
+            <small>
+              src: ${img.src}<br>
+              complete: ${img.complete}, 
+              naturalWidth: ${img.naturalWidth}, 
+              naturalHeight: ${img.naturalHeight}<br>
+              cursor: ${getComputedStyle(img).cursor}
+            </small>
+          </li>
+        `;
+      });
+      
+      statusHTML += '</ul>';
+      document.getElementById('live-status').innerHTML = statusHTML;
+    }
+    
+    function updateStatus(message) {
+      console.log('📢', message);
+    }
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('🚀 页面加载完成，启用监控...');
+      LightboxMonitor.enableFull();
+      
+      // 等待图片和脚本加载
+      setTimeout(() => {
+        if (typeof window.initLightboxAuto === 'function') {
+          window.initLightboxAuto();
+        }
+        
+        // 定期更新状态
+        setInterval(showImageStatus, 2000);
+        showImageStatus();
+      }, 100);
+      
+      updateStatus('测试页面已加载，监控已启用');
+    });
+    
+    // 添加点击事件监听，用于测试阻止行为
+    document.addEventListener('click', function(e) {
+      if (e.target.tagName === 'IMG' && e.target.closest('.md-content.pswp-featured')) {
+        console.log('🖱️ 图片点击事件:', {
+          src: e.target.src,
+          complete: e.target.complete,
+          naturalWidth: e.target.naturalWidth,
+          naturalHeight: e.target.naturalHeight,
+          cursor: getComputedStyle(e.target).cursor
+        });
+      }
+    });
+  </script>
+</body>
+</html>

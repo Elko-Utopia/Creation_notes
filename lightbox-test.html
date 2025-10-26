@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lightbox 测试页面</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .test-section {
+      margin: 2rem 0;
+      padding: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+    
+    .md-content.pswp-featured img {
+      max-width: 300px;
+      height: 200px;
+      object-fit: cover;
+      margin: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 2px solid #007acc;
+    }
+    
+    button {
+      padding: 0.5rem 1rem;
+      margin: 0.5rem;
+      border: none;
+      border-radius: 4px;
+      background: #007acc;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔧 Lightbox 修复测试</h1>
+  
+  <div class="test-section">
+    <h2>监控控制</h2>
+    <button onclick="enableMonitor()">启用监控</button>
+    <button onclick="disableMonitor()">禁用监控</button>
+    <button onclick="showStats()">查看统计</button>
+  </div>
+  
+  <div class="test-section">
+    <h2>测试图片 (应该可以点击打开灯箱)</h2>
+    <div class="md-content pswp-featured">
+      <img src="/Creation_notes/portfolio1.jpg" 
+           data-full="/Creation_notes/portfolio1.jpg" 
+           alt="测试图片1">
+      <img src="/Creation_notes/portfolio2.jpg" 
+           data-full="/Creation_notes/portfolio2.jpg" 
+           alt="测试图片2">
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>调试信息</h2>
+    <div id="debug-info"></div>
+  </div>
+
+  <!-- 引入脚本 -->
+  <script src="/Creation_notes/scripts/lightbox.js"></script>
+  <script src="/Creation_notes/scripts/lightbox-monitor.js"></script>
+  
+  <script>
+    function enableMonitor() {
+      LightboxMonitor.enableFull();
+      updateDebugInfo();
+    }
+    
+    function disableMonitor() {
+      LightboxMonitor.disable();
+      updateDebugInfo();
+    }
+    
+    function showStats() {
+      const stats = LightboxMonitor.getStats();
+      console.table(stats);
+    }
+    
+    function updateDebugInfo() {
+      const images = document.querySelectorAll('.md-content.pswp-featured img[data-full]');
+      const debugEl = document.getElementById('debug-info');
+      
+      debugEl.innerHTML = `
+        <p><strong>图片数量:</strong> ${images.length}</p>
+        <p><strong>监控状态:</strong> ${LightboxMonitor.isEnabled() ? '已启用' : '未启用'}</p>
+        <p><strong>initLightboxAuto:</strong> ${typeof window.initLightboxAuto}</p>
+        <p><strong>图片详情:</strong></p>
+        <ul>
+          ${Array.from(images).map((img, i) => 
+            `<li>图片${i+1}: src="${img.src}" data-full="${img.dataset.full}"</li>`
+          ).join('')}
+        </ul>
+      `;
+    }
+    
+    // 初始化
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('🚀 DOM加载完成，开始初始化...');
+      
+      // 启用监控
+      LightboxMonitor.enableFull();
+      
+      // 手动初始化lightbox
+      if (typeof window.initLightboxAuto === 'function') {
+        console.log('📞 调用 initLightboxAuto');
+        window.initLightboxAuto();
+      } else {
+        console.error('❌ initLightboxAuto 函数不存在');
+      }
+      
+      updateDebugInfo();
+    });
+  </script>
+</body>
+</html>

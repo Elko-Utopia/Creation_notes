@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lightbox Monitor 使用示例</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+    
+    .demo-section {
+      margin: 2rem 0;
+      padding: 1.5rem;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin: 1rem 0;
+    }
+    
+    button {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      background: #007acc;
+      color: white;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    button:hover {
+      background: #005a9e;
+    }
+    
+    button.secondary {
+      background: #6c757d;
+    }
+    
+    button.secondary:hover {
+      background: #545b62;
+    }
+    
+    button.danger {
+      background: #dc3545;
+    }
+    
+    button.danger:hover {
+      background: #c82333;
+    }
+    
+    .status {
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 6px;
+      border-left: 4px solid #007acc;
+      background: #f8f9fa;
+    }
+    
+    .md-content.pswp-featured img {
+      max-width: 300px;
+      height: 200px;
+      object-fit: cover;
+      margin: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    
+    .md-content.pswp-featured img:hover {
+      transform: scale(1.05);
+    }
+    
+    .code-block {
+      background: #f6f8fa;
+      border: 1px solid #d0d7de;
+      border-radius: 6px;
+      padding: 1rem;
+      margin: 1rem 0;
+      overflow-x: auto;
+    }
+    
+    .code-block code {
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔍 Lightbox Monitor 使用示例</h1>
+  
+  <div class="status" id="status">
+    监控状态: <strong id="status-text">未启用</strong>
+  </div>
+
+  <div class="demo-section">
+    <h2>🎛️ 监控控制</h2>
+    <div class="button-group">
+      <button onclick="enableBasic()">启用基础监控</button>
+      <button onclick="enableFull()">启用完整监控</button>
+      <button onclick="enablePerformance()">仅性能监控</button>
+      <button class="secondary" onclick="disableMonitor()">禁用监控</button>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2>🖼️ 测试图片 (点击打开灯箱)</h2>
+    <div class="md-content pswp-featured">
+      <img src="/Creation_notes/portfolio1.jpg" 
+           data-full="/Creation_notes/portfolio1.jpg" 
+           alt="作品1 - 横版图片">
+      <img src="/Creation_notes/portfolio2.jpg" 
+           data-full="/Creation_notes/portfolio2.jpg" 
+           alt="作品2 - 竖版图片">
+      <img src="/Creation_notes/portfolio3.jpg" 
+           data-full="/Creation_notes/portfolio3.jpg" 
+           alt="作品3 - 正方形图片">
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2>📊 监控数据</h2>
+    <div class="button-group">
+      <button onclick="showStats()">查看统计</button>
+      <button onclick="showReport()">性能报告</button>
+      <button class="secondary" onclick="clearStats()">清除数据</button>
+    </div>
+  </div>
+
+  <div class="demo-section">
+    <h2>⚙️ 自定义配置</h2>
+    <div class="code-block">
+      <code>
+// 自定义监控配置<br>
+LightboxMonitor.configure({<br>
+&nbsp;&nbsp;logPerformance: true,&nbsp;&nbsp;&nbsp;&nbsp;// 性能日志<br>
+&nbsp;&nbsp;logScrollLock: false,&nbsp;&nbsp;&nbsp;&nbsp;// 滚动锁定日志<br>
+&nbsp;&nbsp;logImageLoading: true,&nbsp;&nbsp;&nbsp;// 图片加载日志<br>
+&nbsp;&nbsp;showTimestamps: true,&nbsp;&nbsp;&nbsp;&nbsp;// 显示时间戳<br>
+&nbsp;&nbsp;groupLogs: true&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// 分组显示<br>
+});</code>
+    </div>
+    <button onclick="customConfig()">应用自定义配置</button>
+  </div>
+
+  <div class="demo-section">
+    <h2>🚀 快速启动命令</h2>
+    <div class="code-block">
+      <code>
+// 控制台中直接使用:<br>
+LightboxMonitor.enableBasic()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// 基础监控<br>
+LightboxMonitor.enableFull()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// 完整监控<br>
+LightboxMonitor.getStats()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// 查看统计<br>
+LightboxMonitor.getPerformanceReport()&nbsp;// 性能报告<br>
+LightboxMonitor.disable()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;// 禁用监控
+      </code>
+    </div>
+  </div>
+
+  <!-- 引入脚本 -->
+  <script src="/Creation_notes/scripts/lightbox.js"></script>
+  <script src="/Creation_notes/scripts/lightbox-monitor.js"></script>
+  
+  <script>
+    // 更新状态显示
+    function updateStatus() {
+      const statusEl = document.getElementById('status-text');
+      if (LightboxMonitor.isEnabled()) {
+        statusEl.textContent = '已启用';
+        statusEl.style.color = '#28a745';
+      } else {
+        statusEl.textContent = '未启用';
+        statusEl.style.color = '#dc3545';
+      }
+    }
+
+    // 启用基础监控
+    function enableBasic() {
+      LightboxMonitor.enableBasic();
+      updateStatus();
+    }
+
+    // 启用完整监控
+    function enableFull() {
+      LightboxMonitor.enableFull();
+      updateStatus();
+    }
+
+    // 启用性能监控
+    function enablePerformance() {
+      LightboxMonitor.enablePerformanceOnly();
+      updateStatus();
+    }
+
+    // 禁用监控
+    function disableMonitor() {
+      LightboxMonitor.disable();
+      updateStatus();
+    }
+
+    // 显示统计
+    function showStats() {
+      const stats = LightboxMonitor.getStats();
+      console.table(stats);
+      alert('统计数据已输出到控制台，请按F12查看');
+    }
+
+    // 显示性能报告
+    function showReport() {
+      LightboxMonitor.getPerformanceReport();
+      alert('性能报告已输出到控制台，请按F12查看');
+    }
+
+    // 清除统计
+    function clearStats() {
+      LightboxMonitor.clearStats();
+      alert('统计数据已清除');
+    }
+
+    // 自定义配置
+    function customConfig() {
+      LightboxMonitor.configure({
+        logPerformance: true,
+        logScrollLock: false,
+        logImageLoading: true,
+        logInitialization: true,
+        logInteractions: true,
+        showTimestamps: true,
+        groupLogs: true
+      });
+      console.log('✅ 已应用自定义配置');
+    }
+
+    // 自动初始化lightbox
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof window.initLightboxAuto === 'function') {
+        window.initLightboxAuto();
+      }
+      updateStatus();
+    });
+
+    if (document.readyState !== 'loading') {
+      if (typeof window.initLightboxAuto === 'function') {
+        window.initLightboxAuto();
+      }
+      updateStatus();
+    }
+  </script>
+</body>
+</html>
