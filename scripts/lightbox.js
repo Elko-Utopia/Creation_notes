@@ -300,11 +300,11 @@ function updateImageCursor(img) {
   if (!img.complete || !img.naturalWidth || !img.naturalHeight) {
     // 图片未加载完成或加载失败
     img.style.cursor = 'wait';
-    img.title = '图片加载中，请稍候...';
+    img.title = 'Image loading, please wait...';
   } else {
     // 图片已加载完成
     img.style.cursor = 'pointer';
-    img.title = '点击查看大图';
+    img.title = 'Click to view the larger image';
   }
 }
 
@@ -417,7 +417,7 @@ function unlockScroll() {
   // ...
   const startTime = performance.now();
   if (!scrollLockSnapshot) {
-    monitor.log('onError', 'unlockScroll', 'scrollLockSnapshot为空，跳过解锁');
+    monitor.log('onError', 'unlockScroll', 'scrollLockSnapshot missing; skipping unlock');
     return;
   }
   
@@ -488,20 +488,20 @@ function primeWithPreview(triggerImage) {
   const startTime = performance.now();
   
   if (!triggerImage) {
-    monitor.log('onError', 'primeWithPreview', '没有触发图片');
+    monitor.log('onError', 'primeWithPreview', 'No initiating thumbnail found');
     return false;
   }
 
   // 双重检查：确保缩略图已完全加载
   if (!triggerImage.complete || !triggerImage.naturalWidth || !triggerImage.naturalHeight) {
-    monitor.log('onError', 'primeWithPreview', '缩略图未加载完成，无法获取预览');
+    monitor.log('onError', 'primeWithPreview', 'Thumbnail has not finished loading; preview unavailable');
     return false;
   }
 
   const previewSrc = triggerImage.currentSrc || triggerImage.src;
   
   if (!previewSrc) {
-    monitor.log('onError', 'primeWithPreview', '没有预览图src');
+    monitor.log('onError', 'primeWithPreview', 'No preview src available');
     return false;
   }
 
@@ -517,7 +517,7 @@ function primeWithPreview(triggerImage) {
   });
 
   if (!naturalW || !naturalH) {
-    monitor.log('onError', 'primeWithPreview', '无效尺寸');
+    monitor.log('onError', 'primeWithPreview', 'Invalid dimensions');
     return false;
   }
 
@@ -579,8 +579,8 @@ function onImageClick(event) {
 
   // 检查缩略图是否已完全加载
   if (!target.complete || !target.naturalWidth || !target.naturalHeight) {
-    monitor.log('onError', 'onImageClick', '缩略图未加载完成，阻止灯箱打开');
-    console.warn('⚠️ 缩略图未加载完成，无法打开灯箱');
+    monitor.log('onError', 'onImageClick', 'Thumbnail has not finished loading; lightbox prevented');
+    console.warn('⚠️ Thumbnail is still loading; lightbox prevented.');
     
     // 可选：显示加载提示
     if (!target.dataset.loadingHint) {
@@ -600,7 +600,7 @@ function onImageClick(event) {
         delete target.dataset.loadingHint;
         target.removeEventListener('load', handleLoad);
         target.removeEventListener('error', handleError);
-        console.error('❌ 缩略图加载失败:', target.src);
+        console.error('❌ Thumbnail failed to load:', target.src);
       };
       
       target.addEventListener('load', handleLoad, { once: true });
@@ -632,6 +632,23 @@ async function openLightbox(triggerImage) {
     naturalWidth: triggerImage.naturalWidth,
     naturalHeight: triggerImage.naturalHeight
   });
+
+  // --- DEBUG: 打印关键布局/坐标信息以便定位“打开位置错误”问题 ---
+  try {
+    const thumbRect = triggerImage.getBoundingClientRect();
+    const overlayRect = overlayEl ? overlayEl.getBoundingClientRect() : null;
+    const stageRect = stageEl ? stageEl.getBoundingClientRect() : null;
+    console.debug('[lightbox.debug] openLightbox start', {
+      thumbRect: {
+        top: thumbRect.top, left: thumbRect.left, width: thumbRect.width, height: thumbRect.height
+      },
+      viewport: { innerWidth: window.innerWidth, innerHeight: window.innerHeight, scrollY: window.pageYOffset || document.documentElement.scrollTop },
+      overlayRect: overlayRect ? { top: overlayRect.top, left: overlayRect.left, width: overlayRect.width, height: overlayRect.height } : null,
+      stageRect: stageRect ? { top: stageRect.top, left: stageRect.left, width: stageRect.width, height: stageRect.height } : null
+    });
+  } catch (err) {
+    console.debug('[lightbox.debug] openLightbox debug read failed', err && err.message);
+  }
 
   // 重置imageEl状态，清除上一次光箱的残留
   imageEl.style.visibility = 'hidden';
@@ -728,6 +745,26 @@ async function openLightbox(triggerImage) {
   let fullSrc = triggerImage.dataset && triggerImage.dataset.full;
   if (fullSrc && fullSrc !== imageEl.src) {
     if (overlayEl._spinner) overlayEl._spinner.style.display = '';
+    // Capture the image coordinate currently at the center of the stage so
+    // we can preserve that visual anchor when swapping to the full-size image.
+    let prevCenter = null;
+    try {
+      const srect = stageEl.getBoundingClientRect();
+      const sW = srect.width;
+      const sH = srect.height;
+      prevCenter = {
+        imgX: (sW / 2 - state.translateX) / (state.scale || 1),
+        imgY: (sH / 2 - state.translateY) / (state.scale || 1),
+        stageW: sW,
+        stageH: sH,
+        // previous displayed size in pixels (helps preserve visual size)
+        prevDisplayW: state.naturalWidth * (state.scale || 1),
+        prevDisplayH: state.naturalHeight * (state.scale || 1)
+      };
+    } catch (e) {
+      prevCenter = null;
+    }
+
     const xhr = new XMLHttpRequest();
     xhr.open('GET', fullSrc, true);
     xhr.responseType = 'blob';
@@ -736,15 +773,88 @@ async function openLightbox(triggerImage) {
         const blobUrl = URL.createObjectURL(xhr.response);
         const img = new window.Image();
         img.onload = function() {
-          if (isOpen) {
-            state.naturalWidth = img.naturalWidth;
-            state.naturalHeight = img.naturalHeight;
-            imageEl.classList.remove('lb-fadein');
-            imageEl.src = blobUrl;
-            configureStageDimensions(false);
-            setTimeout(()=>{imageEl.classList.add('lb-fadein');}, 10);
-            if (overlayEl._spinner) overlayEl._spinner.style.display = 'none';
+          if (!isOpen) return;
+
+          // New natural size
+          const newW = img.naturalWidth;
+          const newH = img.naturalHeight;
+
+          // Update natural dimensions first
+          state.naturalWidth = newW;
+          state.naturalHeight = newH;
+
+          // Compute stage size and fit scale (replicating configureStageDimensions
+          // behavior but without clobbering the desired state.scale)
+          const paddingLimit = Math.min(settings.viewportPadding, Math.min(window.innerWidth, window.innerHeight) / 2);
+          const viewportW = Math.max(1, window.innerWidth - paddingLimit * 2);
+          const viewportH = Math.max(1, window.innerHeight - paddingLimit * 2);
+          const stageWidth = Math.max(1, Math.min(state.naturalWidth, viewportW));
+          const stageHeight = Math.max(1, Math.min(state.naturalHeight, viewportH));
+
+          // Apply stage size
+          stageEl.style.width = `${stageWidth}px`;
+          stageEl.style.height = `${stageHeight}px`;
+
+          const fitScale = Math.min(stageWidth / state.naturalWidth, stageHeight / state.naturalHeight, 1);
+          state.initialScale = fitScale;
+          state.minScale = Math.min(fitScale, 0.5);
+          state.maxScale = 3;
+
+          // Preserve previous visual size: compute desired scale so that the
+          // previously-displayed pixel width remains the same on screen.
+          if (prevCenter && prevCenter.prevDisplayW) {
+            let desiredScale = prevCenter.prevDisplayW / Math.max(1, newW);
+            if (!isFinite(desiredScale) || desiredScale <= 0) desiredScale = fitScale;
+            desiredScale = clamp(desiredScale, state.minScale, state.maxScale);
+            state.scale = desiredScale;
+          } else {
+            // Fallback to fitScale when we can't compute previous display size
+            state.scale = fitScale;
           }
+
+          // Compute translate so the same image-space coordinate remains centered
+          if (prevCenter) {
+            state.translateX = stageWidth / 2 - prevCenter.imgX * state.scale;
+            state.translateY = stageHeight / 2 - prevCenter.imgY * state.scale;
+            constrainTranslation();
+          } else {
+            state.translateX = (stageWidth - state.naturalWidth * state.scale) / 2;
+            state.translateY = (stageHeight - state.naturalHeight * state.scale) / 2;
+          }
+
+          // Apply changes and swap src with minimal visual disruption
+          imageEl.classList.remove('lb-fadein');
+          // Keep explicit sizing so layout doesn't recalc to intrinsic size
+          imageEl.style.width = `${state.naturalWidth}px`;
+          imageEl.style.height = `${state.naturalHeight}px`;
+          // Set the new src and immediately apply transform to keep position
+          imageEl.src = blobUrl;
+          applyTransform();
+
+          // Small post-adjustment: compute desired center and actual image
+          // center in viewport and nudge translate to remove sub-pixel/rounding
+          // offsets (common when switching intrinsic sizes).
+          try {
+            const srect2 = stageEl.getBoundingClientRect();
+            const desiredCenterX = srect2.left + srect2.width / 2;
+            const desiredCenterY = srect2.top + srect2.height / 2;
+            const imageCenterX = srect2.left + state.translateX + (state.naturalWidth * state.scale) / 2;
+            const imageCenterY = srect2.top + state.translateY + (state.naturalHeight * state.scale) / 2;
+            const deltaX = desiredCenterX - imageCenterX;
+            const deltaY = desiredCenterY - imageCenterY;
+            // Only apply small adjustments to avoid large jumps
+            if (Math.abs(deltaX) > 0.5 || Math.abs(deltaY) > 0.5) {
+              state.translateX += deltaX;
+              state.translateY += deltaY;
+              constrainTranslation();
+              applyTransform();
+            }
+          } catch (e) {
+            // ignore adjustment failures
+          }
+          setTimeout(()=>{imageEl.classList.add('lb-fadein');}, 10);
+
+          if (overlayEl._spinner) overlayEl._spinner.style.display = 'none';
         };
         img.src = blobUrl;
       } else {

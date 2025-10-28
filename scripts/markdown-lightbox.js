@@ -54,7 +54,7 @@ function initMarkdownLightbox() {
         }
     });
     
-    console.log(`Markdown Lightbox: 已为 ${uniqueImages.length} 张图片添加灯箱功能`);
+    console.log(`Markdown Lightbox: lightbox enabled for ${uniqueImages.length} image${uniqueImages.length === 1 ? '' : 's'}.`);
 }
 
 /**
@@ -77,7 +77,7 @@ function openLightbox(imageSrc, imageAlt = '') {
     overlay.innerHTML = `
         <div class="lightbox-content">
             <img src="${imageSrc}" alt="${imageAlt}" class="lightbox-image">
-            <button class="lightbox-close" aria-label="关闭灯箱">&times;</button>
+            <button class="lightbox-close" aria-label="Close lightbox">&times;</button>
             ${imageAlt ? `<div class="lightbox-caption">${imageAlt}</div>` : ''}
         </div>
     `;
