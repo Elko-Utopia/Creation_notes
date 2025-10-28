@@ -232,6 +232,9 @@ function ensureOverlay() {
   imageEl.alt = '';
   imageEl.decoding = 'async';
   imageEl.draggable = false;
+  // Use a stable transform origin (left-top) to make translate/scale math
+  // deterministic when swapping preview -> full images.
+  imageEl.style.transformOrigin = '0 0';
 
   stageEl.appendChild(imageEl);
   overlayEl.appendChild(stageEl);
@@ -664,15 +667,28 @@ async function openLightbox(triggerImage) {
   isOpen = true;
   overlayEl.setAttribute('aria-hidden', 'false');
   overlayEl.classList.add('lb-open');
-  skipCloseClick = false;
-
-  // 秒开预览：直接使用页面img的src
+      // Ensure image is visible and force a paint/reflow so pixels are rasterized
+      imageEl.style.visibility = 'visible';
+      // trigger layout/readback
+      void imageEl.offsetWidth;
+      // use will-change briefly to hint repaint, then clear it
+      imageEl.style.willChange = 'transform, opacity';
+      requestAnimationFrame(() => {
+        imageEl.style.willChange = '';
+        setTimeout(() => { imageEl.classList.add('lb-fadein'); }, 10);
+      });
   const beforePrime = performance.now();  
   // 获取预览图src用于后续检查
   const previewSrc = triggerImage.currentSrc || triggerImage.src;
   
   const primeSuccess = primeWithPreview(triggerImage);
   const afterPrime = performance.now();  
+  // NOTE: previous approach attempted to deterministically map a thumbnail
+  // pixel into image-space and preserve that anchor when swapping the
+  // high-resolution image. That logic caused brittle position jumps in some
+  // layouts and has been removed. We now perform an atomic swap and use a
+  // cloned-thumbnail animation to preserve visual continuity (see
+  // animateCloneToStage below).
   const beforeVisible = performance.now();
   
   // 检查原始图片是否已缓存
@@ -745,25 +761,9 @@ async function openLightbox(triggerImage) {
   let fullSrc = triggerImage.dataset && triggerImage.dataset.full;
   if (fullSrc && fullSrc !== imageEl.src) {
     if (overlayEl._spinner) overlayEl._spinner.style.display = '';
-    // Capture the image coordinate currently at the center of the stage so
-    // we can preserve that visual anchor when swapping to the full-size image.
-    let prevCenter = null;
-    try {
-      const srect = stageEl.getBoundingClientRect();
-      const sW = srect.width;
-      const sH = srect.height;
-      prevCenter = {
-        imgX: (sW / 2 - state.translateX) / (state.scale || 1),
-        imgY: (sH / 2 - state.translateY) / (state.scale || 1),
-        stageW: sW,
-        stageH: sH,
-        // previous displayed size in pixels (helps preserve visual size)
-        prevDisplayW: state.naturalWidth * (state.scale || 1),
-        prevDisplayH: state.naturalHeight * (state.scale || 1)
-      };
-    } catch (e) {
-      prevCenter = null;
-    }
+    // We'll animate a cloned thumbnail into place and perform an atomic
+    // swap once the offscreen image is ready. This avoids relying on
+    // brittle image-space anchor math that caused jumps in some layouts.
 
     const xhr = new XMLHttpRequest();
     xhr.open('GET', fullSrc, true);
@@ -776,85 +776,97 @@ async function openLightbox(triggerImage) {
           if (!isOpen) return;
 
           // New natural size
-          const newW = img.naturalWidth;
-          const newH = img.naturalHeight;
+            // Offscreen-load then single-shot swap to avoid intermediate paints
+            const newW = img.naturalWidth;
+            const newH = img.naturalHeight;
 
-          // Update natural dimensions first
-          state.naturalWidth = newW;
-          state.naturalHeight = newH;
+            state.naturalWidth = newW;
+            state.naturalHeight = newH;
 
-          // Compute stage size and fit scale (replicating configureStageDimensions
-          // behavior but without clobbering the desired state.scale)
-          const paddingLimit = Math.min(settings.viewportPadding, Math.min(window.innerWidth, window.innerHeight) / 2);
-          const viewportW = Math.max(1, window.innerWidth - paddingLimit * 2);
-          const viewportH = Math.max(1, window.innerHeight - paddingLimit * 2);
-          const stageWidth = Math.max(1, Math.min(state.naturalWidth, viewportW));
-          const stageHeight = Math.max(1, Math.min(state.naturalHeight, viewportH));
+            // Compute stage size and fit scale deterministically
+            const paddingLimit = Math.min(settings.viewportPadding, Math.min(window.innerWidth, window.innerHeight) / 2);
+            const viewportW = Math.max(1, window.innerWidth - paddingLimit * 2);
+            const viewportH = Math.max(1, window.innerHeight - paddingLimit * 2);
+            const stageWidth = viewportW;
+            const stageHeight = viewportH;
 
-          // Apply stage size
-          stageEl.style.width = `${stageWidth}px`;
-          stageEl.style.height = `${stageHeight}px`;
+            // Apply stage size immediately
+            stageEl.style.width = `${stageWidth}px`;
+            stageEl.style.height = `${stageHeight}px`;
 
-          const fitScale = Math.min(stageWidth / state.naturalWidth, stageHeight / state.naturalHeight, 1);
-          state.initialScale = fitScale;
-          state.minScale = Math.min(fitScale, 0.5);
-          state.maxScale = 3;
-
-          // Preserve previous visual size: compute desired scale so that the
-          // previously-displayed pixel width remains the same on screen.
-          if (prevCenter && prevCenter.prevDisplayW) {
-            let desiredScale = prevCenter.prevDisplayW / Math.max(1, newW);
-            if (!isFinite(desiredScale) || desiredScale <= 0) desiredScale = fitScale;
-            desiredScale = clamp(desiredScale, state.minScale, state.maxScale);
-            state.scale = desiredScale;
-          } else {
-            // Fallback to fitScale when we can't compute previous display size
+            const fitScale = Math.min(stageWidth / state.naturalWidth, stageHeight / state.naturalHeight, 1);
+            state.initialScale = fitScale;
+            state.minScale = Math.min(fitScale, 0.5);
+            state.maxScale = 3;
             state.scale = fitScale;
-          }
 
-          // Compute translate so the same image-space coordinate remains centered
-          if (prevCenter) {
-            state.translateX = stageWidth / 2 - prevCenter.imgX * state.scale;
-            state.translateY = stageHeight / 2 - prevCenter.imgY * state.scale;
-            constrainTranslation();
-          } else {
+            // Center the image in the stage; visual continuity is provided
+            // by the cloned-thumbnail animation rather than preserving a
+            // computed image-space pixel.
             state.translateX = (stageWidth - state.naturalWidth * state.scale) / 2;
             state.translateY = (stageHeight - state.naturalHeight * state.scale) / 2;
-          }
+            constrainTranslation();
 
-          // Apply changes and swap src with minimal visual disruption
-          imageEl.classList.remove('lb-fadein');
-          // Keep explicit sizing so layout doesn't recalc to intrinsic size
-          imageEl.style.width = `${state.naturalWidth}px`;
-          imageEl.style.height = `${state.naturalHeight}px`;
-          // Set the new src and immediately apply transform to keep position
-          imageEl.src = blobUrl;
-          applyTransform();
+            // Prepare visible element but keep it hidden until offscreen is ready
+            imageEl.style.transformOrigin = '0 0';
+            imageEl.classList.remove('lb-fadein');
+            imageEl.style.width = `${state.naturalWidth}px`;
+            imageEl.style.height = `${state.naturalHeight}px`;
+            applyTransform();
 
-          // Small post-adjustment: compute desired center and actual image
-          // center in viewport and nudge translate to remove sub-pixel/rounding
-          // offsets (common when switching intrinsic sizes).
-          try {
-            const srect2 = stageEl.getBoundingClientRect();
-            const desiredCenterX = srect2.left + srect2.width / 2;
-            const desiredCenterY = srect2.top + srect2.height / 2;
-            const imageCenterX = srect2.left + state.translateX + (state.naturalWidth * state.scale) / 2;
-            const imageCenterY = srect2.top + state.translateY + (state.naturalHeight * state.scale) / 2;
-            const deltaX = desiredCenterX - imageCenterX;
-            const deltaY = desiredCenterY - imageCenterY;
-            // Only apply small adjustments to avoid large jumps
-            if (Math.abs(deltaX) > 0.5 || Math.abs(deltaY) > 0.5) {
-              state.translateX += deltaX;
-              state.translateY += deltaY;
-              constrainTranslation();
-              applyTransform();
-            }
-          } catch (e) {
-            // ignore adjustment failures
-          }
-          setTimeout(()=>{imageEl.classList.add('lb-fadein');}, 10);
+            // Offscreen image to force decode/rasterize
+            const off = new Image();
+            off.decoding = 'async';
+            off.onload = function() {
+              // Ensure rasterized then swap
+              const reveal = () => {
+                // Debug: log computed layout values before swapping in the blob
+                try {
+                  const srect = stageEl.getBoundingClientRect();
+                  console.debug('[lightbox.debug] xhr.reveal', {
+                    branch: 'xhr',
+                    stageRect: { left: srect.left, top: srect.top, width: srect.width, height: srect.height },
+                    state: { scale: state.scale, translateX: state.translateX, translateY: state.translateY, naturalWidth: state.naturalWidth, naturalHeight: state.naturalHeight },
+                    imageComputedStyle: window.getComputedStyle(imageEl).transform
+                  });
+                } catch (e) {}
+                imageEl.src = blobUrl;
+                const finalize = () => {
+                  imageEl.style.visibility = 'visible';
+                  void imageEl.offsetWidth;
+                  imageEl.getBoundingClientRect();
+                  applyTransform();
+                  imageEl.style.willChange = 'transform, opacity';
+                  requestAnimationFrame(() => {
+                    imageEl.style.willChange = '';
+                    setTimeout(() => { imageEl.classList.add('lb-fadein'); }, 10);
+                  });
+                  if (overlayEl._spinner) overlayEl._spinner.style.display = 'none';
+                };
 
-          if (overlayEl._spinner) overlayEl._spinner.style.display = 'none';
+                if (typeof imageEl.decode === 'function') {
+                  imageEl.decode().then(finalize).catch(finalize);
+                } else {
+                  requestAnimationFrame(finalize);
+                }
+              };
+
+              if (typeof ensureRasterized === 'function') {
+                try {
+                  ensureRasterized(off, reveal);
+                } catch (e) { reveal(); }
+              } else if (typeof off.decode === 'function') {
+                off.decode().then(reveal).catch(reveal);
+              } else {
+                requestAnimationFrame(reveal);
+              }
+            };
+            off.onerror = function() {
+              // fallback: assign directly
+              imageEl.src = blobUrl;
+              if (overlayEl._spinner) overlayEl._spinner.style.display = 'none';
+            };
+            off.src = blobUrl;
         };
         img.src = blobUrl;
       } else {
@@ -877,10 +889,122 @@ async function openLightbox(triggerImage) {
       // 无缝切换到高质量图片
       state.naturalWidth = loaded.naturalWidth;
       state.naturalHeight = loaded.naturalHeight;
-      imageEl.src = loaded.src;
+
       imageEl.style.width = `${state.naturalWidth}px`;
       imageEl.style.height = `${state.naturalHeight}px`;
+      // Compute stage/layout BEFORE assigning src so transform is correct
       configureStageDimensions(false);
+
+      // Finalize reveal helper (force paint then fade in)
+      const finalizeLoaded = () => {
+        // ensure fully visible and force paint to avoid partial rasterization
+        imageEl.style.visibility = 'visible';
+        void imageEl.offsetWidth;
+        imageEl.getBoundingClientRect();
+        applyTransform();
+        // hint browser to paint by toggling will-change briefly, then fade in
+        imageEl.style.willChange = 'transform, opacity';
+        requestAnimationFrame(() => {
+          imageEl.style.willChange = '';
+          if (overlayEl._spinner) overlayEl._spinner.style.display = 'none';
+          setTimeout(() => { imageEl.classList.add('lb-fadein'); }, 10);
+        });
+      };
+
+      // Deterministic swap: set up sizes and transform based on the thumbnail
+      // mapping we computed earlier (prevThumbPoint). This avoids a left-shift
+      // caused by inconsistent reference frames during the swap.
+      const newW = loaded.naturalWidth;
+      const newH = loaded.naturalHeight;
+      // Compute stage/fit like above
+      const paddingLimit2 = Math.min(settings.viewportPadding, Math.min(window.innerWidth, window.innerHeight) / 2);
+      const viewportW2 = Math.max(1, window.innerWidth - paddingLimit2 * 2);
+      const viewportH2 = Math.max(1, window.innerHeight - paddingLimit2 * 2);
+  // Use the same viewport-constrained stage used elsewhere to keep the
+  // lightbox window stable between preview and full-size images.
+  const stageWidth2 = viewportW2;
+  const stageHeight2 = viewportH2;
+
+      // Apply sizing
+      stageEl.style.width = `${stageWidth2}px`;
+      stageEl.style.height = `${stageHeight2}px`;
+
+      const fitScale2 = Math.min(stageWidth2 / newW, stageHeight2 / newH, 1);
+      state.initialScale = fitScale2;
+      state.minScale = Math.min(fitScale2, 0.5);
+      state.maxScale = 3;
+      state.scale = fitScale2;
+
+      if (prevThumbPoint) {
+        state.translateX = stageWidth2 / 2 - prevThumbPoint.imgX * state.scale;
+        state.translateY = stageHeight2 / 2 - prevThumbPoint.imgY * state.scale;
+        constrainTranslation();
+      } else {
+        state.translateX = (stageWidth2 - newW * state.scale) / 2;
+        state.translateY = (stageHeight2 - newH * state.scale) / 2;
+      }
+
+      // Offscreen-load the high-res image then swap into view atomically
+      imageEl.style.transformOrigin = '0 0';
+      imageEl.classList.remove('lb-fadein');
+      imageEl.style.visibility = 'hidden';
+      imageEl.style.width = `${newW}px`;
+      imageEl.style.height = `${newH}px`;
+      applyTransform();
+
+      const offHigh = new Image();
+      offHigh.decoding = 'async';
+      if (original && original.crossOrigin) offHigh.crossOrigin = original.crossOrigin;
+      offHigh.onload = function() {
+        // Ensure rasterized then reveal
+        const revealHigh = () => {
+          // Debug: log computed layout values before swapping in the high-res image
+          try {
+            const srect2 = stageEl.getBoundingClientRect();
+            console.debug('[lightbox.debug] loadSource.reveal', {
+              branch: 'loadSource',
+              stageRect: { left: srect2.left, top: srect2.top, width: srect2.width, height: srect2.height },
+              state: { scale: state.scale, translateX: state.translateX, translateY: state.translateY, naturalWidth: state.naturalWidth, naturalHeight: state.naturalHeight },
+              prevThumbPoint: prevThumbPoint || null,
+              imageComputedStyle: window.getComputedStyle(imageEl).transform
+            });
+          } catch (e) {}
+          imageEl.src = loaded.src;
+          const finalize2 = () => {
+            imageEl.style.visibility = 'visible';
+            void imageEl.offsetWidth;
+            imageEl.getBoundingClientRect();
+            applyTransform();
+            imageEl.style.willChange = 'transform, opacity';
+            requestAnimationFrame(() => {
+              imageEl.style.willChange = '';
+              if (overlayEl._spinner) overlayEl._spinner.style.display = 'none';
+              setTimeout(() => { imageEl.classList.add('lb-fadein'); }, 10);
+            });
+          };
+
+          if (typeof imageEl.decode === 'function') {
+            imageEl.decode().then(finalize2).catch(finalize2);
+          } else {
+            requestAnimationFrame(finalize2);
+          }
+        };
+
+        if (typeof ensureRasterized === 'function') {
+          try { ensureRasterized(offHigh, revealHigh); } catch (e) { revealHigh(); }
+        } else if (typeof offHigh.decode === 'function') {
+          offHigh.decode().then(revealHigh).catch(revealHigh);
+        } else {
+          requestAnimationFrame(revealHigh);
+        }
+      };
+      offHigh.onerror = function() {
+        // fallback: assign directly
+        imageEl.src = loaded.src;
+        requestAnimationFrame(finalizeLoaded);
+      };
+      // start offscreen load
+      offHigh.src = loaded.src;
     }
   }).catch(error => {
   // ...
@@ -996,8 +1120,10 @@ function configureStageDimensions(maintainCurrentView) {
   const viewportW = Math.max(1, window.innerWidth - paddingLimit * 2);
   const viewportH = Math.max(1, window.innerHeight - paddingLimit * 2);
 
-  const stageWidth = Math.max(1, Math.min(state.naturalWidth, viewportW));
-  const stageHeight = Math.max(1, Math.min(state.naturalHeight, viewportH));
+  // Use viewport-constrained stage size so all images share the same lightbox
+  // window dimensions (stage), and only the image inside is fit-scaled.
+  const stageWidth = viewportW;
+  const stageHeight = viewportH;
 
   stageEl.style.width = `${stageWidth}px`;
   stageEl.style.height = `${stageHeight}px`;
@@ -1144,7 +1270,11 @@ function onPointerCancel(event) {
 }
 
 function applyTransform() {
-  imageEl.style.transform = `translate3d(${state.translateX}px, ${state.translateY}px, 0) scale(${state.scale})`;
+  // Round translation to integer pixels to reduce sub-pixel repaint differences
+  // that can cause a one-time visible shift when swapping intrinsic sizes.
+  const tx = Math.round(state.translateX);
+  const ty = Math.round(state.translateY);
+  imageEl.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(${state.scale})`;
 }
 
 function constrainTranslation() {
@@ -1161,6 +1291,90 @@ function constrainTranslation() {
 
   state.translateX = clamp(state.translateX, minX, maxX);
   state.translateY = clamp(state.translateY, minY, maxY);
+}
+
+// Ensure the current image is fully decoded / rasterized before revealing.
+// Uses createImageBitmap when available to force decode; then runs cb.
+function ensureRasterized(imgEl, cb) {
+  try {
+    if (typeof createImageBitmap === 'function') {
+      // createImageBitmap may accept an HTMLImageElement and will force decoding
+      createImageBitmap(imgEl).then(bitmap => {
+        try { bitmap.close && bitmap.close(); } catch (e) {}
+        // force layout/readback
+        void imgEl.offsetWidth;
+        requestAnimationFrame(() => cb && cb());
+      }).catch(() => {
+        void imgEl.offsetWidth;
+        requestAnimationFrame(() => cb && cb());
+      });
+      return;
+    }
+  } catch (e) {
+    // fallthrough to fallback
+  }
+  // Fallback: force layout then next frame
+  void imgEl.offsetWidth;
+  requestAnimationFrame(() => cb && cb());
+}
+
+// Cross-fade from current preview to a new src using a temporary overlay image.
+// Calls cb() after swap completes. Keeps changes minimal and avoids repaint jumps.
+function crossFadeTo(imgEl, src, cb) {
+  if (!stageEl) {
+    // fallback: assign directly
+    imgEl.src = src;
+    if (cb) cb();
+    return;
+  }
+
+  const overlay = document.createElement('img');
+  overlay.className = 'lb-image lb-temp-overlay';
+  overlay.decoding = 'async';
+  overlay.draggable = false;
+  // absolute fill of the stage
+  overlay.style.position = 'absolute';
+  overlay.style.left = '0';
+  overlay.style.top = '0';
+  overlay.style.width = '100%';
+  overlay.style.height = '100%';
+  overlay.style.objectFit = 'contain';
+  overlay.style.opacity = '0';
+  overlay.style.transition = `opacity ${Math.max(100, settings.transitionDurationMs)}ms ease`; // match transition timing
+  overlay.style.borderRadius = window.getComputedStyle(imgEl).borderRadius || '';
+
+  // insert overlay above the existing image
+  stageEl.appendChild(overlay);
+
+  const cleanup = () => {
+    try { if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay); } catch (e) {}
+    if (cb) cb();
+  };
+
+  const onShown = () => {
+    // when overlay fully visible, swap underlying image src then remove overlay
+    imgEl.src = src;
+    // ensure underlying image is rasterized before removing overlay
+    ensureRasterized(imgEl, () => {
+      // small delay to ensure a frame where overlay covers the preview
+      setTimeout(cleanup, 30);
+    });
+  };
+
+  // load overlay image then fade it in
+  overlay.addEventListener('load', () => {
+    requestAnimationFrame(() => {
+      overlay.style.opacity = '1';
+    });
+  }, { once: true });
+
+  // When transition completes, proceed to swap
+  overlay.addEventListener('transitionend', (e) => {
+    if (e.propertyName === 'opacity') onShown();
+  }, { once: true });
+
+  // start loading
+  overlay.src = src;
 }
 
 function computeWheelScale(event) {
