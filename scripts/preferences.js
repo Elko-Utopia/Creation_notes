@@ -234,11 +234,6 @@ function onGlobalKeydown(event) {
     event.preventDefault();
     closeSearchOverlay();
   }
-  // close subscribe overlay on Escape
-  if (event.key === 'Escape' && subscribeOverlay?.classList.contains('is-open')) {
-    event.preventDefault();
-    closeSubscribeOverlay();
-  }
 }
 
 let subscribeOverlay = null;
@@ -281,6 +276,19 @@ function ensureSubscribeOverlay() {
       closeSubscribeOverlay();
     }
   });
+
+  // Ensure dialog is not covered by header on small screens: add a small top margin equal to header height
+  try {
+    const headerEl = document.querySelector && document.querySelector('header');
+    const dialog = subscribeOverlay.querySelector('.pref-subscribe-dialog');
+    if (headerEl && dialog && window.innerWidth <= 820) {
+      const hdrRect = headerEl.getBoundingClientRect();
+      // add a bit of breathing room
+      dialog.style.marginTop = Math.max(8, Math.round(hdrRect.height)) + 'px';
+    }
+  } catch (e) {
+    // noop
+  }
 
   if (typeof window.attachSubscribeForms === 'function') {
     window.attachSubscribeForms(subscribeOverlay);
