@@ -2,10 +2,7 @@
 (function () {
   function showMessage(msgEl, text, link) {
     if (!msgEl) {
-      try { console.log('[subscribe]', text); } catch (_) {}
-      if (link) {
-        try { console.log('[subscribe] Open manually:', link); } catch (_) {}
-      }
+      // 静默失败，不输出到控制台
       return;
     }
     msgEl.textContent = '';

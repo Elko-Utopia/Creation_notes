@@ -3,9 +3,13 @@ const DEFAULT_SELECTOR = 'main img';
 const boundImages = new WeakSet();
 const registeredSelectors = new Set();
 
-// 监控器支持
+// 开发环境判断
+const isDev = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+// 监控器支持（仅在开发环境或启用监控时生效）
 const monitor = {
   log: function(hookName, ...args) {
+    if (!isDev && !window.LightboxMonitor) return; // 生产环境跳过
     if (window.LightboxMonitor && window.LightboxMonitor.isEnabled() && window.LightboxMonitor.hooks[hookName]) {
       window.LightboxMonitor.hooks[hookName](...args);
     }
@@ -87,15 +91,6 @@ function initLightboxAuto() {
   
   if (images.length > 0) {
     initLightbox({ selector: '.md-content.pswp-featured img[data-full]' });
-    // 简化的成功信息 - 不依赖监控器
-    if (!window.LightboxMonitor || !window.LightboxMonitor.isEnabled()) {
-      console.log(`✅ Lightbox initialized for ${images.length} images`);
-    }
-  } else {
-    // 简化的提示信息 - 不依赖监控器
-    if (!window.LightboxMonitor || !window.LightboxMonitor.isEnabled()) {
-      console.log('ℹ️ No lightbox images found');
-    }
   }
 }
 

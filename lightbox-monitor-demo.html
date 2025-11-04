@@ -115,14 +115,14 @@
   <div class="demo-section">
     <h2>🖼️ 测试图片 (点击打开灯箱)</h2>
     <div class="md-content pswp-featured">
-      <img src="/Creation_notes/portfolio1.jpg" 
-           data-full="/Creation_notes/portfolio1.jpg" 
+   <img src="./portfolio1.jpg" 
+     data-full="./portfolio1.jpg" 
            alt="作品1 - 横版图片">
-      <img src="/Creation_notes/portfolio2.jpg" 
-           data-full="/Creation_notes/portfolio2.jpg" 
+   <img src="./portfolio2.jpg" 
+     data-full="./portfolio2.jpg" 
            alt="作品2 - 竖版图片">
-      <img src="/Creation_notes/portfolio3.jpg" 
-           data-full="/Creation_notes/portfolio3.jpg" 
+   <img src="./portfolio3.jpg" 
+     data-full="./portfolio3.jpg" 
            alt="作品3 - 正方形图片">
     </div>
   </div>
@@ -167,8 +167,8 @@ LightboxMonitor.disable()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&
   </div>
 
   <!-- 引入脚本 -->
-  <script src="/Creation_notes/scripts/lightbox.js"></script>
-  <script src="/Creation_notes/scripts/lightbox-monitor.js"></script>
+  <script src="scripts/lightbox.js"></script>
+  <script src="scripts/lightbox-monitor.js"></script>
   
   <script>
     // 更新状态显示
@@ -210,14 +210,15 @@ LightboxMonitor.disable()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&
     // 显示统计
     function showStats() {
       const stats = LightboxMonitor.getStats();
-      console.table(stats);
-      alert('统计数据已输出到控制台，请按F12查看');
+      // 将统计信息展示为简单的弹窗摘要，避免向控制台写入
+      alert('统计数据：' + JSON.stringify(stats));
     }
 
     // 显示性能报告
     function showReport() {
-      LightboxMonitor.getPerformanceReport();
-      alert('性能报告已输出到控制台，请按F12查看');
+      // 尝试获取性能报告并以弹窗展示部分摘要（避免 console 输出）
+      const rpt = LightboxMonitor.getPerformanceReport();
+      alert('性能报告（摘要）:\n' + (rpt ? JSON.stringify(rpt).slice(0, 1000) : '无报告'));
     }
 
     // 清除统计
@@ -237,7 +238,7 @@ LightboxMonitor.disable()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&
         showTimestamps: true,
         groupLogs: true
       });
-      console.log('✅ 已应用自定义配置');
+  updateStatus();
     }
 
     // 自动初始化lightbox

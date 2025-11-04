@@ -96,14 +96,14 @@
     <h2>正常图片 (应该可以点击)</h2>
     <div class="md-content pswp-featured" id="normal-images">
       <div>
-        <img src="/Creation_notes/portfolio1.jpg" 
-             data-full="/Creation_notes/portfolio1.jpg" 
+     <img src="./portfolio1.jpg" 
+       data-full="./portfolio1.jpg" 
              alt="正常图片1">
         <div class="image-info">状态: <span id="status-normal-1">检查中...</span></div>
       </div>
       <div>
-        <img src="/Creation_notes/portfolio2.jpg" 
-             data-full="/Creation_notes/portfolio2.jpg" 
+     <img src="./portfolio2.jpg" 
+       data-full="./portfolio2.jpg" 
              alt="正常图片2">
         <div class="image-info">状态: <span id="status-normal-2">检查中...</span></div>
       </div>
@@ -130,8 +130,8 @@
   </div>
 
   <!-- 引入脚本 -->
-  <script src="/Creation_notes/scripts/lightbox.js"></script>
-  <script src="/Creation_notes/scripts/lightbox-monitor.js"></script>
+  <script src="scripts/lightbox.js"></script>
+  <script src="scripts/lightbox-monitor.js"></script>
   
   <script>
     function enableMonitor() {
@@ -232,13 +232,17 @@
     }
     
     function updateStatus(message) {
-      console.log('📢', message);
+      // 将状态输出到页面的实时状态区域，避免使用 console.log
+      const el = document.getElementById('live-status');
+      if (el) {
+        el.innerHTML = `<p>${String(message)}</p>` + el.innerHTML;
+      }
     }
     
     // 初始化
     document.addEventListener('DOMContentLoaded', function() {
-      console.log('🚀 页面加载完成，启用监控...');
-      LightboxMonitor.enableFull();
+  // 页面加载完成，启用监控（已移除调试输出）
+  LightboxMonitor.enableFull();
       
       // 等待图片和脚本加载
       setTimeout(() => {
@@ -257,13 +261,7 @@
     // 添加点击事件监听，用于测试阻止行为
     document.addEventListener('click', function(e) {
       if (e.target.tagName === 'IMG' && e.target.closest('.md-content.pswp-featured')) {
-        console.log('🖱️ 图片点击事件:', {
-          src: e.target.src,
-          complete: e.target.complete,
-          naturalWidth: e.target.naturalWidth,
-          naturalHeight: e.target.naturalHeight,
-          cursor: getComputedStyle(e.target).cursor
-        });
+        // 点击事件不再输出到控制台；保留逻辑以便后续扩展
       }
     });
   </script>
