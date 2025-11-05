@@ -67,10 +67,20 @@ let lightboxInitialized = false; // 防止重复初始化lightbox
 let prefsDelegateAttached = false;
 
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
-  initializePreferences();
+  // Wait for DOM to be ready before initializing
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializePreferences);
+  } else {
+    // DOM already loaded
+    initializePreferences();
+  }
 }
 
 async function initializePreferences() {
+  console.log('[Prefs Debug] initializePreferences called, readyState:', document.readyState);
+  console.log('[Prefs Debug] document.body exists:', !!document.body);
+  console.log('[Prefs Debug] Current location:', window.location.href);
+  
   // Default to light theme (not following system preference unless explicitly set)
   const storedTheme = readStoredTheme();
   const initialTheme = storedTheme !== null ? storedTheme : 'light';
@@ -106,6 +116,14 @@ async function initializePreferences() {
   // prefs toggle (header new icon) -> open prefs overlay
   const prefsToggles = document.querySelectorAll('[data-prefs-toggle]');
   console.log('[Prefs Debug] Found prefs toggle buttons:', prefsToggles.length);
+  console.log('[Prefs Debug] All elements with class containing "prefs":', document.querySelectorAll('[class*="prefs"]').length);
+  console.log('[Prefs Debug] Header exists:', !!document.querySelector('header'));
+  
+  if (prefsToggles.length === 0) {
+    console.warn('[Prefs Debug] WARNING: No prefs toggle buttons found! Checking DOM...');
+    console.log('[Prefs Debug] Body HTML (first 500 chars):', document.body?.innerHTML?.substring(0, 500));
+  }
+  
   prefsToggles.forEach((button, idx) => {
     console.log(`[Prefs Debug] Attaching listener to button ${idx}:`, button);
     button.addEventListener('click', (e) => {
