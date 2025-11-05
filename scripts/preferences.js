@@ -429,7 +429,17 @@ function ensurePrefsOverlay() {
       if (!seg) return;
       const path = (window.location.pathname || '/');
       const normalized = path.endsWith('/') ? path : path + '/';
-      const isZh = document.documentElement.lang === 'zh' || /(^|\/)zh(\/|$)/.test(normalized);
+      
+      // Detect base path
+      let basePath = '/';
+      if (normalized.startsWith('/Creation_notes/')) {
+        basePath = '/Creation_notes/';
+      }
+      
+      // Check if path after base starts with zh/
+      const pathAfterBase = normalized.substring(basePath.length);
+      const isZh = document.documentElement.lang === 'zh' || pathAfterBase.startsWith('zh/');
+      
       seg.querySelectorAll('[data-lang]').forEach((btn) => {
         const v = btn.getAttribute('data-lang');
         const active = (v === 'zh') ? isZh : !isZh;
@@ -453,15 +463,36 @@ function ensurePrefsOverlay() {
 
       const curPath = window.location.pathname || '/';
       const pathWithSlash = curPath.endsWith('/') ? curPath : curPath + '/';
+      
+      // Detect base path by checking if path starts with /Creation_notes/
+      // This handles both local (/) and GitHub Pages (/Creation_notes/) deployments
+      let basePath = '/';
+      if (pathWithSlash.startsWith('/Creation_notes/')) {
+        basePath = '/Creation_notes/';
+      }
+      
       if (v === 'zh') {
+        // Switch to Chinese: add /zh/ after base path
         let target = pathWithSlash;
-        if (!/^\/zh\//.test(target)) target = ('/zh' + (target.startsWith('/') ? '' : '/') + target).replace(/\/+/g, '/');
+        // Get path after base
+        const pathAfterBase = target.substring(basePath.length);
+        // Check if already in /zh/ path
+        if (!pathAfterBase.startsWith('zh/')) {
+          // Insert /zh/ after base path
+          target = basePath + 'zh/' + pathAfterBase;
+        }
         target = target.replace(/\/+/g, '/');
         window.location.href = target;
       } else {
+        // Switch to English: remove /zh/ from path (after base)
         let target = pathWithSlash;
-        if (/^\/zh\//.test(target)) target = target.replace(/^\/zh/, '');
-        if (!target || target === '') target = '/';
+        const pathAfterBase = target.substring(basePath.length);
+        if (pathAfterBase.startsWith('zh/')) {
+          // Remove /zh/ prefix
+          const pathWithoutZh = pathAfterBase.substring(3); // Remove 'zh/'
+          target = basePath + pathWithoutZh;
+        }
+        if (!target || target === basePath.slice(0, -1)) target = basePath;
         target = target.replace(/\/+/g, '/');
         window.location.href = target;
       }
