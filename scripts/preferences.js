@@ -60,11 +60,53 @@ const subscribeUnsubscribeUrl = (() => {
 })();
 const subscribeUnsubLink = subscribeUnsubscribeUrl ? `<button type="button" class="pref-subscribe-unsub" data-subscribe-unsub>Manage / Unsubscribe</button>` : '';
 
+// Detect if current page is Chinese
+const isZhPage = document.documentElement.lang === 'zh' || window.location.pathname.startsWith('/zh/');
+
+// Text content for bilingual support
+const i18n = {
+  search: {
+    title: isZhPage ? '搜索' : 'Search',
+    closeLabel: isZhPage ? '关闭搜索' : 'Close search',
+    placeholder: isZhPage ? '搜索此网站...' : 'Search this site...',
+    hint: isZhPage ? '输入关键词并按回车通过谷歌搜索网站。按 Esc 关闭。' : 'Enter a keyword and press Enter to search the site via Google. Press Esc to close.'
+  },
+  preferences: {
+    title: isZhPage ? '偏好设置' : 'Preferences',
+    closeLabel: isZhPage ? '关闭偏好设置' : 'Close preferences',
+    theme: {
+      title: isZhPage ? '主题' : 'Theme',
+      desc: isZhPage ? '在亮色和暗色主题之间切换。您的偏好将保存在本地。' : 'Switch between light and dark themes. Your preference is saved locally.',
+      light: isZhPage ? '亮色' : 'Light',
+      dark: isZhPage ? '暗色' : 'Dark',
+      ariaLabel: isZhPage ? '主题选择器' : 'Theme selector',
+      ariaGroupLabel: isZhPage ? '主题' : 'Theme'
+    },
+    language: {
+      title: isZhPage ? '语言' : 'Language',
+      desc: isZhPage ? '在英文和中文之间切换网站语言。' : 'Switch site language between English and 中文（Chinese）.',
+      ariaLabel: isZhPage ? '语言选择器' : 'Language selector',
+      ariaGroupLabel: isZhPage ? '语言' : 'Language'
+    }
+  },
+  subscribe: {
+    title: isZhPage ? '订阅' : 'Subscribe',
+    closeLabel: isZhPage ? '关闭订阅' : 'Close subscribe',
+    desc: isZhPage ? '订阅以获取新文章和作品集更新。绝无垃圾邮件。' : 'Get updates for new posts and portfolio additions. No spam.',
+    note: isZhPage ? '订阅将在新标签页打开 Buttondown（我的邮件服务提供商），以便您直接确认请求。如果您不确定是否成功，请发邮件至 <a href="mailto:elkoutopia@gmail.com">elkoutopia@gmail.com</a>，我会帮您检查。' : 'Subscribing opens Buttondown (my email provider) in a new tab so you can confirm the request directly. If you are unsure whether it worked, just drop a note to <a href="mailto:elkoutopia@gmail.com">elkoutopia@gmail.com</a> and I will check it for you.',
+    privacy: isZhPage ? '我尊重您的隐私。随时可以取消订阅。' : 'I respect your privacy. Unsubscribe anytime.',
+    button: isZhPage ? '订阅' : 'Subscribe',
+    manageUnsub: isZhPage ? '管理 / 取消订阅' : 'Manage / Unsubscribe'
+  }
+};
+
 let searchOverlay = null;
 let searchInput = null;
 let prevActiveElement = null;
 let lightboxInitialized = false; // 防止重复初始化lightbox
 let prefsDelegateAttached = false;
+let scrollbarCompensated = false; // 防止重复设置滚动条补偿
+let originalBodyPadding = ''; // 保存body原始padding
 
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   // Wait for DOM to be ready before initializing
@@ -246,13 +288,13 @@ function ensureSearchOverlay() {
   searchOverlay.innerHTML = `
     <div class="pref-search-dialog" role="dialog" aria-modal="true" aria-labelledby="pref-search-title">
       <div class="pref-search-header">
-        <h2 class="pref-search-title" id="pref-search-title">Search</h2>
-        <button type="button" class="pref-search-close" aria-label="Close search">&times;</button>
+        <h2 class="pref-search-title" id="pref-search-title">${i18n.search.title}</h2>
+        <button type="button" class="pref-search-close" aria-label="${i18n.search.closeLabel}">&times;</button>
       </div>
       <form class="pref-search-form">
-        <input type="search" class="pref-search-input" name="q" placeholder="Search this site..." autocomplete="off" />
+        <input type="search" class="pref-search-input" name="q" placeholder="${i18n.search.placeholder}" autocomplete="off" />
       </form>
-      <p class="pref-search-hint">Enter a keyword and press Enter to search the site via Google. Press Esc to close.</p>
+      <p class="pref-search-hint">${i18n.search.hint}</p>
     </div>
   `;
 
@@ -282,9 +324,14 @@ function ensurePrefsOverlay() {
   prefsOverlay.className = 'pref-search-overlay pref-prefs-overlay';
   prefsOverlay.innerHTML = `
     <style>
-  .pref-prefs-overlay { position: fixed; inset: 0; display:none; align-items:center; justify-content:center; z-index:2147483647; background: rgba(12, 12, 15, 0.65); backdrop-filter: blur(12px); }
-  .pref-prefs-overlay.is-open { display:flex; }
-  .pref-prefs-overlay .pref-dialog { width: min(720px, calc(100% - 48px)); background: var(--surface); color: rgb(var(--black)); border-radius: 12px; box-shadow: var(--box-shadow); overflow: hidden; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
+  .pref-prefs-overlay { position: fixed; inset: 0; display:none; align-items:center; justify-content:center; z-index:2147483647; background: rgba(12, 12, 15, 0); backdrop-filter: blur(0px); transition: background-color 0.3s ease, backdrop-filter 0.3s ease; will-change: opacity, backdrop-filter; }
+  .pref-prefs-overlay.is-open { display:flex; background: rgba(12, 12, 15, 0.65); backdrop-filter: blur(12px); }
+  .pref-prefs-overlay.is-closing { background: rgba(12, 12, 15, 0); backdrop-filter: blur(0px); }
+  .pref-prefs-overlay .pref-dialog { width: min(720px, calc(100% - 48px)); background: var(--surface); color: rgb(var(--black)); border-radius: 12px; box-shadow: var(--box-shadow); overflow: hidden; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; opacity: 0; transform: translateY(30px) scale(0.95); transition: opacity 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); will-change: transform, opacity; }
+  .pref-prefs-overlay.is-open .pref-dialog { animation: dialogSlideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+  .pref-prefs-overlay.is-closing .pref-dialog { animation: dialogSlideDown 0.25s ease forwards; }
+  @keyframes dialogSlideUp { from { opacity: 0; transform: translateY(30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes dialogSlideDown { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(20px) scale(0.98); } }
   html[data-theme="dark"] .pref-prefs-overlay .pref-dialog { background: var(--surface); color: rgb(var(--black)); }
       .pref-prefs-overlay .pref-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px 20px; border-bottom: 1px solid rgba(0,0,0,0.06); }
   html[data-theme="dark"] .pref-prefs-overlay .pref-header { border-bottom-color: rgba(255,255,255,0.04); }
@@ -299,10 +346,12 @@ function ensurePrefsOverlay() {
   .pref-prefs-overlay .pref-card { background: var(--card-section, rgba(0,0,0,0.02)); padding:14px; border-radius:10px; display:flex; flex-direction:column; gap:10px; align-items:flex-start; }
   html[data-theme="dark"] .pref-prefs-overlay .pref-card { background: rgba(255,255,255,0.02); }
       .pref-prefs-overlay .pref-card .card-top { display:flex; gap:12px; align-items:center; width:100%; }
+      @media (max-width: 680px) { .pref-prefs-overlay .pref-card .card-top { flex-direction:column; align-items:flex-start; } }
     .pref-prefs-overlay .pref-card .card-title { font-weight:700; font-size:0.98rem; color: rgb(var(--black)); }
   .pref-prefs-overlay .pref-card .card-desc { font-size:0.86rem; color: rgba(var(--gray-dark), 0.85); }
   html[data-theme="dark"] .pref-prefs-overlay .pref-card .card-desc { color: rgba(var(--gray-dark), 0.85); }
       .pref-prefs-overlay .pref-actions { margin-left:auto; display:flex; gap:8px; align-items:center; }
+      @media (max-width: 680px) { .pref-prefs-overlay .pref-actions { margin-left:0; } }
   .pref-prefs-overlay .pref-btn { display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:8px; border:1px solid rgba(0,0,0,0.06); background:transparent; cursor:pointer; font-weight:600; }
   .pref-prefs-overlay .pref-btn:hover { background: rgba(0,0,0,0.04); }
   html[data-theme="dark"] .pref-prefs-overlay .pref-btn:hover { background: rgba(255,255,255,0.03); }
@@ -324,37 +373,37 @@ function ensurePrefsOverlay() {
 
     <div class="pref-dialog" role="dialog" aria-modal="true" aria-labelledby="pref-prefs-title">
       <div class="pref-header">
-        <h2 class="pref-title" id="pref-prefs-title">Preferences</h2>
+        <h2 class="pref-title" id="pref-prefs-title">${i18n.preferences.title}</h2>
         <div>
-          <button type="button" class="pref-close" aria-label="Close preferences">&times;</button>
+          <button type="button" class="pref-close" aria-label="${i18n.preferences.closeLabel}">&times;</button>
         </div>
       </div>
       <div class="pref-body">
         <div class="pref-grid">
-          <div class="pref-card" role="group" aria-label="Theme">
+          <div class="pref-card" role="group" aria-label="${i18n.preferences.theme.ariaGroupLabel}">
             <div class="card-top">
               <div style="flex:1">
-                <div class="card-title">Theme</div>
-                <div class="card-desc">Switch between light and dark themes. Your preference is saved locally.</div>
+                <div class="card-title">${i18n.preferences.theme.title}</div>
+                <div class="card-desc">${i18n.preferences.theme.desc}</div>
               </div>
               <div class="pref-actions">
-                <div class="segmented pref-seg-theme" role="tablist" aria-label="Theme selector">
-                  <button type="button" class="seg-btn" data-theme-option="light" aria-pressed="false" title="Light">☀︎ <span style="margin-left:6px">Light</span></button>
-                  <button type="button" class="seg-btn" data-theme-option="dark" aria-pressed="false" title="Dark">☾ <span style="margin-left:6px">Dark</span></button>
+                <div class="segmented pref-seg-theme" role="tablist" aria-label="${i18n.preferences.theme.ariaLabel}">
+                  <button type="button" class="seg-btn" data-theme-option="light" aria-pressed="false" title="${i18n.preferences.theme.light}">☀︎ <span style="margin-left:6px">${i18n.preferences.theme.light}</span></button>
+                  <button type="button" class="seg-btn" data-theme-option="dark" aria-pressed="false" title="${i18n.preferences.theme.dark}">☾ <span style="margin-left:6px">${i18n.preferences.theme.dark}</span></button>
                 </div>
               </div>
             </div>
             
           </div>
 
-          <div class="pref-card" role="group" aria-label="Language">
+          <div class="pref-card" role="group" aria-label="${i18n.preferences.language.ariaGroupLabel}">
             <div class="card-top">
               <div style="flex:1">
-                <div class="card-title">Language</div>
-                <div class="card-desc">Switch site language between English and 中文（Chinese）.</div>
+                <div class="card-title">${i18n.preferences.language.title}</div>
+                <div class="card-desc">${i18n.preferences.language.desc}</div>
               </div>
               <div class="pref-actions">
-                <div class="segmented pref-seg-lang" role="tablist" aria-label="Language selector">
+                <div class="segmented pref-seg-lang" role="tablist" aria-label="${i18n.preferences.language.ariaLabel}">
                   <button type="button" class="seg-btn" data-lang="en" aria-pressed="false" title="English">EN</button>
                   <button type="button" class="seg-btn" data-lang="zh" aria-pressed="false" title="中文">中文</button>
                 </div>
@@ -530,10 +579,90 @@ function openPrefsOverlay() {
   }
   console.log('[Prefs Debug] Opening overlay');
   prevActiveElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  
+  // 计算滚动条宽度并补偿body，避免内容跳动（只在第一次打开时设置）
+  if (!scrollbarCompensated) {
+    // 保存原始padding值
+    originalBodyPadding = document.body.style.paddingRight || '';
+    
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    if (scrollbarWidth > 0) {
+      // 只设置body的padding补偿
+      document.body.style.paddingRight = scrollbarWidth + 'px';
+    }
+    scrollbarCompensated = true;
+  }
+  
+  // 移除可能残留的关闭类
+  prefsOverlay.classList.remove('is-closing');
   prefsOverlay.classList.add('is-open');
+  
   // ensure the overlay's theme buttons reflect current theme when opened
-  try { if (typeof setThemeSwitchState === 'function') setThemeSwitchState(); } catch (e) {}
-  try { if (typeof setLangSwitchState === 'function') setLangSwitchState(); } catch (e) {}
+  // 使用 requestAnimationFrame 和 setTimeout 确保DOM完全渲染后再更新indicator位置
+  setTimeout(() => {
+    requestAnimationFrame(() => {
+      try {
+        // 直接调用updateSegIndicator更新所有segmented controls
+        const themeSeg = prefsOverlay.querySelector('.pref-seg-theme');
+        const langSeg = prefsOverlay.querySelector('.pref-seg-lang');
+        
+        // 更新theme按钮状态
+        if (themeSeg) {
+          const cur = root.dataset.theme === 'dark' ? 'dark' : 'light';
+          themeSeg.querySelectorAll('[data-theme-option]').forEach((btn) => {
+            const v = btn.getAttribute('data-theme-option');
+            const active = v === cur;
+            btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+            btn.classList.toggle('is-active', active);
+          });
+          
+          // 更新indicator位置
+          const activeBtn = themeSeg.querySelector('.seg-btn.is-active');
+          if (activeBtn) {
+            const containerRect = themeSeg.getBoundingClientRect();
+            const btnRect = activeBtn.getBoundingClientRect();
+            const offset = btnRect.left - containerRect.left - 4;
+            const width = btnRect.width;
+            themeSeg.style.setProperty('--indicator-offset', `${offset}px`);
+            themeSeg.style.setProperty('--indicator-width', `${width}px`);
+          }
+        }
+        
+        // 更新language按钮状态
+        if (langSeg) {
+          const path = (window.location.pathname || '/');
+          const normalized = path.endsWith('/') ? path : path + '/';
+          let basePath = '/';
+          if (normalized.startsWith('/Creation_notes/')) {
+            basePath = '/Creation_notes/';
+          }
+          const pathAfterBase = normalized.substring(basePath.length);
+          const isZh = document.documentElement.lang === 'zh' || pathAfterBase.startsWith('zh/');
+          
+          langSeg.querySelectorAll('[data-lang]').forEach((btn) => {
+            const v = btn.getAttribute('data-lang');
+            const active = (v === 'zh') ? isZh : !isZh;
+            btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+            btn.classList.toggle('is-active', active);
+          });
+          
+          // 更新indicator位置
+          const activeBtn = langSeg.querySelector('.seg-btn.is-active');
+          if (activeBtn) {
+            const containerRect = langSeg.getBoundingClientRect();
+            const btnRect = activeBtn.getBoundingClientRect();
+            const offset = btnRect.left - containerRect.left - 4;
+            const width = btnRect.width;
+            langSeg.style.setProperty('--indicator-offset', `${offset}px`);
+            langSeg.style.setProperty('--indicator-width', `${width}px`);
+          }
+        }
+      } catch (e) { 
+        console.error('[Prefs Debug] Error updating indicators:', e);
+      }
+    });
+  }, 50); // 增加延迟确保动画开始后DOM稳定
+  
   document.body.dataset.prefSearchLock = 'true';
   document.body.style.overflow = 'hidden';
   console.log('[Prefs Debug] Overlay opened successfully');
@@ -542,26 +671,36 @@ function openPrefsOverlay() {
 function closePrefsOverlay() {
   console.log('[Prefs Debug] closePrefsOverlay called');
   if (!prefsOverlay) return;
-  // Clean up resize handler
-  try {
-    if (prefsOverlay._resizeHandler) {
-      window.removeEventListener('resize', prefsOverlay._resizeHandler);
-      delete prefsOverlay._resizeHandler;
-    }
-  } catch (e) {}
-  // hide then fully remove the overlay so its <style> does not leak and hide header icons
-  try {
-    prefsOverlay.classList.remove('is-open');
-  } catch (e) {}
-  try { document.body.style.overflow = ''; } catch (e) {}
-  try { delete document.body.dataset.prefSearchLock; } catch (e) {}
-  try { if (prefsKeydownHandler) document.removeEventListener('keydown', prefsKeydownHandler); } catch(e) {}
-  try { if (prefsOverlay.parentNode) prefsOverlay.parentNode.removeChild(prefsOverlay); } catch (e) {}
-  prefsOverlay = null;
-  if (prevActiveElement) prevActiveElement.focus();
-  // Trigger a resize so header logic re-evaluates layout (safeguard)
-  try { window.setTimeout(() => window.dispatchEvent(new Event('resize')), 80); } catch (e) {}
-  console.log('[Prefs Debug] Overlay closed');
+  
+  // 添加关闭动画
+  prefsOverlay.classList.add('is-closing');
+  
+  // 等待动画完成后清理
+  setTimeout(() => {
+    // Clean up resize handler
+    try {
+      if (prefsOverlay._resizeHandler) {
+        window.removeEventListener('resize', prefsOverlay._resizeHandler);
+        delete prefsOverlay._resizeHandler;
+      }
+    } catch (e) {}
+    // hide then fully remove the overlay so its <style> does not leak and hide header icons
+    try {
+      prefsOverlay.classList.remove('is-open', 'is-closing');
+    } catch (e) {}
+    try { document.body.style.overflow = ''; } catch (e) {}
+    try { document.body.style.paddingRight = originalBodyPadding; } catch (e) {}
+    try { delete document.body.dataset.prefSearchLock; } catch (e) {}
+    scrollbarCompensated = false; // 重置标志，允许下次打开时重新计算
+    originalBodyPadding = '';
+    try { if (prefsKeydownHandler) document.removeEventListener('keydown', prefsKeydownHandler); } catch(e) {}
+    try { if (prefsOverlay.parentNode) prefsOverlay.parentNode.removeChild(prefsOverlay); } catch (e) {}
+    prefsOverlay = null;
+    if (prevActiveElement) prevActiveElement.focus();
+    // Trigger a resize so header logic re-evaluates layout (safeguard)
+    try { window.setTimeout(() => window.dispatchEvent(new Event('resize')), 80); } catch (e) {}
+    console.log('[Prefs Debug] Overlay closed');
+  }, 300); // 与CSS动画时长匹配
 }
 
 function openSearchOverlay() {
@@ -569,6 +708,21 @@ function openSearchOverlay() {
   if (searchOverlay.classList.contains('is-open')) return;
 
   prevActiveElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  
+  // 计算滚动条宽度并补偿body，避免内容跳动（只在第一次打开时设置）
+  if (!scrollbarCompensated) {
+    // 保存原始padding值
+    originalBodyPadding = document.body.style.paddingRight || '';
+    
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = scrollbarWidth + 'px';
+    }
+    scrollbarCompensated = true;
+  }
+  
+  // 移除可能残留的关闭类
+  searchOverlay.classList.remove('is-closing');
   searchOverlay.classList.add('is-open');
   document.body.dataset.prefSearchLock = 'true';
   document.body.style.overflow = 'hidden';
@@ -581,13 +735,23 @@ function openSearchOverlay() {
 
 function closeSearchOverlay() {
   if (!searchOverlay) return;
-  searchOverlay.classList.remove('is-open');
-  document.body.style.overflow = '';
-  delete document.body.dataset.prefSearchLock;
+  
+  // 添加关闭动画
+  searchOverlay.classList.add('is-closing');
+  
+  // 等待动画完成后移除类和样式
+  setTimeout(() => {
+    searchOverlay.classList.remove('is-open', 'is-closing');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = originalBodyPadding;
+    delete document.body.dataset.prefSearchLock;
+    scrollbarCompensated = false; // 重置标志，允许下次打开时重新计算
+    originalBodyPadding = '';
 
-  if (prevActiveElement) {
-    prevActiveElement.focus();
-  }
+    if (prevActiveElement) {
+      prevActiveElement.focus();
+    }
+  }, 300); // 与CSS动画时长匹配
 }
 
 function onSearchSubmit(event) {
@@ -622,21 +786,21 @@ function ensureSubscribeOverlay() {
   subscribeOverlay.innerHTML = `
     <div class="pref-subscribe-dialog" role="dialog" aria-modal="true" aria-labelledby="pref-subscribe-title">
       <div class="pref-subscribe-header">
-        <h2 class="pref-subscribe-title" id="pref-subscribe-title">Subscribe</h2>
-        <button type="button" class="pref-subscribe-close" aria-label="Close subscribe">&times;</button>
+        <h2 class="pref-subscribe-title" id="pref-subscribe-title">${i18n.subscribe.title}</h2>
+        <button type="button" class="pref-subscribe-close" aria-label="${i18n.subscribe.closeLabel}">&times;</button>
       </div>
       <div class="pref-subscribe-body">
-        <p class="pref-subscribe-desc">Get updates for new posts and portfolio additions. No spam.</p>
+        <p class="pref-subscribe-desc">${i18n.subscribe.desc}</p>
         <p class="pref-subscribe-desc pref-subscribe-desc-note">
-          Subscribing opens Buttondown (my email provider) in a new tab so you can confirm the request directly. If you are unsure whether it worked, just drop a note to <a href="mailto:elkoutopia@gmail.com">elkoutopia@gmail.com</a> and I will check it for you.
+          ${i18n.subscribe.note}
         </p>
         <div class="subscribe-form pref-subscribe-form">
-          <div class="pref-subscribe-note">I respect your privacy. Unsubscribe anytime.</div>
+          <div class="pref-subscribe-note">${i18n.subscribe.privacy}</div>
           <div class="sf-message" aria-live="polite" style="display:none"></div>
         </div>
         <div class="pref-subscribe-actions">
-          <button type="button" class="pref-subscribe-cta" data-subscribe-open>Subscribe</button>
-          ${subscribeUnsubLink ? subscribeUnsubLink : ''}
+          <button type="button" class="pref-subscribe-cta" data-subscribe-open>${i18n.subscribe.button}</button>
+          ${subscribeUnsubscribeUrl ? `<button type="button" class="pref-subscribe-unsub" data-subscribe-unsub>${i18n.subscribe.manageUnsub}</button>` : ''}
         </div>
       </div>
     </div>
@@ -717,6 +881,21 @@ function openSubscribeOverlay() {
   ensureSubscribeOverlay();
   if (subscribeOverlay.classList.contains('is-open')) return;
   prevActiveElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  
+  // 计算滚动条宽度并补偿body，避免内容跳动（只在第一次打开时设置）
+  if (!scrollbarCompensated) {
+    // 保存原始padding值
+    originalBodyPadding = document.body.style.paddingRight || '';
+    
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    if (scrollbarWidth > 0) {
+      document.body.style.paddingRight = scrollbarWidth + 'px';
+    }
+    scrollbarCompensated = true;
+  }
+  
+  // 移除可能残留的关闭类
+  subscribeOverlay.classList.remove('is-closing');
   subscribeOverlay.classList.add('is-open');
   document.body.dataset.prefSubscribeLock = 'true';
   document.body.style.overflow = 'hidden';
@@ -724,10 +903,20 @@ function openSubscribeOverlay() {
 
 function closeSubscribeOverlay() {
   if (!subscribeOverlay) return;
-  subscribeOverlay.classList.remove('is-open');
-  document.body.style.overflow = '';
-  delete document.body.dataset.prefSubscribeLock;
-  if (prevActiveElement) prevActiveElement.focus();
+  
+  // 添加关闭动画
+  subscribeOverlay.classList.add('is-closing');
+  
+  // 等待动画完成后移除类和样式
+  setTimeout(() => {
+    subscribeOverlay.classList.remove('is-open', 'is-closing');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = originalBodyPadding;
+    delete document.body.dataset.prefSubscribeLock;
+    scrollbarCompensated = false; // 重置标志，允许下次打开时重新计算
+    originalBodyPadding = '';
+    if (prevActiveElement) prevActiveElement.focus();
+  }, 300); // 与CSS动画时长匹配
 }
 
 document.addEventListener('subscribe:success', (event) => {
