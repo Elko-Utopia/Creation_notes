@@ -13,8 +13,10 @@
   async function loadIndex() {
     if (index) return index;
     try {
-      const base = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) ? import.meta.env.BASE_URL : '/';
-      const res = await fetch(new URL('search-index.json', base));
+      // 使用 document.baseURI 或页面 <base href> 来决定请求基准，避免在 public 静态脚本中依赖构建时的 import.meta
+      const baseForFetch = (typeof document !== 'undefined' && document.baseURI) ? document.baseURI : '/';
+      console.debug('[site-search] loadIndex using base:', baseForFetch);
+      const res = await fetch(new URL('search-index.json', baseForFetch));
       if (!res.ok) throw new Error('failed to fetch index');
       index = await res.json();
       return index;

@@ -850,7 +850,8 @@ async function onSearchSubmit(event) {
 
   // 跳转到对应语言的 /search 页面并携带查询参数，让该页面负责展示结果
   try {
-    const base = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) ? import.meta.env.BASE_URL : '/';
+    // 使用文件顶部计算的 basePath，能兼容构建期 BASE_URL、<base href> 或运行时注入的全局
+    const base = (typeof basePath !== 'undefined' && basePath) ? basePath : '/';
     const curPath = (location.pathname || '/');
     const curLang = (document.documentElement.lang || (curPath.indexOf('/zh/') !== -1 ? 'zh' : 'en')).toLowerCase();
     const rel = curLang === 'zh' ? 'zh/search' : 'search';
@@ -881,7 +882,8 @@ async function onSearchSubmit(event) {
       resultsContainer.innerHTML = '<div class="pref-search-loading">Searching…</div>';
       // 尝试按原有方式做本地索引搜索
       if (!searchIndex) {
-        const res = await fetch((typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) ? (import.meta.env.BASE_URL + 'search-index.json') : '/search-index.json');
+        // 在回退路径中也使用 resolveWithBase() 以确保在 GH Pages 等子路径托管下能正确访问索引
+        const res = await fetch(resolveWithBase('/search-index.json'));
         if (!res.ok) throw new Error('Failed to load index');
         searchIndex = await res.json();
       }
