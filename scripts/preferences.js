@@ -1,12 +1,25 @@
 ﻿const THEME_KEY = 'theme-preference';
 const root = document.documentElement;
-// Safer base path detection: works whether Vite replaces import.meta.env or not
+// Safer base path detection: prefer build-time BASE_URL, then <base href>, then '/'
 const basePath = (() => {
   try {
-    const raw = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '/Creation_notes/';
-    return raw.endsWith('/') ? raw : `${raw}/`;
+    const envBase = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '';
+    if (envBase) return envBase.endsWith('/') ? envBase : `${envBase}/`;
+    // try reading <base href> if available in browser
+    if (typeof document !== 'undefined') {
+      try {
+        const baseEl = document.querySelector('base');
+        if (baseEl && baseEl.getAttribute) {
+          const href = baseEl.getAttribute('href') || '/';
+          return href.endsWith('/') ? href : `${href}/`;
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+    return '/';
   } catch (_) {
-    return '/Creation_notes/';
+    return '/';
   }
 })();
 
@@ -69,7 +82,9 @@ const i18n = {
     title: isZhPage ? '搜索' : 'Search',
     closeLabel: isZhPage ? '关闭搜索' : 'Close search',
     placeholder: isZhPage ? '搜索此网站...' : 'Search this site...',
-    hint: isZhPage ? '输入关键词并按回车通过谷歌搜索网站。按 Esc 关闭。' : 'Enter a keyword and press Enter to search the site via Google. Press Esc to close.'
+    hint: isZhPage ? '输入关键词并按回车在本站内搜索。按 Esc 关闭。' : 'Enter a keyword and press Enter to search this site. Press Esc to close.'
+    ,
+    browseTags: isZhPage ? '浏览标签' : 'Browse tags'
   },
   preferences: {
     title: isZhPage ? '偏好设置' : 'Preferences',
@@ -102,6 +117,7 @@ const i18n = {
 
 let searchOverlay = null;
 let searchInput = null;
+let searchIndex = null; // cached JSON index
 let prevActiveElement = null;
 let lightboxInitialized = false; // 防止重复初始化lightbox
 let prefsDelegateAttached = false;
@@ -287,14 +303,22 @@ function ensureSearchOverlay() {
   searchOverlay.className = 'pref-search-overlay';
   searchOverlay.innerHTML = `
     <div class="pref-search-dialog" role="dialog" aria-modal="true" aria-labelledby="pref-search-title">
-      <div class="pref-search-header">
-        <h2 class="pref-search-title" id="pref-search-title">${i18n.search.title}</h2>
-        <button type="button" class="pref-search-close" aria-label="${i18n.search.closeLabel}">&times;</button>
-      </div>
+    <div class="pref-search-header">
+      <h5 class="pref-search-title" id="pref-search-title">${i18n.search.title}</h5>
+          <button type="button" class="pref-search-close" aria-label="${i18n.search.closeLabel}">&times;</button>
+        </div>
       <form class="pref-search-form">
         <input type="search" class="pref-search-input" name="q" placeholder="${i18n.search.placeholder}" autocomplete="off" />
       </form>
       <p class="pref-search-hint">${i18n.search.hint}</p>
+      <div style="margin:0.6rem 0 0.8rem; text-align:center">
+        <button type="button" class="pref-btn pref-browse-tags" aria-label="${i18n.search.browseTags}" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.45rem 0.9rem;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:transparent;cursor:pointer;font-weight:600">
+          <span class="sr-only">${i18n.search.browseTags}</span>
+          <svg class="icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M21 11l-8-8H3v10l8 8 10-10z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span style="font-weight:600">${i18n.search.browseTags}</span>
+        </button>
+      </div>
+      <div class="pref-search-results" aria-live="polite"></div>
     </div>
   `;
 
@@ -304,6 +328,49 @@ function ensureSearchOverlay() {
   const form = searchOverlay.querySelector('.pref-search-form');
   searchInput = searchOverlay.querySelector('.pref-search-input');
 
+  // 创建一个自定义的清除按钮，确保在所有浏览器中外观与主题一致（尤其是 Firefox）
+  try {
+    if (form && searchInput) {
+      // 调整输入框右内边距，为按钮留出空间
+      const origPaddingRight = window.getComputedStyle(searchInput).paddingRight || '0px';
+      searchInput.style.paddingRight = '44px';
+
+      const clearBtn = document.createElement('button');
+      clearBtn.type = 'button';
+      clearBtn.className = 'pref-search-input-clear';
+      clearBtn.setAttribute('aria-label', isZhPage ? '清除搜索' : 'Clear search');
+      // 使用可继承颜色的 × 符号（简单且可缩放），也可以替换为内联 SVG
+      clearBtn.innerHTML = '&times;';
+      clearBtn.style.display = 'none';
+
+      // 点击清空并聚焦输入框
+      clearBtn.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        if (searchInput) {
+          searchInput.value = '';
+          searchInput.focus();
+          clearBtn.style.display = 'none';
+          // 触发 input 事件以便其他逻辑响应
+          try { searchInput.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
+        }
+      });
+
+      // 根据输入内容切换按钮可见性
+      searchInput.addEventListener('input', function () {
+        if (!searchInput) return;
+        clearBtn.style.display = (searchInput.value && searchInput.value.length) ? 'inline-flex' : 'none';
+      });
+
+      // 初始可见性
+      if (searchInput.value && searchInput.value.length) clearBtn.style.display = 'inline-flex';
+
+      form.appendChild(clearBtn);
+    }
+  } catch (e) {
+    // 不要让清除按钮影响主流程
+    console.warn('failed to create custom clear button', e);
+  }
+
   closeBtn.addEventListener('click', closeSearchOverlay);
   searchOverlay.addEventListener('click', (event) => {
     if (event.target === searchOverlay) {
@@ -311,6 +378,23 @@ function ensureSearchOverlay() {
     }
   });
   form.addEventListener('submit', onSearchSubmit);
+  // Browse tags button: open the full /search page (respecting zh prefix)
+  try {
+    const browseBtn = searchOverlay.querySelector('.pref-browse-tags');
+    if (browseBtn) {
+      browseBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        // build target using basePath (already normalized) and a relative path
+        const rel = isZhPage ? 'zh/search' : 'search';
+        let target = (basePath.endsWith('/') ? basePath : basePath + '/') + rel;
+        // collapse multiple slashes but preserve protocol (if any)
+        try { target = target.replace(/([^:]\/)?\/+/g, '$1/'); } catch (e) {}
+        window.location.href = target;
+      });
+    }
+  } catch (e) {
+    // noop
+  }
   // (Search overlay only handles search input; theme/language moved to a separate prefs overlay)
   document.addEventListener('keydown', onGlobalKeydown);
 }
@@ -335,7 +419,8 @@ function ensurePrefsOverlay() {
   html[data-theme="dark"] .pref-prefs-overlay .pref-dialog { background: var(--surface); color: rgb(var(--black)); }
       .pref-prefs-overlay .pref-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px 20px; border-bottom: 1px solid rgba(0,0,0,0.06); }
   html[data-theme="dark"] .pref-prefs-overlay .pref-header { border-bottom-color: rgba(255,255,255,0.04); }
-  .pref-prefs-overlay .pref-title { margin:0; font-size:1.05rem; font-weight:700; color: rgb(var(--black)); }
+  /* Only target h2 pref titles here so h4 will fall back to global h4 styles */
+  .pref-prefs-overlay h2.pref-title { margin:0; font-size:1.05rem; font-weight:700; color: rgb(var(--black)); }
       .pref-prefs-overlay .pref-close { background:transparent;border:0;font-size:1.35rem;line-height:1;cursor:pointer;padding:6px;border-radius:6px; color: rgb(var(--black)); }
   .pref-prefs-overlay .pref-close:hover { background: rgba(0,0,0,0.04); }
   html[data-theme="dark"] .pref-prefs-overlay .pref-close { color: rgb(var(--gray-dark)); }
@@ -373,7 +458,7 @@ function ensurePrefsOverlay() {
 
     <div class="pref-dialog" role="dialog" aria-modal="true" aria-labelledby="pref-prefs-title">
       <div class="pref-header">
-        <h2 class="pref-title" id="pref-prefs-title">${i18n.preferences.title}</h2>
+        <h5 class="pref-title" id="pref-prefs-title">${i18n.preferences.title}</h5>
         <div>
           <button type="button" class="pref-close" aria-label="${i18n.preferences.closeLabel}">&times;</button>
         </div>
@@ -754,7 +839,7 @@ function closeSearchOverlay() {
   }, 300); // 与CSS动画时长匹配
 }
 
-function onSearchSubmit(event) {
+async function onSearchSubmit(event) {
   event.preventDefault();
   if (!searchInput) return;
   const query = searchInput.value.trim();
@@ -763,10 +848,70 @@ function onSearchSubmit(event) {
     return;
   }
 
-  const site = location.origin.replace(/\/$/, '');
-  const url = `https://www.google.com/search?q=${encodeURIComponent(`site:${site} ${query}`)}`;
-  window.open(url, '_blank', 'noopener');
-  closeSearchOverlay();
+  // 跳转到对应语言的 /search 页面并携带查询参数，让该页面负责展示结果
+  try {
+    const base = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) ? import.meta.env.BASE_URL : '/';
+    const curPath = (location.pathname || '/');
+    const curLang = (document.documentElement.lang || (curPath.indexOf('/zh/') !== -1 ? 'zh' : 'en')).toLowerCase();
+    const rel = curLang === 'zh' ? 'zh/search' : 'search';
+    let target = (base.endsWith('/') ? base : base + '/') + rel;
+    // 添加 q 查询参数
+    target += `?q=${encodeURIComponent(query)}`;
+    // 规范化重复斜杠
+    try { target = target.replace(/([^:]\/)\/+/g, '$1/'); } catch (e) {}
+    // 调试日志，便于排查为何没有跳转
+    console.debug('[prefs] search redirect target:', target, 'current:', location.href);
+
+    // 如果当前已经在搜索页面（/search 或 /zh/search），直接更新查询参数并重新加载
+    const normalizedPath = location.pathname.replace(/\/$/, '');
+    const normalizedTargetPath = new URL(target, location.origin).pathname.replace(/\/$/, '');
+    if (normalizedPath === normalizedTargetPath) {
+      // 使用 assign 会在大多数环境触发页面重新加载，从而让 site-search.js 读取 q 并展示结果
+      window.location.assign(target);
+      return;
+    }
+
+    // 否则正常跳转到目标页面
+    window.location.assign(target);
+  } catch (e) {
+    // 若跳转失败则回退到内联搜索（保留体验）
+    console.error('Redirect to search page failed, falling back to inline search', e);
+    try {
+      const resultsContainer = searchOverlay.querySelector('.pref-search-results');
+      resultsContainer.innerHTML = '<div class="pref-search-loading">Searching…</div>';
+      // 尝试按原有方式做本地索引搜索
+      if (!searchIndex) {
+        const res = await fetch((typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) ? (import.meta.env.BASE_URL + 'search-index.json') : '/search-index.json');
+        if (!res.ok) throw new Error('Failed to load index');
+        searchIndex = await res.json();
+      }
+      const q = query.toLowerCase();
+      const matched = searchIndex
+        .filter(item => (item.lang || 'en').toLowerCase() === curLang)
+        .filter(item => {
+          return (item.title && String(item.title).toLowerCase().includes(q)) ||
+                 (item.description && String(item.description).toLowerCase().includes(q)) ||
+                 (item.excerpt && String(item.excerpt).toLowerCase().includes(q));
+        }).slice(0, 20);
+      if (!matched.length) {
+        resultsContainer.innerHTML = `<div class="pref-search-noresults">No results found for "${escapeHtml(query)}".</div>`;
+      } else {
+        resultsContainer.innerHTML = matched.map(it => {
+          const title = escapeHtml(it.title || 'Untitled');
+          const desc = escapeHtml(it.description || it.excerpt || '');
+          const url = it.url || '#';
+          return `\n          <a class="pref-search-item" href="${url}">\n            <div class=\"pref-search-item-title\">${title}</div>\n            <div class=\"pref-search-item-desc\">${desc}</div>\n          </a>`;
+        }).join('\n');
+      }
+    } catch (err) {
+      console.error('Fallback inline search also failed', err);
+      closeSearchOverlay();
+    }
+  }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"})[ch]);
 }
 
 function onGlobalKeydown(event) {
@@ -786,7 +931,7 @@ function ensureSubscribeOverlay() {
   subscribeOverlay.innerHTML = `
     <div class="pref-subscribe-dialog" role="dialog" aria-modal="true" aria-labelledby="pref-subscribe-title">
       <div class="pref-subscribe-header">
-        <h2 class="pref-subscribe-title" id="pref-subscribe-title">${i18n.subscribe.title}</h2>
+        <h5 class="pref-subscribe-title" id="pref-subscribe-title">${i18n.subscribe.title}</h5>
         <button type="button" class="pref-subscribe-close" aria-label="${i18n.subscribe.closeLabel}">&times;</button>
       </div>
       <div class="pref-subscribe-body">

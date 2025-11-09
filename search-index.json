@@ -1,0 +1,306 @@
+[
+  {
+    "title": "Webpage Production Log",
+    "description": "Webpage Production Log",
+    "pubDate": "2025-11-8",
+    "pinned": false,
+    "heroImage": "../../assets/blog-placeholder-1.jpg",
+    "heroImagePosition": "50% 50%",
+    "heroImageWidth": "101%",
+    "url": "/website-log/",
+    "excerpt": "english 🛠️网页制作日志 网页开发日志 下面按大版本分组，点击小版本以展开详情。 制作中： V0.4.X 多语言&更好的搜索 2025/11/4至今 V0.4.3 2025/11/6 1. 制作tag功能 2. 修改制作日志进新页面 V0.4.2 2025/11/5 1. 调整正文字体以提升可读性。 2. 完成中文版页面的初步翻译。 3. 优化移动端的显示与排版。 V0.4.1 2025/11/4 搭建中文模式的页面框架。 V0.3.X 订阅和评论区 2025/10…",
+    "tags": [
+      "- system"
+    ],
+    "lang": "en",
+    "source": "website-log.md"
+  },
+  {
+    "title": "网页制作日志",
+    "description": "网页制作日志",
+    "pubDate": "2025-11-8",
+    "pinned": false,
+    "heroImage": "../../assets/blog-placeholder-1.jpg",
+    "heroImagePosition": "50% 50%",
+    "heroImageWidth": "101%",
+    "url": "/zh/website-log/",
+    "excerpt": "🛠️网页制作日志 网页开发日志 下面按大版本分组，点击小版本以展开详情。 制作中： V0.4.X 多语言&更好的搜索 2025/11/4至今 V0.4.3 2025/11/6 2025/11/7 1. 制作tag功能 2. 修改制作日志进新页面 3. 解决刷新后帖子位置会位移的bug 4. 解决列表样式行间距过宽的bug 5. 制作列表收缩功能 6. 制作帖子内添加帖子链接的功能 7. 制作按tag搜索功能 8. 制作 V0.4.2 2025/11/5 1. 调整正文字体以…",
+    "tags": [
+      "- system"
+    ],
+    "lang": "zh",
+    "source": "zh/website-log.md"
+  },
+  {
+    "title": "Why you should try obsidian for note",
+    "description": "local Markdown for full data control, bidirectional links to weave a searchable knowledge network, and plugins to support study, research, and world-building.",
+    "pubDate": "2025-10-26",
+    "pinned": false,
+    "heroImage": "../../assets/header_picture/obsidian1.png",
+    "heroImagePosition": "50% 50%",
+    "heroImageWidth": "101%",
+    "url": "/blog/obsidian/",
+    "excerpt": "As an art student, I have been using Obsidian for notetaking for almost two years. Counting the time I spent experimenting with other notetaking tools before that, I have over four years of experience in total. During this time, I have trie…",
+    "tags": [
+      "- Obsidian"
+    ],
+    "lang": "en",
+    "source": "blog/obsidian.md"
+  },
+  {
+    "title": "为什么你应该尝试Obsidian来做笔记",
+    "description": "本地Markdown实现完全的数据控制，双向链接编织可搜索的知识网络，插件支持学习、研究和世界观构建。",
+    "pubDate": "2025-10-26",
+    "pinned": false,
+    "heroImage": "../../assets/header_picture/obsidian1.png",
+    "heroImagePosition": "50% 50%",
+    "heroImageWidth": "101%",
+    "url": "/zh/blog/obsidian/",
+    "excerpt": "作为一名艺术学生，我使用Obsidian做笔记已经快两年了。算上之前尝试其他笔记工具的时间，总共有超过四年的经验。 在这段时间里，我几乎尝试过所有主流的笔记应用，但最终只有Obsidian留了下来。原因很简单——它让我能够完全控制我的知识和创作工作。 一、传统笔记工具的局限性 如果你习惯在Word或类似软件中做笔记，你可能遇到过这个问题： 当笔记数量还很少时，一切看起来井井有条；但一旦积累了几十甚至上百个文件，再复杂的文件夹结构也无法帮你快速定位所需内容。 这个问题在学习语法…",
+    "tags": [
+      "- Obsidian"
+    ],
+    "lang": "en",
+    "source": "zh/blog/obsidian.md"
+  },
+  {
+    "title": "Contact",
+    "description": "Contact information and social links",
+    "pubDate": "2025-10-24",
+    "pinned": false,
+    "heroImage": null,
+    "heroImagePosition": null,
+    "heroImageWidth": null,
+    "url": "/contact/",
+    "excerpt": "If you'd like to reach me, here are the best ways to get in touch: · Email: · Instagram: · GitHub: If you are interested in my works, please feel free to contact me through these methods. I'm happy to communicate and typically reply within…",
+    "tags": [
+      "- system"
+    ],
+    "lang": "en",
+    "source": "contact.md"
+  },
+  {
+    "title": "联系",
+    "description": "联系信息和社交链接",
+    "pubDate": "2025-10-24",
+    "pinned": false,
+    "heroImage": null,
+    "heroImagePosition": null,
+    "heroImageWidth": null,
+    "url": "/zh/contact/",
+    "excerpt": "如果你想联系我，以下是最佳的联系方式： · 邮箱： · Instagram： · GitHub： 如果你对我的作品感兴趣，欢迎通过这些方式联系我。我很乐意交流，通常会在几个工作日内回复。",
+    "tags": [
+      "· system"
+    ],
+    "lang": "zh",
+    "source": "zh/contact.md"
+  },
+  {
+    "title": "Sketch and Painting in Senior High School",
+    "description": "Selected featured portfolio pieces and artwork showcase",
+    "pubDate": "2025-10-24",
+    "pinned": false,
+    "heroImage": "../../assets/portfolio/portfolio1/Featured6-sketching.png",
+    "heroImagePosition": "50% 20%",
+    "heroImageWidth": "101%",
+    "url": "/portfolio/HighSchool_Sketch/",
+    "excerpt": "@@ All these works were created between 2022 and 2023 @@ @@ Below are pictures of my progress experiences in 2023 @@",
+    "tags": [
+      "- Sketch"
+    ],
+    "lang": "en",
+    "source": "portfolio/HighSchool_Sketch.md"
+  },
+  {
+    "title": "高中时期的素描和绘画",
+    "description": "精选作品集和艺术作品展示",
+    "pubDate": "2025-10-24",
+    "pinned": false,
+    "heroImage": "../../assets/portfolio/portfolio1/Featured6-sketching.png",
+    "heroImagePosition": "50% 20%",
+    "heroImageWidth": "101%",
+    "url": "/zh/portfolio/HighSchool_Sketch/",
+    "excerpt": "@@ 所有这些作品都创作于2022年至2023年之间 @@ @@ 以下是我在2023年的进步过程图片 @@",
+    "tags": [
+      "- 素描"
+    ],
+    "lang": "en",
+    "source": "zh/portfolio/HighSchool_Sketch.md"
+  },
+  {
+    "title": "About Me",
+    "description": "Personal introduction",
+    "pubDate": "2025-10-20",
+    "pinned": false,
+    "heroImage": null,
+    "heroImagePosition": null,
+    "heroImageWidth": null,
+    "url": "/about/",
+    "excerpt": "Hi! Welcome to the website. I'm Elko, a firstyear student at SCAD, majoring in Animation and Concept Design. This site began as a simple experiment—a place to learn, document, and create. I'm passionate about drawing, worldbuilding, and vis…",
+    "tags": [
+      "- system"
+    ],
+    "lang": "en",
+    "source": "about.md"
+  },
+  {
+    "title": "关于我",
+    "description": "个人介绍",
+    "pubDate": "2025-10-20",
+    "pinned": false,
+    "heroImage": null,
+    "heroImagePosition": null,
+    "heroImageWidth": null,
+    "url": "/zh/about/",
+    "excerpt": "你好，欢迎来到这个网站。我是托邦，SCAD动画与概念设计专业的大一学生。这个网站起初只是一次简单的尝试，用来学习、记录与创作。 我热爱绘画、世界观构建与视觉叙事。在这里，我将分享进展、创作笔记与精选作品，探索如何通过图像塑造连贯的世界与故事。我先天红绿色盲，同时为左撇子，但始终专注于绘画训练与实践。 启航星是我的长期世界观项目：讲述人类在异星重建文明的进程，一个在共存与战争之间拉扯的社会。人类终将学会与异族共生，还是在生存压力下选择毁灭对方？ 围绕该项目，我的目标是构建结构严…",
+    "tags": [
+      "- system"
+    ],
+    "lang": "zh",
+    "source": "zh/about.md"
+  },
+  {
+    "title": "Welcome to My Blog",
+    "description": "This is my first blog post about my creative journey",
+    "pubDate": "2025-10-20",
+    "pinned": false,
+    "heroImage": "../../assets/blog-placeholder-1.jpg",
+    "heroImagePosition": "50% 50%",
+    "heroImageWidth": "101%",
+    "url": "/blog/welcome/",
+    "excerpt": "Hello everyone! This is my first blog post, and I'm excited to share my creative journey with you. What You Can Expect In this blog, I'll be sharing: Thoughts and notes on my original worldbuilding project Useful, interesting, and affordabl…",
+    "tags": [
+      "- About"
+    ],
+    "lang": "en",
+    "source": "blog/welcome.md"
+  },
+  {
+    "title": "欢迎来到我的博客",
+    "description": "这是我第一篇关于创作旅程的博客文章",
+    "pubDate": "2025-10-20",
+    "pinned": false,
+    "heroImage": "../../assets/blog-placeholder-1.jpg",
+    "heroImagePosition": "50% 50%",
+    "heroImageWidth": "101%",
+    "url": "/zh/blog/welcome/",
+    "excerpt": "大家好！ 这是我的第一篇博客文章，我很高兴与你分享我的创作旅程。 你可以期待什么 在这个博客中，我将分享： 关于我的原创世界观项目的想法和笔记 实用、有趣且价格合理的软件推荐 玩电子游戏的体验和感想 关于我的作品 我热爱绘画和世界观构建。 我的目标是创造能够引起人们共鸣的引人入胜的视觉叙事。 敬请期待！",
+    "tags": [
+      "- 关于"
+    ],
+    "lang": "en",
+    "source": "zh/blog/welcome.md"
+  },
+  {
+    "title": "Featured Works With Detail",
+    "description": "Selected featured portfolio pieces and artwork showcase",
+    "pubDate": "2025-10-20",
+    "pinned": true,
+    "heroImage": "../../assets/portfolio/portfolio1/Featured1-character_design.png",
+    "heroImagePosition": "70% 16%",
+    "heroImageWidth": "120%",
+    "url": "/portfolio/portfolio1-featured/",
+    "excerpt": "@@ Threshold Step 10/26/2023 This is the sheep character I tried to draw. I attempted to use overlapping red and blue colors to emphasize the sense of lighting. I didn't use any Photoshop brushes to create this character. Seth The Untamed S…",
+    "tags": [
+      "- Sketch"
+    ],
+    "lang": "en",
+    "source": "portfolio/portfolio1-featured.md"
+  },
+  {
+    "title": "精选作品详情",
+    "description": "精选作品集和艺术作品展示",
+    "pubDate": "2025-10-20",
+    "pinned": true,
+    "heroImage": "../../assets/portfolio/portfolio1/Featured1-character_design.png",
+    "heroImagePosition": "70% 16%",
+    "heroImageWidth": "120%",
+    "url": "/zh/portfolio/portfolio1-featured/",
+    "excerpt": "@@ 临界步 2023/10/26 这是我尝试绘制的羊角色。我尝试使用重叠的红色和蓝色来强调光照感。我没有使用任何Photoshop笔刷来创作这个角色。 塞斯 不羁的科学家 2023/10/26 塞斯是我原创世界观启航星中的一个角色。他在为和平而战时受了重伤；他的脸永久扭曲，常被误认为愤怒或疯狂，他的外表让陌生人感到恐惧。作为一名科学家，他的思维方式不同于普通逻辑——他从意想不到的角度处理问题，所以他的帮助方式常常看起来奇怪甚至令人不安，但结果总是非常出色。与他相处的人逐渐被…",
+    "tags": [
+      "- 素描"
+    ],
+    "lang": "en",
+    "source": "zh/portfolio/portfolio1-featured.md"
+  },
+  {
+    "title": "HOME",
+    "description": "Featured works and projects",
+    "pubDate": null,
+    "pinned": false,
+    "heroImage": null,
+    "heroImagePosition": null,
+    "heroImageWidth": null,
+    "url": "/home/",
+    "excerpt": "Here are my featured works. To learn more about my artwork, you can visit portfolio page. I also update my blog regularly to share my experiences and insights. If you'd like to contact me, please check the contact page I welcome anyone to g…",
+    "tags": [
+      "- system"
+    ],
+    "lang": "en",
+    "source": "home.md"
+  },
+  {
+    "title": "HOME",
+    "description": "精选作品和项目",
+    "pubDate": null,
+    "pinned": false,
+    "heroImage": null,
+    "heroImagePosition": null,
+    "heroImageWidth": null,
+    "url": "/zh/home/",
+    "excerpt": "这里是我的精选作品。要了解更多我的艺术作品，你可以访问作品集页面。我也会定期更新博客分享我的经验和见解。如果你想联系我，请查看联系页面 欢迎任何人与我取得联系！ @@ ==💡 提示：点击任何图片可放大查看！== @@ @@ 临界步 2023/10/26 塞斯 不羁的科学家 2023/10/26 夏戈尔（废弃草稿） 2023 光影静物组合 2023/01/15 石膏雕塑静物组合 2023/01/07 荷马石膏像素描 2021 塞内卡石膏像素描 2021 圆环中的田野 2022…",
+    "tags": [
+      "- system"
+    ],
+    "lang": "zh",
+    "source": "zh/home.md"
+  },
+  {
+    "title": "tag-colors",
+    "description": "",
+    "pubDate": null,
+    "pinned": false,
+    "heroImage": null,
+    "heroImagePosition": null,
+    "heroImageWidth": null,
+    "url": "/tag-colors/",
+    "excerpt": "这些映射将被脚本读取并生成 JSON 供模板与客户端使用。 编辑上面的 tags: 部分可以添加或修改 tag 的颜色。保存后运行生成脚本将把颜色写入 src/data/tagcolors.json 和 public/tagcolors.json。",
+    "tags": [
+      "system: '#6b7280"
+    ],
+    "lang": "en",
+    "source": "tag-colors.md"
+  },
+  {
+    "title": "text",
+    "description": "text",
+    "pubDate": null,
+    "pinned": false,
+    "heroImage": null,
+    "heroImagePosition": null,
+    "heroImageWidth": null,
+    "url": "/text/",
+    "excerpt": "列表功能测试 正文正文正文正文正文正文正文正文正文正文正文正文正文 1. 测试1 2. 测试2 3. 测试3 正文正文正文正文正文正文正文正文正文 测试4 测试5 测试6 正文正文正文正文正文正文正文正文正文正文正文 标题 1. 测试1 2. 测试2 3. 测试3 正文正文正文正文正文正文正文正文正文 测试4 测试5 测试6 正文正文正文正文正文正文正文正文正文正文正文 正常md功能测试 标题 1111111 1111111 1111111 1111111 1111111 加…",
+    "tags": [
+      "- system"
+    ],
+    "lang": "en",
+    "source": "text.md"
+  },
+  {
+    "title": "text",
+    "description": "text",
+    "pubDate": null,
+    "pinned": false,
+    "heroImage": null,
+    "heroImagePosition": null,
+    "heroImageWidth": null,
+    "url": "/zh/text/",
+    "excerpt": "列表功能测试 正文正文正文正文正文正文正文正文正文正文正文正文正文 1. 测试1 2. 测试2 3. 测试3 正文正文正文正文正文正文正文正文正文 测试4 测试5 测试6 正文正文正文正文正文正文正文正文正文正文正文 标题 1. 测试1 2. 测试2 3. 测试3 正文正文正文正文正文正文正文正文正文 测试4 测试5 测试6 正文正文正文正文正文正文正文正文正文正文正文 正常md功能测试 标题 1111111 1111111 1111111 1111111 1111111 加…",
+    "tags": [
+      "- system"
+    ],
+    "lang": "zh",
+    "source": "zh/text.md"
+  }
+]

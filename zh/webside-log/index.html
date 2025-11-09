@@ -1,0 +1,327 @@
+<!DOCTYPE html><html lang="zh" data-astro-cid-ivotzlvf> <head><!-- 全局元数据 --><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><!-- 行内同步主题初始化器：从 localStorage 或系统偏好中设置 html[data-theme]
+	该脚本在 CSS 加载前运行，以避免样式闪烁（FOUC）。 --><script type="module">(function(){if(typeof document>"u")return;function i(t){try{if(!(t instanceof HTMLElement))return;const e=t.getAttribute&&t.getAttribute("style");if(e&&e.indexOf("position: static")!==-1){try{t.style.removeProperty("position")}catch{}const o=window.getComputedStyle?window.getComputedStyle(t):null;o&&o.position==="static"&&(t.style.position="absolute",t.style.left||(t.style.left="50%"),t.style.top||(t.style.top="50%"),t.style.transform||(t.style.transform="translate(-50%, -50%)"))}}catch{}}function n(){try{document.querySelectorAll(".inline-portfolio-card .hero-img").forEach(i)}catch{}}document.readyState==="loading"?document.addEventListener("DOMContentLoaded",function(){n()}):n()})();</script><link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;24&quot; height=&quot;24&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;white&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; class=&quot;icon icon-tabler icons-tabler-outline icon-tabler-planet&quot;><path stroke=&quot;none&quot; d=&quot;M0 0h24v24H0z&quot; fill=&quot;none&quot;/><path d=&quot;M18.816 13.58c2.292 2.138 3.546 4 3.092 4.9c-.745 1.46 -5.783 -.259 -11.255 -3.838c-5.47 -3.579 -9.304 -7.664 -8.56 -9.123c.464 -.91 2.926 -.444 5.803 .805&quot; /><path d=&quot;M12 12m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0&quot; /></svg>"><link rel="sitemap" href="/sitemap-index.xml"><link rel="alternate" type="application/rss+xml" title="[object Object]" href="https://elko-utopia.github.io/Creation_notes/rss.xml"><meta name="generator" content="Astro v5.13.10"><!-- 字体预加载 --><link rel="preload" href="/Creation_notes/fonts/SmileySans-Oblique.ttf.woff2" as="font" type="font/woff2" crossorigin><!-- 规范 URL --><link rel="canonical" href="https://elko-utopia.github.io/Creation_notes/zh/webside-log/"><!-- 主要 Meta 标签 --><title>网页制作日志</title><meta name="title" content="网页制作日志"><meta name="description" content="网站制作的版本记录与更新日志"><!-- Open Graph / Facebook 元数据 --><meta property="og:type" content="website"><meta property="og:url" content="https://elko-utopia.github.io/Creation_notes/zh/webside-log/"><meta property="og:title" content="网页制作日志"><meta property="og:description" content="网站制作的版本记录与更新日志"><meta property="og:image" content="https://elko-utopia.github.io/Creation_notes/_astro/blog-placeholder-1.Bx0Zcyzv.jpg"><!-- Twitter --><meta property="twitter:card" content="summary_large_image"><meta property="twitter:url" content="https://elko-utopia.github.io/Creation_notes/zh/webside-log/"><meta property="twitter:title" content="网页制作日志"><meta property="twitter:description" content="网站制作的版本记录与更新日志"><meta property="twitter:image" content="https://elko-utopia.github.io/Creation_notes/_astro/blog-placeholder-1.Bx0Zcyzv.jpg"><!-- 在运行时设置字体变量，避免构建期 CSS url 被 Vite 尝试解析导致警告 --><script type="text/javascript">(function(){const fontSmileySans = "/Creation_notes/fonts/SmileySans-Oblique.ttf.woff2";
+
+	(function(){
+		if (typeof window === 'undefined' || typeof document === 'undefined') return;
+		try {
+			var src = "url(\"" + (String(fontSmileySans || "") ) + "\") format('woff2')";
+			document.documentElement.style.setProperty('--font-smiley-sans-src', src);
+		} catch(e) { 
+			console.error('[Font Debug] Error setting font:', e);
+		}
+	})();
+})();</script><!-- Inject centralized font CSS for UI and markdown content --><!-- This component has been disabled. All font rules are centralized in global.css. --><!-- This component has been disabled. All font rules are centralized in global.css. --><!-- 折叠列表功能已迁移到独立组件：FolderTool --><!-- 插件级：折叠列表样式与客户端行为 --><!-- 客户端脚本：仅在客户端加载（避免 SSR 执行浏览器 API） --><script type="module">
+  // 由 FolderTool 组件管理折叠列表的 DOM 构造与交互
+  (function(){
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+
+    function createFold(list){
+      try{
+        if (!list || list.dataset.foldInited === 'true') return;
+        if (list.closest('details') || list.closest('.list-fold-container')) return;
+
+        const container = document.createElement('div'); container.className = 'list-fold-container';
+        const trigger = document.createElement('a'); trigger.className = 'list-fold-trigger'; trigger.href = '#';
+        // 使用伪元素显示指示符；触发器仅包含 label 文本（保持最小 DOM 变更）
+        trigger.textContent = '展开列表';
+        trigger.setAttribute('role','button'); trigger.setAttribute('aria-expanded','false');
+        const content = document.createElement('div'); content.className = 'list-fold-content';
+
+        list.parentNode.insertBefore(container, list);
+        content.appendChild(list);
+        container.appendChild(trigger);
+        container.appendChild(content);
+        container.dataset.foldInited = 'true';
+
+        const listId = list.id || ('list-fold-' + Math.random().toString(36).slice(2,9));
+        list.id = listId; trigger.setAttribute('aria-controls', listId);
+
+        content.style.maxHeight = '0'; content.style.overflow = 'hidden'; content.style.transition = 'max-height 0.35s ease-out';
+
+        function toggle(e){ e && e.preventDefault && e.preventDefault();
+          const isOpen = container.classList.toggle('is-open'); trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+          if (isOpen){ trigger.textContent = '收起列表'; content.style.maxHeight = content.scrollHeight + 'px'; }
+          else { trigger.textContent = '展开列表'; content.style.maxHeight = '0'; }
+        }
+
+        trigger.addEventListener('click', toggle);
+      }catch(e){ console.warn('[FolderTool] createFold error', e); }
+    }
+
+    function init(){
+      try{
+        const lists = document.querySelectorAll('.prose ul, .prose ol, .md-content ul, .md-content ol');
+        lists.forEach(function(list){ if (!(list instanceof HTMLElement)) return; if (list.querySelectorAll('li').length < 2) return; createFold(list); });
+      }catch(e){ console.warn('[FolderTool] init error', e); }
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  })();
+</script><!-- Diagnostic logging removed in cleanup: sanitizer kept below. --><!-- Ensure inline-portfolio-card foreground images hide the background once loaded
+			 to avoid visible double-layered images caused by background-image + <img>. --><script type="module">(function(){if(typeof document>"u")return;function o(t){try{const e=t&&t.closest&&t.closest(".hero-frame");if(e){e.classList.add("img-loaded");try{(!(t instanceof HTMLElement)||!t.classList||!t.classList.contains("hero-img--invisible"))&&e.style.removeProperty("background-image")}catch{}}}catch{}}function r(){try{document.querySelectorAll(".inline-portfolio-card .hero-img").forEach(e=>{e instanceof HTMLImageElement&&(e.complete&&e.naturalWidth&&e.naturalWidth>0?o(e):(e.addEventListener("load",function n(){o(e),e.removeEventListener("load",n)}),e.addEventListener("error",function n(){o(e),e.removeEventListener("error",n)})))})}catch(t){console.warn("[wiki-cards] image load init failed",t)}}document.readyState==="loading"?document.addEventListener("DOMContentLoaded",r):r()})();</script><!-- Defensive runtime sanitizer: fix images that accidentally receive `position: static` as an inline style
+	     Some other runtime may copy or normalize styles and introduce `position: static` into
+	     an <img>'s inline style which prevents the CSS rule (.hero-frame .hero-img { position:absolute })
+	     from taking effect. This script attempts to remove that inline `position` property so the
+	     stylesheet can control positioning. If removal doesn't take effect (rare), it falls back to
+	     setting position:absolute as a last-resort fix. It also observes future mutations for a short
+	     time to catch late-arriving scripts.
+	--><script type="module">(function(){try{var t="theme-preference",e=localStorage.getItem(t);if(e==="dark"||e==="light"){document.documentElement.dataset.theme=e;return}}catch{}try{var a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.dataset.theme=a?"dark":"light"}catch{}})();</script><!-- Wiki-style link -> inline card replacer
+			 Replaces <div class="inline-portfolio-card-placeholder" data-wiki="..."> placeholders
+			 (injected at build-time by remark-wiki-links.mjs) with the actual card HTML by
+			 looking up `search-index.json` generated at build-time.
+	--><script type="module">
+	(
+	function(){
+		if (typeof document === 'undefined') return;
+		// Determine site base URL safely at runtime. import.meta.env is not available
+		// in the browser, so prefer a global injected value, then document.baseURI,
+		// finally fallback to '/'. Ensure it ends with a slash.
+		const SITE_BASE = (function(){
+			try {
+				if (typeof window !== 'undefined' && window.__ASTRO_BASE_URL__) {
+					return String(window.__ASTRO_BASE_URL__).endsWith('/') ? String(window.__ASTRO_BASE_URL__) : String(window.__ASTRO_BASE_URL__) + '/';
+				}
+			} catch (e) {}
+			try {
+				if (typeof document !== 'undefined' && document.baseURI) {
+					const u = new URL(document.baseURI);
+					const p = u.pathname || '/';
+					return p.endsWith('/') ? p : p + '/';
+				}
+			} catch (e) {}
+			return '/';
+		})();
+
+		async function init(){
+			const placeholders = document.querySelectorAll('.inline-portfolio-card-placeholder');
+			if (!placeholders || placeholders.length === 0) return;
+			try {
+				const idxRes = await fetch(SITE_BASE + 'search-index.json');
+				const idx = await idxRes.json();
+				// Build a minimal runtime mapping that mirrors the build-time
+				// policy: exact-key lookup only, plus explicit `basename_zh`
+				// aliases for entries under `zh/`. No heuristic inference.
+				const mapBySource = new Map();
+				const mapByRel = new Map();
+				for (const item of (idx || [])){
+					const src = item.source ? String(item.source).replace(/\.mdx?$/i, '').replace(/^\/+/, '') : null;
+					if (src) {
+						const key = src; // exact match key, no lowercasing or aliasing
+						if (!mapBySource.has(key)) mapBySource.set(key, item);
+					}
+					if (item.url) mapByRel.set(String(item.url).replace(/^\/+|\/+$/g,''), item);
+				}
+
+				placeholders.forEach(ph => {
+					const target = (ph.dataset && ph.dataset.wiki) ? ph.dataset.wiki : '';
+					const label = (ph.dataset && ph.dataset.label) ? ph.dataset.label : '';
+					let item = null;
+					if (target) {
+						const rawKey = target.replace(/^\/+|\/+$/g,'').toLowerCase();
+						item = mapBySource.get(rawKey) || mapByRel.get(rawKey);
+					}
+
+					let siteBaseNoSlash = SITE_BASE === '/' ? '' : SITE_BASE.replace(/\/$/, '');
+					// If running on a non-localhost host and SITE_BASE is '/', prefer the
+					// GitHub Pages absolute host so runtime-hydrated links point to your
+					// published site rather than relative local paths.
+					if (siteBaseNoSlash === '') {
+						try {
+							if (typeof window !== 'undefined' && window.location && !/localhost|127\.0\.0\.1/.test(window.location.hostname)) {
+								siteBaseNoSlash = 'https://elko-utopia.github.io/Creation_notes';
+							}
+						} catch (e) {}
+					}
+					let href = '#';
+					let img = siteBaseNoSlash + '/assets/blog-placeholder-2.jpg';
+					let title = label || target;
+					let dateStr = '';
+					if (item) {
+						href = item.url || href;
+						if (item.heroImage) {
+							const hi = String(item.heroImage);
+							const m = hi.match(/(?:\.\.\/)+assets\/(.*)/);
+							if (m) img = (siteBaseNoSlash || '') + '/assets/' + m[1];
+							else if (hi.startsWith('/')) img = (siteBaseNoSlash || '') + hi;
+							else img = hi;
+						}
+						if (item.title) title = item.title;
+						if (item.pubDate) {
+							// Robust parse of YYYY-M-D or YYYY-MM-DD into UTC date
+							const m = String(item.pubDate).match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+							if (m) {
+								const y = Number(m[1]), mo = Number(m[2]) - 1, day = Number(m[3]);
+								const d = new Date(Date.UTC(y, mo, day));
+								if (!isNaN(d.valueOf())) dateStr = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' }).format(d);
+							}
+						}
+					} else {
+						// fallback: link to guessed path
+						href = (siteBaseNoSlash || '') + '/' + target.replace(/^\/+|\/+$/g,'') + '/';
+					}
+
+					// Create a block-level wrapper so runtime hydration matches build-time output
+					const wrap = document.createElement('div');
+					wrap.className = 'inline-portfolio-card-wrap';
+					const a = document.createElement('a');
+					// mark runtime-hydrated wiki/obsidian cards so global.css can target them
+					a.className = 'inline-portfolio-card obsidian-card';
+					a.href = href;
+					// Use background-image on hero-frame as a resilient fallback (matches server output)
+					// Ensure runtime-hydrated cards include the same conservative inline
+					// styles the server-template emits so they keep layout parity even
+					// when other scripts inject CSS later (e.g. the lightbox styles).
+					const objPos = (item && item.heroImagePosition) ? `object-position: ${String(item.heroImagePosition)};` : '';
+					// Do not force position in inline styles; let CSS (.hero-img) control positioning
+					// so the foreground image can be absolutely positioned to fully cover the frame.
+					const imgInline = `width: 100%; height: 100%; object-fit: cover; ${objPos}`;
+										a.innerHTML = `<span class="hero-frame" style="background-image:url('${img}');background-size:cover;background-position:center center">` +
+																 ` <img class="hero-img" src="${img}" alt="" loading="lazy" decoding="async" style="${imgInline}" />` +
+																 `</span><div class="meta"><h5 class="title site-heading">${title}</h5>` + (dateStr?`<h6 class="date">${dateStr}</h6>`:'') + `</div>`;
+										// Attach the resolved image path to the anchor for robustness and
+										// ensure the hero-frame explicitly has a background-image set on
+										// the element (some later runtime code was observed to clear the
+										// inline style in rare cases; setting it directly ensures the
+										// visible fallback is present immediately after hydration).
+										a.dataset.hi = img;
+										// Ensure the inline element reflects the background we intend to show.
+										try {
+											const hfEl = (function(){
+												const tmp = document.createElement('div'); tmp.innerHTML = a.innerHTML; return tmp.querySelector('.hero-frame');
+											})();
+											if (hfEl) {
+												hfEl.style.backgroundImage = `url('${img}')`;
+												hfEl.style.backgroundSize = 'cover';
+												hfEl.style.backgroundPosition = 'center center';
+											}
+										} catch(e) { /* ignore */ }
+										wrap.appendChild(a);
+					// hydrate: no debug logging in production
+					ph.replaceWith(wrap);
+				});
+			} catch (e) { console.error('[wiki-cards] failed to hydrate placeholders', e); }
+		}
+
+		if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+	})();
+	</script><link rel="stylesheet" href="/Creation_notes/_astro/about.CbgqirQt.css">
+<style>.log-only[data-astro-cid-ivotzlvf]{max-width:720px;margin:0 auto;padding:1rem;padding-top:0}.log-only[data-astro-cid-ivotzlvf] hr[data-astro-cid-ivotzlvf]{display:none}.log-only[data-astro-cid-ivotzlvf]>[data-astro-cid-ivotzlvf]:first-child{margin-top:0}.log-only[data-astro-cid-ivotzlvf] h1[data-astro-cid-ivotzlvf],.log-only[data-astro-cid-ivotzlvf] h2[data-astro-cid-ivotzlvf],.log-only[data-astro-cid-ivotzlvf] h3[data-astro-cid-ivotzlvf],.log-only[data-astro-cid-ivotzlvf] h4[data-astro-cid-ivotzlvf],.log-only[data-astro-cid-ivotzlvf] h5[data-astro-cid-ivotzlvf]{margin:.6rem 0 .4rem}.log-only[data-astro-cid-ivotzlvf] h1[data-astro-cid-ivotzlvf]:first-of-type{margin-top:0}.log-only[data-astro-cid-ivotzlvf] details[data-astro-cid-ivotzlvf].log-minor{margin:.4rem 0 .6rem;padding:.6rem .85rem;border-radius:8px;background:rgba(var(--gray-light),.03)}.log-only[data-astro-cid-ivotzlvf] details[data-astro-cid-ivotzlvf].log-minor summary[data-astro-cid-ivotzlvf]{font-weight:700;cursor:pointer}main[data-astro-cid-ivotzlvf]{padding-top:0}.zh-banner{display:none}header{margin-bottom:0;box-shadow:none}main hr,.log-only hr{display:none}body:before,body:after{display:none}
+</style></head> <body data-astro-cid-ivotzlvf> <header data-astro-cid-3ef6ksr2> <nav data-astro-cid-3ef6ksr2> <h5 class="site-heading" data-astro-cid-3ef6ksr2> <a href="/Creation_notes/zh/" data-astro-cid-3ef6ksr2>托邦的创作笔记</a> </h5> <div class="internal-links" data-astro-cid-3ef6ksr2> <a href="/Creation_notes/zh/" data-astro-cid-3ef6ksr2="true" data-astro-cid-eimmu3lg> 主页 </a>  <a href="/Creation_notes/zh/blog/" data-astro-cid-3ef6ksr2="true" data-astro-cid-eimmu3lg> 博客 </a>  <a href="/Creation_notes/zh/portfolio/" data-astro-cid-3ef6ksr2="true" data-astro-cid-eimmu3lg> 作品集 </a>  <a href="/Creation_notes/zh/about/" data-astro-cid-3ef6ksr2="true" data-astro-cid-eimmu3lg> 关于 </a>  <a href="/Creation_notes/zh/contact/" data-astro-cid-3ef6ksr2="true" data-astro-cid-eimmu3lg> 联系 </a>  </div> <div class="right-side" data-astro-cid-3ef6ksr2> <!-- 移动端汉堡包菜单按钮 --> <button type="button" class="mobile-menu-btn" data-mobile-menu-toggle aria-label="切换移动菜单" data-astro-cid-3ef6ksr2> <span class="sr-only" data-astro-cid-3ef6ksr2>切换移动菜单</span> <span class="hamburger-icon" data-astro-cid-3ef6ksr2> <span data-astro-cid-3ef6ksr2></span> <span data-astro-cid-3ef6ksr2></span> <span data-astro-cid-3ef6ksr2></span> </span> </button> <div class="pref-controls" data-astro-cid-3ef6ksr2> <button type="button" class="subscribe-pill" data-subscribe-toggle aria-label="订阅" data-astro-cid-3ef6ksr2> <span class="subscribe-pill-label" data-astro-cid-3ef6ksr2>订阅</span> </button> <!-- 紧凑模式下显示的铃铛图标（与汉堡、放大镜图标样式一致） --> <button type="button" class="pref-btn subscribe-bell" data-subscribe-toggle aria-label="订阅" data-astro-cid-3ef6ksr2> <span class="sr-only" data-astro-cid-3ef6ksr2>订阅</span> <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" data-astro-cid-3ef6ksr2> <!-- 依据用户参考彻底重画：粗线、圆角、饱满轮廓 --> <!-- 整体稍微放大，clapper 下移以增加间距 --> <!-- 使用外部统一缩放变量控制尺寸，移除内联 scale 防止重复缩放 --> <g data-astro-cid-3ef6ksr2> <path d="M6.5 10c0-3.04 2.46-5.5 5.5-5.5s5.5 2.46 5.5 5.5v1.25c0 1.93.9 3.37 1.5 4.01a1 1 0 0 1-.83 1.66H5.83a1 1 0 0 1-.83-1.66c.6-.64 1.5-2.08 1.5-4.01V10z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" data-astro-cid-3ef6ksr2></path> <path d="M10.8 17.8a1.2 1.2 0 0 0 2.4 0" transform="translate(0,0.6)" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" data-astro-cid-3ef6ksr2></path> </g> </svg> </button> <button type="button" class="pref-btn search-btn" data-search-toggle aria-label="打开搜索" data-astro-cid-3ef6ksr2> <span class="sr-only" data-astro-cid-3ef6ksr2>打开搜索</span> <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" data-astro-cid-3ef6ksr2> <circle cx="11" cy="11" r="5.75" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" data-astro-cid-3ef6ksr2></circle> <line x1="15.8" y1="15.8" x2="21.2" y2="21.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" data-astro-cid-3ef6ksr2></line> </svg> </button> <!-- Preferences button: opens a compact preferences dialog (theme + language) --> <button type="button" class="pref-btn prefs-toggle" data-prefs-toggle aria-label="偏好设置" data-astro-cid-3ef6ksr2> <span class="sr-only" data-astro-cid-3ef6ksr2>偏好设置</span> <!-- Sun / Moon combined icon and small language badge --> <span class="prefs-icon" aria-hidden="true" data-astro-cid-3ef6ksr2> <!-- Sun icon (shown in light mode) --> <svg class="icon icon-sun" viewBox="0 0 24 24" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" data-astro-cid-3ef6ksr2> <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" data-astro-cid-3ef6ksr2></circle> <g stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" data-astro-cid-3ef6ksr2> <path d="M12 2v2" vector-effect="non-scaling-stroke" data-astro-cid-3ef6ksr2></path> <path d="M12 20v2" vector-effect="non-scaling-stroke" data-astro-cid-3ef6ksr2></path> <path d="M4.93 4.93l1.41 1.41" vector-effect="non-scaling-stroke" data-astro-cid-3ef6ksr2></path> <path d="M17.66 17.66l1.41 1.41" vector-effect="non-scaling-stroke" data-astro-cid-3ef6ksr2></path> <path d="M2 12h2" vector-effect="non-scaling-stroke" data-astro-cid-3ef6ksr2></path> <path d="M20 12h2" vector-effect="non-scaling-stroke" data-astro-cid-3ef6ksr2></path> <path d="M4.93 19.07l1.41-1.41" vector-effect="non-scaling-stroke" data-astro-cid-3ef6ksr2></path> <path d="M17.66 6.34l1.41-1.41" vector-effect="non-scaling-stroke" data-astro-cid-3ef6ksr2></path> </g> </svg> <!-- Moon icon (shown in dark mode) --> <svg class="icon icon-moon" viewBox="0 0 24 24" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" data-astro-cid-3ef6ksr2> <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" stroke-width="1.8" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" fill="none" data-astro-cid-3ef6ksr2></path> </svg> <!-- language badge moved inside prefs-icon so it can be clipped to the icon bounds --> <span class="lang-badge" aria-hidden="true" data-astro-cid-3ef6ksr2>中</span> </span> </button> </div> </div> </nav> <!-- 移动端下拉菜单 --> <div class="mobile-nav-dropdown" data-mobile-nav data-astro-cid-3ef6ksr2> <div class="mobile-nav-content" data-astro-cid-3ef6ksr2> <div class="mobile-nav-links" data-astro-cid-3ef6ksr2> <a href="/Creation_notes/zh/" data-astro-cid-3ef6ksr2="true" data-astro-cid-eimmu3lg> 主页 </a>  <a href="/Creation_notes/zh/blog/" data-astro-cid-3ef6ksr2="true" data-astro-cid-eimmu3lg> 博客 </a>  <a href="/Creation_notes/zh/portfolio/" data-astro-cid-3ef6ksr2="true" data-astro-cid-eimmu3lg> 作品集 </a>  <a href="/Creation_notes/zh/about/" data-astro-cid-3ef6ksr2="true" data-astro-cid-eimmu3lg> 关于 </a>  <a href="/Creation_notes/zh/contact/" data-astro-cid-3ef6ksr2="true" data-astro-cid-eimmu3lg> 联系 </a>  </div> </div> </div> </header> <!-- Chinese mode warning banner (only shown when lang=zh) --> <div class="zh-banner" data-zh-banner data-astro-cid-3ef6ksr2> <div class="zh-banner-content" data-astro-cid-3ef6ksr2> <span class="zh-banner-icon" data-astro-cid-3ef6ksr2>🚧</span> <span class="zh-banner-text" data-astro-cid-3ef6ksr2>中文版正在制作中 · Chinese version under construction</span> </div> </div> <script type="module">document.addEventListener("DOMContentLoaded",function(){const o=document.querySelector("header");let i=document.querySelector("[data-mobile-menu-toggle]"),n=document.querySelector("[data-mobile-nav]");const L=document.querySelector(".internal-links"),h=document.querySelector(".right-side");if(!o)return;let p=null,l=null,s=null,m=!1;function R(){try{const t=document.querySelector(".internal-links");if(!t)return 0;const e=t.cloneNode(!0);e.style.position="absolute",e.style.left="-9999px",e.style.top="-9999px",e.style.visibility="hidden",e.style.display="flex",e.style.whiteSpace="nowrap",document.body.appendChild(e);const r=e.getBoundingClientRect(),y=r&&r.width?r.width:0;return document.body.removeChild(e),y||0}catch{return 0}}function v(){m||(m=!0,requestAnimationFrame(function(){setTimeout(function(){try{const t=document.querySelector(".internal-links");if(!t)return;const e=t.getBoundingClientRect();e&&e.width>0&&(s={left:e.left,right:e.right,width:e.width},a())}catch{}m=!1},45)}))}let c=40,u=50;try{const t=o.getAttribute("data-collapse-a"),e=o.getAttribute("data-collapse-b");if(t!==null&&(c=Number(t)||c),e!==null&&(u=Number(e)||u),c>=u){const r=c;c=Math.min(r,u),u=Math.max(r,u)}}catch{}function w(t){try{o.classList.toggle("compact",!!t),p=!!t}catch{}}function k(){try{if(!L||!h)return!1;let t=L.getBoundingClientRect();if(!t||t.width===0||t.right===0){const f=R();if(f&&f>0){s={left:0,right:f,width:f};try{window.__LAST_GOOD_LINKS_RECT=s}catch{}}const S=o.querySelector("h5"),q=S?S.getBoundingClientRect():{right:0},C=(h.getBoundingClientRect().left||0)-(q.right||0);if(n&&n.classList&&n.classList.contains("active"))return!0;if(s){if(C>=s.width+c)return!1;t=s,v()}else{if(C>=160+c)return!1;v()}}else t&&t.width>0&&(s={left:t.left,right:t.right,width:t.width});const e=h.getBoundingClientRect(),r=o.querySelector("h5"),y=r?r.getBoundingClientRect():{right:0},M=t.left-(y.right||0),T=(e.left||0)-t.right;return!!(n&&n.classList&&n.classList.contains("active")||M<c||T<c)}catch{return!1}}function a(){const t=k();t!==p&&w(t)}const b=a;let g=null;window.addEventListener("resize",function(){b(),g&&clearTimeout(g),g=setTimeout(function(){try{a()}catch{}},120)}),window.visualViewport&&typeof window.visualViewport.addEventListener=="function"&&window.visualViewport.addEventListener("resize",a),window.addEventListener("orientationchange",b);function E(){if(!(!n||!i)){try{const t=o.getBoundingClientRect();n instanceof HTMLElement&&(n.style.top=Math.round(t.bottom)+"px")}catch{}n.classList.add("active"),i.classList.add("active"),i.setAttribute("aria-expanded","true"),n.setAttribute("aria-hidden","false"),w(!0),l=function(t){try{if(!n||!i)return;const e=t.target;if(n.contains(e)||i.contains(e))return;d()}catch{}},document.addEventListener("click",l,!0),document.addEventListener("touchstart",l,!0)}}function d(){if(!(!n||!i)){n.classList.remove("active"),i.classList.remove("active"),i.setAttribute("aria-expanded","false"),n.setAttribute("aria-hidden","true"),a();try{l&&(document.removeEventListener("click",l,!0),document.removeEventListener("touchstart",l,!0),l=null)}catch{}}}i&&n?(i.addEventListener("click",function(t){n.classList.contains("active")?d():E()}),n.querySelectorAll&&n.querySelectorAll("a").forEach(t=>t.addEventListener("click",function(){d()}))):(document.addEventListener("click",function(t){try{const e=t.target&&t.target.closest&&t.target.closest("[data-mobile-menu-toggle]");if(!e||(n||(n=document.querySelector("[data-mobile-nav]")),i||(i=e),!n))return;n.classList.contains("active")?d():E()}catch{}},!0),document.addEventListener("click",function(t){try{if(!(t.target&&t.target.closest&&t.target.closest("[data-mobile-nav] a")))return;n&&n.classList.contains("active")&&d()}catch{}},!0)),a(),window.addEventListener("load",a)});</script> <!-- runtime fallback for p-followed-by-list removed: now added at build time via remark plugin -->  <script>window.__SITE_PREFS = Object.assign({}, window.__SITE_PREFS || {}, {
+  subscribeEndpoint: "https://buttondown.email/api/emails/embed-subscribe/elkoutopia",
+  subscribeUser: "elkoutopia"
+});
+document.documentElement.dataset.subscribeEndpoint = "https://buttondown.email/api/emails/embed-subscribe/elkoutopia";
+document.documentElement.dataset.subscribeUser = "elkoutopia";</script> <script src="/Creation_notes/scripts/subscribe-form.js" defer></script> <script type="module" src="/Creation_notes/scripts/preferences.js"></script> <script type="module" src="/Creation_notes/scripts/lightbox.js"></script> <script type="module" src="/Creation_notes/scripts/lightbox-monitor.js"></script> <script type="module" src="/Creation_notes/scripts/thumbnail-fallback.js"></script> <script type="module">document.addEventListener("DOMContentLoaded",function(){try{const n=window.LightboxMonitor;n&&typeof n.enableFull=="function"&&n.enableFull()}catch{}});</script> <script type="module">(function(){try{if(typeof window>"u")return;const e=document.getElementById("lang-toggle"),a=document.getElementById("lang-label");if(!e||!a)return;const i=document.documentElement.lang||"",n=window.location.pathname||"/",c=n.endsWith("/")?n:n+"/",h=i==="zh"||/(^|\/)zh(\/|$)/.test(c)||/\/zh\/?$/.test(c);a.textContent=h?"ZH":"EN",e.addEventListener("click",function(){const o=window.location.pathname||"/",l=o.endsWith("/")?o:o+"/";if(document.documentElement.lang==="zh"||/^\/zh(\/|$)/.test(l)){let t=l;/^\/zh\//.test(t)&&(t=t.replace(/^\/zh/,"")),(!t||t==="")&&(t="/"),t=t.replace(/\/+/g,"/"),window.location.href=t}else{let t=l;/^\/zh\//.test(t)||(t=("/zh"+(t.startsWith("/")?"":"/")+t).replace(/\/+/g,"/")),t=t.replace(/\/+/g,"/"),window.location.href=t}})}catch(e){console.warn("lang toggle init failed",e)}})();</script> <main data-astro-cid-ivotzlvf> <article class="md-content log-only" data-astro-cid-ivotzlvf> <h1 id="️网页制作日志">🛠️网页制作日志</h1>
+<p><strong>网页开发日志</strong><br>
+下面按大版本分组，点击小版本以展开详情。</p>
+<h3 id="制作中-v04x-多语言更好的搜索">制作中： V0.4.X 多语言&#x26;更好的搜索</h3>
+<p><strong>2025/11/4~至今</strong></p>
+<h4 id="v043">V0.4.3</h4>
+<p class="p-followed-by-list">2025/11/6 ~ 2025/11/7</p>
+<ol>
+<li>制作tag功能</li>
+<li>修改制作日志进新页面</li>
+<li>解决刷新后帖子位置会位移的bug</li>
+<li>解决列表样式行间距过宽的bug</li>
+<li>制作列表收缩功能</li>
+<li>制作帖子内添加帖子链接的功能</li>
+<li>制作按tag搜索功能</li>
+<li>制作</li>
+</ol>
+<h4 id="v042">V0.4.2</h4>
+<p class="p-followed-by-list">2025/11/5</p>
+<ol>
+<li>调整正文字体以提升可读性。</li>
+<li>完成中文版页面的初步翻译。</li>
+<li>优化移动端的显示与排版。</li>
+</ol>
+<h4 id="v041">V0.4.1</h4>
+<p>2025/11/4<br>
+搭建中文模式的页面框架。</p>
+<hr>
+<h3 id="v03x-订阅和评论区">V0.3.X 订阅和评论区</h3>
+<p class="p-followed-by-list"><strong>2025/10/27~2025/11/3</strong></p>
+<ul>
+<li>使用 <a href="https://buttondown.com"><strong>buttondown</strong></a> 创建订阅功能。</li>
+<li>使用<a href="https://utteranc.es/"><strong>utteranc.es</strong></a> 添加评论区功能。</li>
+</ul>
+<h4 id="v033">V0.3.3</h4>
+<p class="p-followed-by-list">2025/10/29~2025/11/3</p>
+<ol>
+<li>优化订阅按钮在移动设备上的显示，并完成相关测试。</li>
+<li>使用<a href="https://utteranc.es/"><strong>utteranc.es</strong></a> 添加评论区功能。</li>
+</ol>
+<h4 id="v032">V0.3.2</h4>
+<p>2025/10/28<br>
+在文章页面使用更小的缩略图以加快加载速度。</p>
+<h4 id="v031">V0.3.1</h4>
+<p>2025/10/27<br>
+基于 <a href="https://buttondown.com"><strong>buttondown</strong></a> 创建订阅功能。</p>
+<hr>
+<h3 id="v02x-个性化功能更新">V0.2.X 个性化功能更新</h3>
+<p class="p-followed-by-list"><strong>2025/10/22~2025/10/26</strong></p>
+<ul>
+<li>制作模块化的灯箱、角标功能</li>
+<li>新增联系界面</li>
+<li>暗色模式和简易搜索功能</li>
+<li>新建联系页面</li>
+</ul>
+<h4 id="v025">V0.2.5</h4>
+<p class="p-followed-by-list">2025/10/26</p>
+<ol>
+<li>支持在列表中调整图片显示位置。</li>
+<li>精简网站静态资源。</li>
+</ol>
+<h4 id="v024">V0.2.4</h4>
+<p class="p-followed-by-list">2025/10/25</p>
+<ol>
+<li>实现文章置顶与角标功能。</li>
+<li>创建新增博客与作品集文章的简化流程。</li>
+<li>添加文本居中与适配暗色模式的 Markdown 高亮效果。</li>
+</ol>
+<h4 id="v023">V0.2.3</h4>
+<p class="p-followed-by-list">2025/10/24</p>
+<ol>
+<li>添加暗色模式与搜索功能。</li>
+<li>将精选作品集内容迁移至主页。</li>
+<li>将原主页内容移至“关于”页面。</li>
+<li>初始化博客与作品集功能，使编辑器能自动识别新 Markdown 文件并生成页面。</li>
+<li>新增“联系”页面。</li>
+</ol>
+<h4 id="v022">V0.2.2</h4>
+<p class="p-followed-by-list">2025/10/23</p>
+<ol>
+<li>优化灯箱并封装为可复用组件。</li>
+<li>改进移动端布局并添加汉堡菜单。</li>
+</ol>
+<h4 id="v021">V0.2.1</h4>
+<p class="p-followed-by-list">2025/10/22</p>
+<ol>
+<li>实现图片放大灯箱功能。</li>
+<li>修复直接引用图片在 GitHub 上无法正确显示的问题。</li>
+</ol>
+<hr>
+<h3 id="v01x-基础页面搭建">V0.1.X 基础页面搭建</h3>
+<p class="p-followed-by-list"><strong>2025/10/19~2025/10/21</strong></p>
+<ul>
+<li>项目的开始。</li>
+</ul>
+<h4 id="v013">V0.1.3</h4>
+<p class="p-followed-by-list">2025/10/21</p>
+<ol>
+<li>创建精选作品集页面。</li>
+<li>在底部栏添加联系信息。</li>
+<li>优化页面整体布局与视觉层级。</li>
+</ol>
+<h4 id="v012">V0.1.2</h4>
+<p>2025/10/20<br>
+创建主页. 博客. 作品集与关于页面的基础界面。</p>
+<h4 id="v011">V0.1.1</h4>
+<p class="p-followed-by-list">2025/10/19</p>
+<ol>
+<li>创建网站项目。</li>
+<li>完成初版主页。</li>
+<li>搭建 Header 与 Footer。</li>
+</ol> </article> </main> <footer data-astro-cid-sz7xmlte>
+&copy; 2025 Elko-Utopia. All rights reserved.
+<!-- 订阅表单已移到博客与作品页面右上角的浮动组件 --> <div class="social-links" data-astro-cid-sz7xmlte> <!-- Email --> <a href="mailto:elkoutopia@gmail.com" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Email</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" data-astro-cid-sz7xmlte> <path fill="currentColor" d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v.217l-8 4.8-8-4.8V4zm0 1.383v6.617a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V5.383l-7.555 4.533a1 1 0 0 1-1.11 0L0 5.383z" data-astro-cid-sz7xmlte></path> </svg> </a> <!-- Instagram --> <a href="https://www.instagram.com/elkoutopia/" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Instagram</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" data-astro-cid-sz7xmlte> <path fill="currentColor" d="M5 1h6a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4H5a4 4 0 0 1-4-4V5a4 4 0 0 1 4-4zm0 1.5A2.5 2.5 0 0 0 2.5 5v6A2.5 2.5 0 0 0 5 13.5h6A2.5 2.5 0 0 0 13.5 11V5A2.5 2.5 0 0 0 11 2.5H5zm3 2a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7zm0 1.5A2 2 0 1 0 10 9a2 2 0 0 0-2-2zm3.25-1.25a.75.75 0 1 1 0 1.5.75.75 0 0 1 0-1.5z" data-astro-cid-sz7xmlte></path> </svg> </a> <!-- GitHub --> <a href="https://github.com/Elko-Utopia" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>GitHub</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" data-astro-cid-sz7xmlte> <path fill="currentColor" d="M8 .5A7.5 7.5 0 0 0 5.4 15.1c.4.07.55-.18.55-.4 0-.2-.01-.73-.01-1.43-2.25.49-2.73-1.09-2.73-1.09-.36-.93-.89-1.18-.89-1.18-.73-.5.06-.49.06-.49.81.06 1.24.83 1.24.83.72 1.22 1.89.87 2.36.66.07-.52.28-.87.51-1.07-1.79-.21-3.66-.9-3.66-4.01 0-.89.32-1.62.84-2.19-.08-.21-.36-1.07.08-2.24 0 0 .67-.22 2.2.86a7.7 7.7 0 0 1 4 0c1.53-1.08 2.2-.86 2.2-.86.44 1.17.16 2.03.08 2.24.52.57.84 1.3.84 2.19 0 3.12-1.88 3.8-3.67 4.01.29.25.55.74.55 1.5 0 1.08-.01 1.95-.01 2.22 0 .22.15.48.55.4A7.5 7.5 0 0 0 8 .5Z" data-astro-cid-sz7xmlte></path> </svg> </a> </div> </footer>   </body> </html>

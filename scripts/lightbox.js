@@ -136,7 +136,10 @@ function ensureOverlay() {
       .lb-image.lb-fadein{opacity:1;}
       
       /* 自动注入的响应式图片样式 */
-      .md-content.pswp-featured img {
+    /* Avoid matching images used by injected inline portfolio cards (.hero-img)
+      so the lightbox's runtime CSS does not change their layout when the
+      lightbox assets are present on the page. Targets only non-hero images. */
+    .md-content.pswp-featured img:not(.hero-img) {
         margin-left: auto;
         margin-right: auto;
         display: block;
@@ -149,7 +152,7 @@ function ensureOverlay() {
       }
       
       /* 横版图片样式 */
-      .md-content.pswp-featured img.landscape {
+  .md-content.pswp-featured img:not(.hero-img).landscape {
         max-width: 100%;
         width: 100%;
         height: auto;
@@ -157,37 +160,37 @@ function ensureOverlay() {
       }
       
       /* 竖版图片样式 */
-      .md-content.pswp-featured img.portrait {
+  .md-content.pswp-featured img:not(.hero-img).portrait {
         max-height: 70vh;
         width: auto;
         max-width: 80%;
       }
       
       /* 正方形图片样式 */
-      .md-content.pswp-featured img.square {
+  .md-content.pswp-featured img:not(.hero-img).square {
         max-width: 60%;
         width: 60%;
         height: auto;
       }
       
       @media (max-width: 720px) {
-        .md-content.pswp-featured img.portrait {
+  .md-content.pswp-featured img:not(.hero-img).portrait {
           max-height: 60vh;
           max-width: 90%;
         }
-        .md-content.pswp-featured img.square {
+  .md-content.pswp-featured img:not(.hero-img).square {
           max-width: 80%;
         }
       }
       
       /* 图片加载状态样式 */
-      .md-content.pswp-featured img[style*="cursor: wait"] {
+  .md-content.pswp-featured img:not(.hero-img)[style*="cursor: wait"] {
         opacity: 0.7;
         filter: grayscale(20%);
         position: relative;
       }
       
-      .md-content.pswp-featured img[style*="cursor: wait"]::before {
+  .md-content.pswp-featured img:not(.hero-img)[style*="cursor: wait"]::before {
         content: '⏳';
         position: absolute;
         top: 50%;
@@ -199,12 +202,12 @@ function ensureOverlay() {
         text-shadow: 0 0 4px rgba(255,255,255,0.8);
       }
       
-      .md-content.pswp-featured img[style*="cursor: not-allowed"] {
+  .md-content.pswp-featured img:not(.hero-img)[style*="cursor: not-allowed"] {
         opacity: 0.5;
         filter: grayscale(100%);
       }
       
-      .md-content.pswp-featured img[style*="cursor: not-allowed"]::before {
+  .md-content.pswp-featured img:not(.hero-img)[style*="cursor: not-allowed"]::before {
         content: '❌';
         position: absolute;
         top: 50%;
@@ -233,6 +236,8 @@ function ensureOverlay() {
 
   stageEl.appendChild(imageEl);
   overlayEl.appendChild(stageEl);
+
+  // Debug UI removed for production - console.debug logs remain for diagnostics.
 
   // loading控制方法
   overlayEl._spinner = spinner;
@@ -269,10 +274,49 @@ function bindImages(selector) {
 
 function bindImage(node) {
   if (!(node instanceof HTMLImageElement)) return;
-  if (boundImages.has(node)) return;
+  // Do not bind images that are inside inline portfolio cards (injected wiki-link cards)
+  // — these images are UI/teaser images and should not open in the site-wide lightbox.
+  if (node.closest && node.closest('.inline-portfolio-card')) return;
 
-  boundImages.add(node);
-  node.addEventListener('click', onImageClick);
+  // Debug: report candidate binding info
+  try {
+    console.debug('[lightbox.debug] bindImage candidate', {
+      src: node.src,
+      currentSrc: node.currentSrc,
+      complete: node.complete,
+      naturalWidth: node.naturalWidth,
+      naturalHeight: node.naturalHeight,
+      inInlineCard: !!(node.closest && node.closest('.inline-portfolio-card'))
+    });
+  } catch (e) { /* ignore */ }
+    // If the image hasn't finished loading or has zero layout size, defer binding
+    // and attach a one-time load/error handler to attempt binding later. This
+    // avoids binding images that are not rendered yet (which can cause
+    // race conditions or visual issues with the lightbox overlay).
+    try {
+      const hasLayout = node.offsetWidth > 0 && node.offsetHeight > 0;
+      if (!node.complete || !hasLayout) {
+        console.debug('[lightbox.debug] bindImage deferred (not ready)', { src: node.src, complete: node.complete, offsetWidth: node.offsetWidth, offsetHeight: node.offsetHeight });
+        const onReady = function onReady() {
+          try { node.removeEventListener('load', onReady); node.removeEventListener('error', onErr); } catch(e){}
+          // Re-run bindImage when the image is ready
+          try { bindImage(node); } catch(e) { console.warn('[lightbox.debug] bindImage rebind failed', e); }
+        };
+        const onErr = function onErr() {
+          try { node.removeEventListener('load', onReady); node.removeEventListener('error', onErr); } catch(e){}
+          console.debug('[lightbox.debug] bindImage deferred image error', { src: node.src });
+        };
+        node.addEventListener('load', onReady, { once: true });
+        node.addEventListener('error', onErr, { once: true });
+        return;
+      }
+    } catch (e) { /* ignore layout detection errors */ }
+
+    if (boundImages.has(node)) return;
+
+    boundImages.add(node);
+    node.addEventListener('click', onImageClick);
+  try { console.debug('[lightbox.debug] bindImage bound listener', { src: node.src, currentSrc: node.currentSrc }); } catch(e){}
   
   // 检查图片加载状态并设置适当的光标
   updateImageCursor(node);
@@ -507,6 +551,11 @@ function primeWithPreview(triggerImage) {
   const naturalW = triggerImage.naturalWidth || triggerImage.width || rect.width;
   const naturalH = triggerImage.naturalHeight || triggerImage.height || rect.height;
   
+  // Debug: report computed preview src and dimensions
+  try {
+    console.debug('[lightbox.debug] primeWithPreview start', { previewSrc, naturalW, naturalH, complete: triggerImage.complete });
+  } catch (e) { /* ignore */ }
+
   monitor.log('onImageLoadStart', previewSrc, {
     naturalW, 
     naturalH, 
@@ -548,6 +597,7 @@ function primeWithPreview(triggerImage) {
   imageEl.style.width = `${state.naturalWidth}px`;
   imageEl.style.height = `${state.naturalHeight}px`;
   configureStageDimensions(false);
+  try { console.debug('[lightbox.debug] primeWithPreview set imageEl.src', { imageElSrc: imageEl.src, imageElComplete: imageEl.complete, imageElNaturalW: imageEl.naturalWidth, imageElNaturalH: imageEl.naturalHeight }); } catch(e){}
   
   const endTime = performance.now();
   monitor.log('onImageLoadComplete', previewSrc, {
@@ -571,6 +621,8 @@ function onImageClick(event) {
   // ...
   if (event.button && event.button !== 0) return;
   event.preventDefault();
+
+  try { console.debug('[lightbox.debug] onImageClick', { button: event.button, target: event.currentTarget && event.currentTarget.src }); } catch(e){}
 
   const target = event.currentTarget;
   if (!(target instanceof HTMLImageElement)) return;
@@ -675,8 +727,14 @@ async function openLightbox(triggerImage) {
   const beforePrime = performance.now();  
   // 获取预览图src用于后续检查
   const previewSrc = triggerImage.currentSrc || triggerImage.src;
-  
+  try { console.debug('[lightbox.debug] openLightbox previewSrc', { previewSrc, triggerSrc: triggerImage.src, triggerCurrentSrc: triggerImage.currentSrc, triggerComplete: triggerImage.complete, triggerNaturalW: triggerImage.naturalWidth, triggerNaturalH: triggerImage.naturalHeight }); } catch(e){}
+
+  // Update overlay debug panel if present
+  try { if (overlayEl && overlayEl._debug) overlayEl._debug.textContent = 'opening... previewSrc: ' + String(previewSrc); } catch(e){}
+
   const primeSuccess = primeWithPreview(triggerImage);
+  try { console.debug('[lightbox.debug] openLightbox primeSuccess', { primeSuccess, imageElSrc: imageEl && imageEl.src, imageElComplete: imageEl && imageEl.complete }); } catch(e){}
+  try { if (overlayEl && overlayEl._debug) overlayEl._debug.textContent += '\nprimeSuccess: ' + String(!!primeSuccess) + '\nimageEl.src: ' + (imageEl && imageEl.src || '(none)'); } catch(e){}
   const afterPrime = performance.now();  
   // NOTE: previous approach attempted to deterministically map a thumbnail
   // pixel into image-space and preserve that anchor when swapping the
@@ -697,6 +755,8 @@ async function openLightbox(triggerImage) {
       overlayEl._spinner.style.display = 'none';
     }
     
+  try { console.debug('[lightbox.debug] handleImageLoad called', { imageElSrc: imageEl.src, naturalWidth: imageEl.naturalWidth, naturalHeight: imageEl.naturalHeight }); } catch(e){}
+  try { if (overlayEl && overlayEl._debug) overlayEl._debug.textContent += '\nimage loaded: ' + (imageEl.src || '') + '\n' + imageEl.naturalWidth + 'x' + imageEl.naturalHeight; } catch(e){}
     imageEl.style.visibility = 'visible';
     
     if (originalImageCached) {
@@ -719,6 +779,8 @@ async function openLightbox(triggerImage) {
       overlayEl._spinner.style.display = 'none';
     }
     // 即使失败也显示，避免一直loading
+  try { console.debug('[lightbox.debug] handleImageError called', { imageElSrc: imageEl.src }); } catch(e){}
+  try { if (overlayEl && overlayEl._debug) overlayEl._debug.textContent += '\nimage error: ' + (imageEl.src || '(none)'); } catch(e){}
     imageEl.style.visibility = 'visible';
     imageEl.classList.add('lb-fadein');
   };

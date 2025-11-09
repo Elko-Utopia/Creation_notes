@@ -32,8 +32,12 @@ function wrapImagesForLightbox(root) {
   const imgs = root.querySelectorAll('img');
   imgs.forEach((img) => {
     if (!(img instanceof HTMLImageElement)) return;
-    const parentIsLink = img.parentElement?.tagName.toLowerCase() === 'a';
-    if (parentIsLink) return;
+    // If the image already lives inside a link (any ancestor) or inside
+    // an inline portfolio card, do not wrap it. Creating a new <a> inside an
+    // existing <a> leads to invalid nested anchors and unpredictable DOM
+    // mutations (browsers will re-parent nodes), which can remove the
+    // expected `.hero-img` placement. Skip in those cases.
+    if (img.closest('a') || img.closest('.inline-portfolio-card')) return;
 
     const link = document.createElement('a');
     const src = (img.currentSrc || img.src);
