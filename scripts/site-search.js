@@ -4,7 +4,72 @@
 (function () {
   let index = null;
   let selectedTag = null;
-  let searchMode = 'keyword'; // 'keyword' or 'tag'
+  let allTagsList = [];
+  // 固定为关键词模式（移除 Keyword/Tag 切换）
+  const searchMode = 'keyword';
+  let tagColors = {}; // 从 /tag-colors.json 加载的映射
+  let repMap = {}; // normalized -> display label
+
+  // 运行时基准 URL 解析：统一使用一个函数，确保对 /zh/ 或自定义 base 的支持
+  function getRuntimeBase() {
+    try {
+      // Prefer an injected absolute base if present
+      if (typeof window !== 'undefined' && window.__ASTRO_BASE_URL__) {
+        let b = String(window.__ASTRO_BASE_URL__);
+        if (/^\//.test(b)) {
+          // path-only, convert to absolute using current origin
+          try { b = location.origin.replace(/\/$/, '') + b; } catch (e) {}
+        }
+        return b.endsWith('/') ? b : b + '/';
+      }
+      // If only a path-only base was injected, synthesize absolute base from origin
+      if (typeof window !== 'undefined' && window.__ASTRO_BASE_PATH__) {
+        let p = String(window.__ASTRO_BASE_PATH__);
+        try { p = p.startsWith('/') ? p : '/' + p; } catch (e) {}
+        try { return (location.origin.replace(/\/$/, '') + p).endsWith('/') ? (location.origin.replace(/\/$/, '') + p) : (location.origin.replace(/\/$/, '') + p + '/'); } catch (e) { return p.endsWith('/') ? p : p + '/'; }
+      }
+    } catch (e) {}
+    try {
+      const b = document.querySelector('base');
+      if (b && b.href) return b.href.endsWith('/') ? b.href : b.href + '/';
+    } catch (e) {}
+    try { return location.origin + '/'; } catch (e) { return '/'; }
+  }
+
+  // Resolve an asset path (from index JSON) into an absolute URL that works
+  // across dev server and GH Pages subpath deployments.
+  function resolveAssetUrl(p) {
+    if (!p) return null;
+    const s = String(p).trim();
+    // Already absolute URL
+    if (/^https?:\/\//i.test(s) || /^\/\//.test(s)) return s;
+    try {
+      // If path starts with '/', treat it as site-root-relative. If a base path
+      // was injected (window.__ASTRO_BASE_PATH__), prepend it so '/assets/..'
+      // resolves to '/<base>/assets/...'
+      if (s.startsWith('/')) {
+        try {
+          if (typeof window !== 'undefined' && window.__ASTRO_BASE_PATH__) {
+            const bp = String(window.__ASTRO_BASE_PATH__);
+            const base = (location.origin.replace(/\/$/, '') + (bp.startsWith('/') ? bp : '/' + bp)).replace(/\/$/, '') + '/';
+            return new URL(s.replace(/^\//, ''), base).toString();
+          }
+        } catch (e) {
+          // fallback to document base
+        }
+        return new URL(s, location.origin).toString();
+      }
+
+      // Strip leading ../ segments (common in generated index) so assets like
+      // '../../assets/...' become 'assets/...', which we then resolve against
+      // the runtime base (which already includes the site subpath if present).
+      const cleaned = s.replace(/^(?:\.\.\/)+/, '');
+      const base = getRuntimeBase();
+      try { return new URL(cleaned, base).toString(); } catch (e) { return new URL(cleaned, location.origin + '/').toString(); }
+    } catch (e) {
+      return String(p);
+    }
+  }
 
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"})[ch]);
@@ -13,12 +78,68 @@
   async function loadIndex() {
     if (index) return index;
     try {
-      // 使用 document.baseURI 或页面 <base href> 来决定请求基准，避免在 public 静态脚本中依赖构建时的 import.meta
-      const baseForFetch = (typeof document !== 'undefined' && document.baseURI) ? document.baseURI : '/';
-      console.debug('[site-search] loadIndex using base:', baseForFetch);
-      const res = await fetch(new URL('search-index.json', baseForFetch));
-      if (!res.ok) throw new Error('failed to fetch index');
-      index = await res.json();
+      // Try multiple candidate URLs to be robust on dev server, GH Pages subpath,
+      // and when <base> or injected globals vary across environments.
+      const runtimeBase = getRuntimeBase();
+      console.debug('[site-search] loadIndex resolving base ->', runtimeBase);
+
+      // Build candidates in order of preference
+      const candidates = [];
+      try { candidates.push(new URL('search-index.json', runtimeBase).toString()); } catch(e) {}
+      try { candidates.push(new URL('search-index.json', document.baseURI).toString()); } catch(e) {}
+      try { candidates.push(new URL('search-index.json', location.origin + '/').toString()); } catch(e) {}
+      // If path-only base present, try combining with origin
+      try {
+        if (typeof window !== 'undefined' && window.__ASTRO_BASE_PATH__) {
+          const p = String(window.__ASTRO_BASE_PATH__);
+          const maybe = (location.origin.replace(/\/$/, '') + (p.startsWith('/') ? p : '/' + p)).replace(/\/+$|(?<=.)$/, '/') ;
+          candidates.push(new URL('search-index.json', maybe).toString());
+        }
+      } catch (e) {}
+      // also try a relative fetch from current document location
+      try { candidates.push(new URL('./search-index.json', location.href).toString()); } catch(e) {}
+
+      // de-duplicate while preserving order
+      const seen = new Set();
+      const uniq = candidates.filter(u => {
+        if (!u) return false;
+        if (seen.has(u)) return false;
+        seen.add(u);
+        return true;
+      });
+
+      async function tryFetchCandidates(list) {
+        for (let i = 0; i < list.length; i++) {
+          const url = list[i];
+          try {
+            console.debug('[site-search] trying index url ->', url);
+            const r = await fetch(url);
+            if (r && r.ok) {
+              console.debug('[site-search] fetched index from ->', url);
+              return await r.json();
+            } else {
+              console.debug('[site-search] index fetch failed', url, r && r.status);
+            }
+          } catch (e) {
+            console.debug('[site-search] index fetch error', url, e && e.message);
+          }
+        }
+        throw new Error('all index fetch attempts failed');
+      }
+
+      index = await tryFetchCandidates(uniq);
+      // 运行时防护：若索引里仍存在带有 system 标签的条目，则在客户端过滤掉这些条目。
+      try {
+        const before = Array.isArray(index) ? index.length : 0;
+        index = (Array.isArray(index) ? index : []).filter(it => {
+          if (!it || !Array.isArray(it.tags)) return true;
+          return !it.tags.some(tag => String(tag || '').trim().toLowerCase() === 'system');
+        });
+        const after = index.length;
+        if (before !== after) console.debug('[site-search] filtered out system-tag items from index', { before, after });
+      } catch (e) {
+        console.debug('[site-search] failed to filter system tags at runtime', e);
+      }
       return index;
     } catch (e) {
       console.error('Failed to load search index', e);
@@ -27,14 +148,95 @@
     }
   }
 
+  async function loadTagColors() {
+    if (tagColors && Object.keys(tagColors).length) return tagColors;
+    try {
+      const runtimeBase = getRuntimeBase();
+      console.debug('[site-search] loadTagColors resolving base ->', runtimeBase);
+
+      const candidates = [];
+      try { candidates.push(new URL('tag-colors.json', runtimeBase).toString()); } catch(e) {}
+      try { candidates.push(new URL('tag-colors.json', document.baseURI).toString()); } catch(e) {}
+      try { candidates.push(new URL('tag-colors.json', location.origin + '/').toString()); } catch(e) {}
+      try { candidates.push(new URL('./tag-colors.json', location.href).toString()); } catch(e) {}
+      const seen = new Set();
+      const uniq = candidates.filter(u => { if (!u) return false; if (seen.has(u)) return false; seen.add(u); return true; });
+
+      async function tryFetchCandidates(list) {
+        for (let i = 0; i < list.length; i++) {
+          const url = list[i];
+          try {
+            console.debug('[site-search] trying tag-colors url ->', url);
+            const r = await fetch(url);
+            if (r && r.ok) {
+              console.debug('[site-search] fetched tag-colors from ->', url);
+              return await r.json();
+            } else {
+              console.debug('[site-search] tag-colors fetch failed', url, r && r.status);
+            }
+          } catch (e) {
+            console.debug('[site-search] tag-colors fetch error', url, e && e.message);
+          }
+        }
+        throw new Error('all tag-colors fetch attempts failed');
+      }
+
+      const raw = await tryFetchCandidates(uniq);
+      const normalized = Object.create(null);
+      Object.keys(raw).forEach(k => {
+        const nk = String(k).trim().toLowerCase();
+        normalized[nk] = raw[k];
+      });
+      tagColors = normalized;
+      return tagColors;
+    } catch (e) {
+      console.debug('No tag-colors.json found or failed to load', e);
+      tagColors = {};
+      return tagColors;
+    }
+  }
+
+  function normalizeTag(t) {
+    if (!t) return '';
+    // strip leading punctuation like '-', '·', etc., and trim
+    return String(t).replace(/^[^\w\p{L}]+/u, '').trim().toLowerCase();
+  }
+
+  function contrastColorFor(hex) {
+    try {
+      // normalize hex (#rgb or #rrggbb)
+      let h = String(hex || '').trim();
+      if (h.startsWith('#')) h = h.slice(1);
+      if (h.length === 3) h = h.split('').map(c => c + c).join('');
+      if (h.length !== 6) return '#ffffff';
+      const r = parseInt(h.slice(0,2), 16);
+      const g = parseInt(h.slice(2,4), 16);
+      const b = parseInt(h.slice(4,6), 16);
+      // relative luminance per WCAG
+      const lum = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+      return lum > 0.6 ? '#111827' : '#ffffff';
+    } catch (e) {
+      return '#ffffff';
+    }
+  }
+
   function renderTags(tags, container, filter) {
-    // build counts for each tag
+    // build counts for each normalized tag and remember a representative display label
     container.innerHTML = '';
-    const counts = tags.reduce((acc, t) => {
-      if (!t) return acc;
-      acc[t] = (acc[t] || 0) + 1;
-      return acc;
-    }, Object.create(null));
+    const counts = Object.create(null);
+    const rep = Object.create(null);
+    tags.forEach(t => {
+      if (!t) return;
+      const nk = normalizeTag(t);
+      if (!nk) return;
+      counts[nk] = (counts[nk] || 0) + 1;
+      if (!rep[nk]) {
+        // preserve original casing (without punctuation) for display
+        rep[nk] = String(t).replace(/^[^\w\p{L}]+/u, '').trim();
+      }
+    });
+    // update global repMap for later use when showing active tag
+    repMap = Object.assign({}, repMap, rep);
     // create sorted list by count desc then name
     const uniq = Object.keys(counts).sort((a, b) => {
       const d = counts[b] - counts[a];
@@ -45,15 +247,31 @@
     // optionally filter tag list by substring
     const list = typeof filter === 'string' && filter.trim() ? uniq.filter(u => u.toLowerCase().includes(String(filter).toLowerCase())) : uniq;
 
-    list.forEach(t => {
+    list.forEach(nk => {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'site-search-tag';
-      // include count badge
-      btn.innerHTML = `${escapeHtml(t)} <span class="tag-count">${counts[t]}</span>`;
-      btn.setAttribute('aria-label', `${t} (${counts[t]})`);
+      const color = (tagColors && tagColors[nk]) ? tagColors[nk] : null;
+      if (color) {
+        const fg = contrastColorFor(color);
+        btn.style.background = color;
+        btn.style.color = fg;
+      }
+      // hide system tag entirely
+      if (nk === 'system') return;
+      // 如果已有选中标签并且当前不是选中标签，则使其在 tag cloud 中变灰
+      if (selectedTag && nk !== selectedTag) {
+        btn.style.opacity = '0.45';
+      }
+      const label = rep[nk] || nk;
+      // include count badge as superscript-like element
+      btn.innerHTML = `${escapeHtml(label)} <span class="tag-count">${counts[nk] || 0}</span>`;
+      btn.setAttribute('aria-label', `${label} (${counts[nk] || 0})`);
+      // store normalized tag in data-tag for consistent matching
+      btn.dataset.tag = nk;
       btn.addEventListener('click', () => {
-        selectedTag = t;
+        // 点击相同 tag 则取消选择，否则选择该 tag
+        selectedTag = (selectedTag === nk) ? null : nk;
         const inp = document.getElementById('site-search-input');
         if (inp) inp.value = '';
         doSearch();
@@ -72,26 +290,131 @@
       out.innerHTML = `<p class="site-search-empty">No results${selectedTag ? ` for tag "${escapeHtml(selectedTag)}"` : (q ? ` for "${escapeHtml(q)}"` : '')}.</p>`;
       return;
     }
+  const runtimeBase = getRuntimeBase();
+  const placeholder = new URL('assets/blog-placeholder-2.jpg', runtimeBase).toString();
     out.innerHTML = items.map(it => {
       const title = escapeHtml(it.title || 'Untitled');
-      const desc = escapeHtml(it.description || it.excerpt || '');
+      // 在 keyword 搜索下优先展示命中的段落并高亮关键词；
+      // 如果没有关键词（q 为空）则显示文章简介/描述（正常颜色，不变灰）
+      let descHtml = '';
+      if (q && !selectedTag && Array.isArray(it.paragraphs) && it.paragraphs.length) {
+        const found = it.paragraphs.find(p => String(p).toLowerCase().includes(q));
+        if (found) {
+          // 安全地 escape 后再高亮匹配项
+          const escaped = escapeHtml(found);
+          try {
+            const safeQ = String(q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const re = new RegExp(`(${safeQ})`, 'ig');
+            const highlighted = escaped.replace(re, '<mark class="search-hit">$1</mark>');
+            descHtml = `<span class="search-paragraph">${highlighted}</span>`;
+          } catch (e) {
+            descHtml = `<span class="search-paragraph">${escaped}</span>`;
+          }
+        } else {
+          // 没有命中段落但有关键词：回退到 description/excerpt，同时高亮关键词
+          const base = escapeHtml(it.description || it.excerpt || '');
+          try {
+            const safeQ = String(q).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const re = new RegExp(`(${safeQ})`, 'ig');
+            const highlighted = base.replace(re, '<mark class="search-hit">$1</mark>');
+            descHtml = `<span class="search-paragraph">${highlighted}</span>`;
+          } catch (e) {
+            descHtml = `<span class="search-paragraph">${base}</span>`;
+          }
+        }
+      } else {
+        // 无关键词时，直接显示文章简介，正常颜色
+        descHtml = escapeHtml(it.description || it.excerpt || '');
+      }
       const url = it.url || '#';
-      const tagsHtml = (it.tags || []).map(t => `<button type="button" class="site-search-result-tag" data-tag="${escapeHtml(t)}">${escapeHtml(t)}</button>`).join(' ');
+      // resolve hero image and position
+      let imgUrl = placeholder;
+      let imgFallback = null;
+      try {
+        if (it.heroImage) {
+          const raw = String(it.heroImage).trim();
+          // Produce two candidates: prefer current origin + cleaned path, fallback to runtime base resolution
+          const cleaned = raw.replace(/^(?:\.\.\/)+/, '').replace(/^\//, '');
+          try {
+            // primary: origin-root relative (http://host/assets/...)
+            if (typeof location !== 'undefined' && location.origin) {
+              imgUrl = location.origin.replace(/\/$/, '') + '/' + cleaned;
+            }
+          } catch (e) {
+            imgUrl = placeholder;
+          }
+          try {
+            const rb = getRuntimeBase();
+            imgFallback = new URL(cleaned, rb).toString();
+          } catch (e) {
+            imgFallback = null;
+          }
+          // if primary equals fallback, just use one
+          if (imgFallback && imgUrl === imgFallback) imgFallback = null;
+        }
+      } catch (e) { imgUrl = placeholder; imgFallback = null; }
+      // use heroImagePosition when provided (allow values like 'top', 'bottom', 'center center', '50% 10%', etc.)
+  const heroPosRaw = (it.heroImagePosition || it.heroPosition || '').toString().trim();
+  const heroPos = heroPosRaw ? heroPosRaw : 'center center';
+  const heroWidthRaw = (it.heroImageWidth || it.heroWidth || '').toString().trim();
+  const heroWidth = heroWidthRaw ? heroWidthRaw : '';
+      // format pubDate if available
+      let dateHTML = '';
+      if (it.pubDate) {
+        try {
+          const d = new Date(it.pubDate);
+          if (!isNaN(d)) {
+            const locale = (document.documentElement && document.documentElement.lang) ? document.documentElement.lang : undefined;
+            const opts = { year: 'numeric', month: 'short', day: 'numeric' };
+            dateHTML = `<time class="post-date" datetime="${escapeHtml(String(it.pubDate))}">${escapeHtml(d.toLocaleDateString(locale, opts))}</time>`;
+          }
+        } catch (e) {
+          // ignore formatting errors
+        }
+      }
+      // render tag badges (显示全部标签；若有已选 tag，则将非选中标签显示为灰色)
+      const tagBadges = (it.tags || []).map(t => {
+        const nk = normalizeTag(t);
+        const display = String(t).replace(/^[^\w\p{L}]+/u, '').trim() || nk;
+          const col = (tagColors && tagColors[nk]) ? tagColors[nk] : null;
+          const isSelected = selectedTag && selectedTag === nk;
+          // 若有选中标签且当前不是选中项，则使用灰色样式
+          if (!isSelected && selectedTag) {
+            // dimmed appearance
+            return `<span class="post-tag post-tag--dim" data-tag="${escapeHtml(nk)}" style="background:var(--tag-dim-bg,#e5e7eb);color:var(--tag-dim-color,#6b7280);">${escapeHtml(display)}</span>`;
+          }
+          if (col) {
+            const fg = contrastColorFor(col);
+            return `<span class="post-tag" data-tag="${escapeHtml(nk)}" style="background:${col};color:${fg};">${escapeHtml(display)}</span>`;
+          }
+          return `<span class="post-tag" data-tag="${escapeHtml(nk)}">${escapeHtml(display)}</span>`;
+      }).join(' ');
+
       return `
         <article class="site-search-item">
-          <h3 class="site-search-item-title"><a href="${url}">${title}</a></h3>
-          <div class="site-search-item-meta">${tagsHtml}</div>
-          <p class="site-search-item-desc">${desc}</p>
+          <a class="inline-portfolio-card" href="${url}">
+            <span class="hero-frame" style="background-image:url('${imgUrl}');background-size:cover;background-position:${escapeHtml(heroPos)};${heroWidth ? `--hero-width:${escapeHtml(heroWidth)};` : ''}--hero-position:${escapeHtml(heroPos)};">
+              <img class="hero-img" src="${imgUrl}" onerror="(function(img){try{var f='${imgFallback || ''}'; if(f && img.src!==f){ img.src=f; var hf=img.closest('.hero-frame'); if(hf) hf.style.backgroundImage='url('+f+')'; } }catch(e){} })(this)" alt="" loading="lazy" decoding="async" style="${heroWidth ? `width: var(--hero-width, 100%);` : `width: 100%;`}height: 100%; object-fit: cover; ${heroPos ? `object-position: ${escapeHtml(heroPos)};` : ''}" />
+            </span>
+            <div class="meta">
+              <h5 class="title site-heading">${title}</h5>
+              ${dateHTML ? `<h6 class="date">${dateHTML}</h6>` : ''}
+            </div>
+          </a>
+          <div class="site-search-item-below">
+            <div class="site-search-item-meta">${tagBadges}</div>
+            <p class="site-search-item-desc">${descHtml}</p>
+          </div>
         </article>
       `;
     }).join('\n');
 
-    // attach tag handlers inside results
-    out.querySelectorAll('.site-search-result-tag').forEach(btn => {
+    // attach tag handlers inside results (for badges inside cards)
+    out.querySelectorAll('.post-tag').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const t = e.currentTarget.dataset.tag;
-        selectedTag = t;
-        document.getElementById('site-search-input').value = '';
+        selectedTag = (selectedTag === t) ? null : t;
+        const inp = document.getElementById('site-search-input'); if (inp) inp.value = '';
         doSearch();
       });
     });
@@ -106,7 +429,7 @@
     // filter to current language only
     let matched = all.filter(it => (it.lang || 'en').toLowerCase() === curLang);
     if (selectedTag) {
-      matched = matched.filter(it => Array.isArray(it.tags) && it.tags.map(t => t.toLowerCase()).includes(selectedTag.toLowerCase()));
+      matched = matched.filter(it => Array.isArray(it.tags) && it.tags.some(tag => normalizeTag(tag) === selectedTag));
     }
     // mode-specific filtering
     if (!selectedTag && q) {
@@ -131,20 +454,26 @@
       return 0;
     });
     renderResults(matched.slice(0, 200));
-    // show active tag in UI
+    // show active tag in UI (display under tag cloud)
+    // 不在页面上显示额外的“当前 tag 文本”；只通过 tag cloud 的样式/高亮来表示当前选择
     const tagView = document.getElementById('site-search-active-tag');
-    if (tagView) tagView.textContent = selectedTag ? `Tag: ${selectedTag}` : '';
+    if (tagView) tagView.textContent = '';
+    // 重新渲染 tag cloud 以更新高亮/变灰状态
+    const tagCloudEl = document.getElementById('site-search-tagcloud');
+    if (tagCloudEl) renderTags(allTagsList, tagCloudEl);
   }
 
   document.addEventListener('DOMContentLoaded', async () => {
     await loadIndex();
+    // determine current page language early so tag cloud and counts reflect current language only
+    const curLang = (document.documentElement.lang || (location.pathname.indexOf('/zh/') !== -1 ? 'zh' : 'en')).toLowerCase();
     // read tag or q param from URL (e.g. /search?tag=foo or /search?q=term)
     try {
       const params = new URLSearchParams(location.search);
       const t = params.get('tag');
       const qParam = params.get('q');
       if (t) {
-        selectedTag = t;
+        selectedTag = normalizeTag(t);
         const input = document.getElementById('site-search-input');
         if (input) input.value = '';
       } else if (qParam) {
@@ -172,67 +501,12 @@
     const tagCloud = document.getElementById('site-search-tagcloud');
 
     // hook up mode toggle (segmented buttons reused from preferences styles)
-      const modeToggle = document.querySelector('.search-mode-toggle');
-      // local helper: update segmented indicator for the search toggle
-      function updateSegIndicatorLocal(segmentedContainer) {
-        try {
-          const activeBtn = segmentedContainer.querySelector('.seg-btn.is-active');
-          if (!activeBtn) return;
-          const containerRect = segmentedContainer.getBoundingClientRect();
-          const btnRect = activeBtn.getBoundingClientRect();
-          const offset = btnRect.left - containerRect.left - 4; // match padding used in CSS
-          const width = btnRect.width;
-          segmentedContainer.style.setProperty('--indicator-offset', `${offset}px`);
-          segmentedContainer.style.setProperty('--indicator-width', `${width}px`);
-        } catch (e) { /* noop */ }
-      }
-
-      if (modeToggle) {
-        // initialize active state from default
-        const btns = modeToggle.querySelectorAll('[data-search-mode]');
-        btns.forEach(b => b.classList.remove('is-active'));
-        const initBtn = modeToggle.querySelector('[data-search-mode="keyword"]') || btns[0];
-        if (initBtn) {
-          initBtn.classList.add('is-active');
-          initBtn.setAttribute('aria-pressed', 'true');
-          requestAnimationFrame(() => updateSegIndicatorLocal(modeToggle));
-        }
-
-        modeToggle.querySelectorAll('[data-search-mode]').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            const mode = btn.dataset.searchMode === 'tag' ? 'tag' : 'keyword';
-            searchMode = mode;
-            // update aria pressed and is-active class
-            modeToggle.querySelectorAll('[data-search-mode]').forEach(b => {
-              const active = (b === btn);
-              b.setAttribute('aria-pressed', String(active));
-              b.classList.toggle('is-active', active);
-            });
-            // update indicator position
-            requestAnimationFrame(() => updateSegIndicatorLocal(modeToggle));
-
-            // update placeholder
-            if (input) input.placeholder = (mode === 'tag') ? 'Filter tags...' : 'Search this site...';
-            // when switching to tag mode, show tag cloud filtered by current input
-            if (tagCloud) {
-              const allTags = (await loadIndex()).flatMap(it => Array.isArray(it.tags) ? it.tags : []);
-              renderTags(allTags, tagCloud, (input && input.value) ? input.value : '');
-            }
-          });
-        });
-      }
+      // Removed keyword/tag toggle: search is always keyword-based. No UI interaction required here.
 
     if (form) {
       form.addEventListener('submit', (e) => {
         e.preventDefault();
-        // if in tag mode, treat input as tag filter/selection
-        if (searchMode === 'tag') {
-          const t = input ? input.value.trim() : '';
-          selectedTag = t || null;
-          if (input) input.value = '';
-          doSearch();
-          return;
-        }
+        // keyword-only submit
         selectedTag = null;
         doSearch();
       });
@@ -241,20 +515,15 @@
     if (input) {
       input.addEventListener('input', async () => {
         selectedTag = null;
-        if (searchMode === 'tag') {
-          // filter tag cloud to help user pick tags
-          const all = await loadIndex();
-          const tags = all.flatMap(it => Array.isArray(it.tags) ? it.tags : []);
-          if (tagCloud) renderTags(tags, tagCloud, input.value);
-        } else {
-          doSearch();
-        }
+        // always do keyword search on input
+        doSearch();
       });
     }
 
-    // render global tag cloud from all tags
-    const allTags = (await loadIndex()).flatMap(it => Array.isArray(it.tags) ? it.tags : []);
-    if (tagCloud) renderTags(allTags, tagCloud);
+  // load tag colors and render global tag cloud from posts in current language
+  await loadTagColors();
+  allTagsList = (await loadIndex()).filter(it => (it.lang || 'en').toLowerCase() === curLang).flatMap(it => Array.isArray(it.tags) ? it.tags : []);
+  if (tagCloud) renderTags(allTagsList, tagCloud);
 
     // initial render (all posts)
     doSearch();

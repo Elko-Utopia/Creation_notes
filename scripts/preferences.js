@@ -1,10 +1,44 @@
 ﻿const THEME_KEY = 'theme-preference';
 const root = document.documentElement;
-// Safer base path detection: prefer build-time BASE_URL, then <base href>, then '/'
+// Safer base path detection: prefer build-time BASE_URL (if this script is bundled),
+// then <base href> in the HTML. Do NOT infer base from the current page path segment
+// because that causes redirects like /contact/search when running on /contact/.
 const basePath = (() => {
   try {
+    // Prefer runtime-injected global (set by BaseHead) so scripts loaded from
+    // /<base>/public/... can discover the correct subpath on GH Pages.
+    if (typeof window !== 'undefined' && window.__ASTRO_BASE_URL__) {
+      // If an absolute base was injected (including origin), be careful:
+      // when running locally (localhost) the injected origin may point to
+      // the published GitHub Pages host. In that case prefer a path-only
+      // base so redirects resolve against the current origin.
+      try {
+        const injected = String(window.__ASTRO_BASE_URL__);
+        try {
+          const u = new URL(injected);
+          // If current host differs from injected host (common in local dev),
+          // prefer the injected path-only base if available, otherwise use
+          // the pathname component of the injected URL.
+          if (typeof location !== 'undefined' && location.hostname && u.hostname && location.hostname !== u.hostname) {
+            if (typeof window.__ASTRO_BASE_PATH__ === 'string' && window.__ASTRO_BASE_PATH__) {
+              const p = String(window.__ASTRO_BASE_PATH__);
+              return p.endsWith('/') ? p : `${p}/`;
+            }
+            const p = u.pathname || '/';
+            return p.endsWith('/') ? p : `${p}/`;
+          }
+        } catch (e) {
+          // not a full URL, fall back to using injected as-is
+        }
+        return injected.endsWith('/') ? injected : `${injected}/`;
+      } catch (e) {
+        // fall through to other fallbacks
+      }
+    }
+
     const envBase = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '';
     if (envBase) return envBase.endsWith('/') ? envBase : `${envBase}/`;
+
     // try reading <base href> if available in browser
     if (typeof document !== 'undefined') {
       try {
@@ -17,11 +51,16 @@ const basePath = (() => {
         // ignore
       }
     }
+
+    // default to root when no explicit base is available
     return '/';
   } catch (_) {
     return '/';
   }
 })();
+
+// debug output so we can see what runtime base was detected in various environments
+try { console.debug('[prefs] basePath:', basePath); } catch (e) {}
 
 const runtimeConfig = (() => {
   try {
@@ -312,7 +351,7 @@ function ensureSearchOverlay() {
       </form>
       <p class="pref-search-hint">${i18n.search.hint}</p>
       <div style="margin:0.6rem 0 0.8rem; text-align:center">
-        <button type="button" class="pref-btn pref-browse-tags" aria-label="${i18n.search.browseTags}" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.45rem 0.9rem;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:transparent;cursor:pointer;font-weight:600">
+  <button type="button" class="pref-btn pref-browse-tags" aria-label="${i18n.search.browseTags}" style="display:inline-flex;align-items:center;gap:0.5rem;padding:0.45rem 0.9rem;border-radius:8px;border:1px solid rgba(var(--gray),0.08);background:transparent;cursor:pointer;font-weight:600;color:inherit">
           <span class="sr-only">${i18n.search.browseTags}</span>
           <svg class="icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M21 11l-8-8H3v10l8 8 10-10z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span style="font-weight:600">${i18n.search.browseTags}</span>
@@ -850,12 +889,46 @@ async function onSearchSubmit(event) {
 
   // 跳转到对应语言的 /search 页面并携带查询参数，让该页面负责展示结果
   try {
-    // 使用文件顶部计算的 basePath，能兼容构建期 BASE_URL、<base href> 或运行时注入的全局
-    const base = (typeof basePath !== 'undefined' && basePath) ? basePath : '/';
+    // 使用更保守的 runtime base 决策：如果注入的 __ASTRO_BASE_URL__ 带有与当前页面不同的 origin（例如指向 GitHub Pages），
+    // 则优先使用注入的 path-only base (__ASTRO_BASE_PATH__) 或注入 URL 的 pathname 部分；否则使用注入的绝对 base。
+    let runtimeBase = '/';
+    try {
+      if (typeof window !== 'undefined' && window.__ASTRO_BASE_URL__) {
+        const injected = String(window.__ASTRO_BASE_URL__);
+        try {
+          const u = new URL(injected);
+          if (typeof location !== 'undefined' && location.hostname && u.hostname && location.hostname !== u.hostname) {
+            // running on localhost or a different host: prefer path-only base to keep current origin
+            if (typeof window.__ASTRO_BASE_PATH__ === 'string' && window.__ASTRO_BASE_PATH__) {
+              runtimeBase = String(window.__ASTRO_BASE_PATH__);
+            } else {
+              runtimeBase = u.pathname || '/';
+            }
+          } else {
+            // same host (or no reliable location), keep absolute injected base
+            runtimeBase = injected;
+          }
+        } catch (e) {
+          // not a full URL, treat it as base string
+          runtimeBase = injected;
+        }
+      } else if (typeof window !== 'undefined' && window.__ASTRO_BASE_PATH__) {
+        runtimeBase = (typeof location !== 'undefined' && location.origin) ? (location.origin.replace(/\/$/, '') + String(window.__ASTRO_BASE_PATH__)) : String(window.__ASTRO_BASE_PATH__);
+      } else if (typeof basePath !== 'undefined' && basePath) runtimeBase = basePath;
+    } catch (e) { runtimeBase = (typeof basePath !== 'undefined' && basePath) ? basePath : '/'; }
+    const base = runtimeBase.endsWith('/') ? runtimeBase : runtimeBase + '/';
     const curPath = (location.pathname || '/');
     const curLang = (document.documentElement.lang || (curPath.indexOf('/zh/') !== -1 ? 'zh' : 'en')).toLowerCase();
     const rel = curLang === 'zh' ? 'zh/search' : 'search';
-    let target = (base.endsWith('/') ? base : base + '/') + rel;
+    // Build the target using the runtime base so it works on GH Pages subpaths and local dev.
+    let target;
+    try {
+      target = new URL(rel, base).toString();
+    } catch (e) {
+      // fallback to simple concatenation
+      target = (base.endsWith('/') ? base : base + '/') + rel;
+      try { target = target.replace(/([^:]\/)\/+/g, '$1/'); } catch (err) {}
+    }
     // 添加 q 查询参数
     target += `?q=${encodeURIComponent(query)}`;
     // 规范化重复斜杠
