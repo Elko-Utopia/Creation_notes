@@ -481,12 +481,17 @@ function ensureSearchOverlay() {
     if (browseBtn) {
       browseBtn.addEventListener('click', (e) => {
         e.preventDefault();
-  // 使用 basePath（已规范化）与相对路径构建目标 URL
+        // 使用统一的 resolveWithBase 构造目标路径，避免手动拼接导致的遗漏
         const rel = isZhPage ? 'zh/search' : 'search';
-        let target = (basePath.endsWith('/') ? basePath : basePath + '/') + rel;
-  // 合并多重斜杠但保留协议（如存在）
-        try { target = target.replace(/([^:]\/)?\/+/g, '$1/'); } catch (e) {}
-        window.location.href = target;
+        let target;
+        try {
+          // resolveWithBase 期望以 / 开头的路径
+          target = resolveWithBase('/' + rel) || ('/' + rel);
+        } catch (err) {
+          target = '/' + rel;
+        }
+        try { console.debug('[prefs] browse tags target:', target); } catch (e) {}
+        window.location.assign(target);
       });
     }
   } catch (e) {
@@ -694,39 +699,41 @@ function ensurePrefsOverlay() {
       } catch (e) {}
 
       const curPath = window.location.pathname || '/';
-      const pathWithSlash = curPath.endsWith('/') ? curPath : curPath + '/';
-      
-  // 通过检查路径是否以 /Creation_notes/ 开头来检测 base 路径
-  // 兼容本地（/）与 GitHub Pages（/Creation_notes/）部署场景
-      let basePath = '/';
-      if (pathWithSlash.startsWith('/Creation_notes/')) {
-        basePath = '/Creation_notes/';
+      // 使用文件顶部的全局 basePath（已规范为以 '/' 结尾），避免在多个地方硬编码 '/Creation_notes/'
+      const globalBase = (typeof basePath !== 'undefined' && basePath) ? basePath : '/';
+      // 去掉 base 前缀，得到相对站点根的路径（例如 'blog/post/' 或 'zh/blog/post/'）
+      let pathAfterBase = curPath;
+      if (globalBase !== '/' && curPath.startsWith(globalBase)) {
+        pathAfterBase = curPath.slice(globalBase.length);
+      } else if (pathAfterBase.startsWith('/')) {
+        pathAfterBase = pathAfterBase.slice(1);
       }
-      
+      // 确保以不以 '/' 开头，方便后续拼接
+      pathAfterBase = pathAfterBase.replace(/^\//, '');
+
       if (v === 'zh') {
-  // 切换到中文：在 base 路径后添加 /zh/
-        let target = pathWithSlash;
-  // 获取 base 之后的路径
-        const pathAfterBase = target.substring(basePath.length);
-  // 检查是否已处于 /zh/ 路径下
-        if (!pathAfterBase.startsWith('zh/')) {
-          // 在 base 路径后插入 /zh/
-          target = basePath + 'zh/' + pathAfterBase;
+        // 切换到中文：若相对路径未以 zh/ 开头，则在其前加入 zh/
+        if (!/^zh(\/|$)/.test(pathAfterBase)) {
+          const newRel = '/zh/' + pathAfterBase;
+          const target = resolveWithBase(newRel.replace(/\/+/g, '/')) || (globalBase + 'zh/' + pathAfterBase);
+          window.location.assign(target);
+        } else {
+          // 已经是中文路径，直接跳转到同一路径以保证刷新
+          const target = resolveWithBase('/' + pathAfterBase.replace(/\/+/g, '/')) || ('/' + pathAfterBase);
+          window.location.assign(target);
         }
-        target = target.replace(/\/+/g, '/');
-        window.location.href = target;
       } else {
-  // 切换到英文：从路径（在 base 之后）移除 /zh/
-        let target = pathWithSlash;
-        const pathAfterBase = target.substring(basePath.length);
-        if (pathAfterBase.startsWith('zh/')) {
-          // 移除 /zh/ 前缀
-          const pathWithoutZh = pathAfterBase.substring(3); // 移除 'zh/'
-          target = basePath + pathWithoutZh;
+        // 切换到英文：若相对路径以 zh/ 开头，则去掉该前缀
+        if (/^zh(\/|$)/.test(pathAfterBase)) {
+          const withoutZh = pathAfterBase.replace(/^zh(\/)?/, '');
+          const newRel = '/' + withoutZh;
+          const target = (withoutZh && withoutZh.length) ? (resolveWithBase(newRel.replace(/\/+/g, '/')) || (globalBase + withoutZh)) : (globalBase);
+          window.location.assign(target);
+        } else {
+          // 已经是英文路径，跳转到当前路径以保证刷新
+          const target = resolveWithBase('/' + pathAfterBase.replace(/\/+/g, '/')) || ('/' + pathAfterBase);
+          window.location.assign(target);
         }
-        if (!target || target === basePath.slice(0, -1)) target = basePath;
-        target = target.replace(/\/+/g, '/');
-        window.location.href = target;
       }
     });
   });
