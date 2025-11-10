@@ -2,7 +2,7 @@
   {
     "title": "Why you should try obsidian for note",
     "description": "local Markdown for full data control, bidirectional links to weave a searchable knowledge network, and plugins to support study, research, and world-building.",
-    "pubDate": "2025-10-26",
+    "pubDate": "2025-10-26T00:00:00.000Z",
     "pinned": false,
     "heroImage": "assets/header_picture/obsidian1.png",
     "heroImagePosition": "50% 50%",
@@ -32,7 +32,7 @@
   {
     "title": "为什么你应该尝试Obsidian来做笔记",
     "description": "本地Markdown实现完全的数据控制，双向链接编织可搜索的知识网络，插件支持学习、研究和世界观构建。",
-    "pubDate": "2025-10-26",
+    "pubDate": "2025-10-26T00:00:00.000Z",
     "pinned": false,
     "heroImage": "assets/header_picture/obsidian1.png",
     "heroImagePosition": "50% 50%",
@@ -62,7 +62,7 @@
   {
     "title": "Sketch and Painting in Senior High School",
     "description": "Selected featured portfolio pieces and artwork showcase",
-    "pubDate": "2025-10-24",
+    "pubDate": "2025-10-24T00:00:00.000Z",
     "pinned": false,
     "heroImage": "assets/portfolio/portfolio1/Featured6-sketching.png",
     "heroImagePosition": "50% 20%",
@@ -83,7 +83,7 @@
   {
     "title": "高中时期的素描和绘画",
     "description": "精选作品集和艺术作品展示",
-    "pubDate": "2025-10-24",
+    "pubDate": "2025-10-24T00:00:00.000Z",
     "pinned": false,
     "heroImage": "assets/portfolio/portfolio1/Featured6-sketching.png",
     "heroImagePosition": "50% 20%",
@@ -103,7 +103,7 @@
   {
     "title": "Welcome to My Blog",
     "description": "This is my first blog post about my creative journey",
-    "pubDate": "2025-10-20",
+    "pubDate": "2025-10-20T00:00:00.000Z",
     "pinned": false,
     "heroImage": "assets/blog-placeholder-1.jpg",
     "heroImagePosition": "50% 50%",
@@ -125,7 +125,7 @@
   {
     "title": "欢迎来到我的博客",
     "description": "这是我第一篇关于创作旅程的博客文章",
-    "pubDate": "2025-10-20",
+    "pubDate": "2025-10-20T00:00:00.000Z",
     "pinned": false,
     "heroImage": "assets/blog-placeholder-1.jpg",
     "heroImagePosition": "50% 50%",
@@ -146,7 +146,7 @@
   {
     "title": "Featured Works With Detail",
     "description": "Selected featured portfolio pieces and artwork showcase",
-    "pubDate": "2025-10-20",
+    "pubDate": "2025-10-20T00:00:00.000Z",
     "pinned": true,
     "heroImage": "assets/portfolio/portfolio1/Featured1-character_design.png",
     "heroImagePosition": "70% 16%",
@@ -174,7 +174,7 @@
   {
     "title": "精选作品详情",
     "description": "精选作品集和艺术作品展示",
-    "pubDate": "2025-10-20",
+    "pubDate": "2025-10-20T00:00:00.000Z",
     "pinned": true,
     "heroImage": "assets/portfolio/portfolio1/Featured1-character_design.png",
     "heroImagePosition": "70% 16%",
