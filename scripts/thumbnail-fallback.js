@@ -17,9 +17,13 @@
     }
   }
 
-  async function exists(url) {
+  // Check if a resource exists with a short timeout to avoid long hangs.
+  async function exists(url, timeout = 1200) {
     try {
-      const res = await fetch(url, { method: 'HEAD' });
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeout);
+      const res = await fetch(url, { method: 'HEAD', signal: controller.signal, cache: 'force-cache' });
+      clearTimeout(id);
       return res.ok;
     } catch (e) {
       return false;
@@ -60,16 +64,35 @@
 
   function scan() {
     // target featured images in md content; include generic md-content imgs as fallback
-    const imgs = document.querySelectorAll('.md-content.pswp-featured img, .md-content img');
-    imgs.forEach((img) => {
-      try {
-        const src = img.getAttribute('src') || img.getAttribute('data-src') || '';
-        if (!src) return;
-        if (/\.webp$/.test(src)) return; // already webp
-        // fire-and-forget
-        handleImage(img).catch(() => {});
-      } catch (e) {}
-    });
+    const imgs = Array.from(document.querySelectorAll('.md-content.pswp-featured img, .md-content img'));
+    if (!imgs.length) return;
+
+    // Limit concurrent probes to avoid flooding the network. Process in small concurrency.
+    const MAX_CONCURRENT = 4;
+    (async function processBatch() {
+      let idx = 0;
+      const running = [];
+      function runNext() {
+        if (idx >= imgs.length) return null;
+        const img = imgs[idx++];
+        const p = handleImage(img).catch(() => {}).then(() => {
+          // remove from running when done
+          const i = running.indexOf(p);
+          if (i !== -1) running.splice(i, 1);
+        });
+        running.push(p);
+        return p;
+      }
+
+      // Kick off initial set
+      while (running.length < MAX_CONCURRENT && idx < imgs.length) runNext();
+
+      // As promises finish, start new ones
+      while (running.length) {
+        await Promise.race(running);
+        while (running.length < MAX_CONCURRENT && idx < imgs.length) runNext();
+      }
+    })();
   }
 
   // schedule scanning with small debounce

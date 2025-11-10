@@ -67,31 +67,6 @@ const runtimeConfig = (() => {
   return {};
 })();
 
-// Emergency: ensure CSS variables used as dialog/overlay defaults exist at runtime.
-// This prevents the dialog background from resolving to transparent if the
-// stylesheet that declares the variables hasn't loaded yet.
-(function ensurePrefCssVars() {
-  try {
-    const root = document.documentElement;
-    const cs = getComputedStyle(root);
-    // if --pref-dialog-bg is not defined or empty, set safe defaults on inline style
-      if (!cs.getPropertyValue('--pref-dialog-bg') || !cs.getPropertyValue('--pref-dialog-bg').trim()) {
-        // prefer theme --surface / --box-shadow when available
-        const themeSurface = cs.getPropertyValue('--surface') && cs.getPropertyValue('--surface').trim();
-        const themeBoxShadow = cs.getPropertyValue('--box-shadow') && cs.getPropertyValue('--box-shadow').trim();
-        if (themeSurface) root.style.setProperty('--pref-dialog-bg', themeSurface);
-        else root.style.setProperty('--pref-dialog-bg', 'rgba(255, 255, 255, 0.95)');
-        if (themeBoxShadow) root.style.setProperty('--pref-dialog-shadow', themeBoxShadow);
-        else root.style.setProperty('--pref-dialog-shadow', '0 24px 60px rgba(0, 0, 0, 0.35)');
-        root.style.setProperty('--pref-overlay-bg', 'rgba(12, 12, 15, 0.65)');
-        root.style.setProperty('--pref-overlay-bg-transparent', 'rgba(12, 12, 15, 0)');
-        root.style.setProperty('--pref-overlay-blur', '12px');
-      }
-  } catch (e) {
-    // silent fail: do not block preferences initialization
-  }
-})();
-
 function resolveWithBase(path) {
   if (!path || typeof path !== 'string') return path;
   if (/^https?:\/\//i.test(path)) return path;
@@ -286,7 +261,6 @@ async function initializePreferences() {
   });
 
   // 延迟光箱初始化，确保图片已渲染且lightbox.js已加�?
-  // 延迟光箱初始化，确保图片已渲染
   setTimeout(() => {
     if (!lightboxInitialized && typeof window.initLightboxAuto === 'function') {
       const images = document.querySelectorAll('.md-content.pswp-featured img[data-full]');
@@ -342,25 +316,6 @@ function applyTheme(theme, { persist = true } = {}) {
     } catch (_) {
       // storage might be unavailable
     }
-  }
-
-  // 移除此前 ensurePrefCssVars 可能写入的内联 --pref-* 变量，
-  // 让基于样式表中 html[data-theme] 的变量立即生效（避免内联覆盖导致颜色不变）
-  try {
-    root.style.removeProperty('--pref-dialog-bg');
-    root.style.removeProperty('--pref-dialog-shadow');
-    root.style.removeProperty('--pref-overlay-bg');
-    root.style.removeProperty('--pref-overlay-blur');
-  } catch (e) {
-    // noop
-  }
-
-  // 通知其它模块（例如打开着的 overlay）主题已更改，以便它们做必要的重绘/同步
-  try {
-    const ev = new CustomEvent('prefs:theme-changed', { detail: { theme } });
-    document.dispatchEvent(ev);
-  } catch (e) {
-    try { document.dispatchEvent(new Event('prefs:theme-changed')); } catch (err) {}
   }
 }
 
@@ -486,20 +441,17 @@ function ensurePrefsOverlay() {
   prefsOverlay.className = 'pref-search-overlay pref-prefs-overlay';
   prefsOverlay.innerHTML = `
     <style>
-  .pref-prefs-overlay { position: fixed; inset: 0; display:none; align-items:center; justify-content:center; z-index:2147483647; background: var(--pref-overlay-bg-transparent); backdrop-filter: blur(0px); transition: background-color 0.3s ease, backdrop-filter 0.3s ease; will-change: opacity, backdrop-filter; }
-  .pref-prefs-overlay.is-open { display:flex; background: var(--pref-overlay-bg); backdrop-filter: blur(var(--pref-overlay-blur)); }
-  .pref-prefs-overlay.is-closing { background: var(--pref-overlay-bg-transparent); backdrop-filter: blur(0px); }
-  .pref-prefs-overlay .pref-dialog { width: min(720px, calc(100% - 48px)); background: var(--pref-dialog-bg); color: rgb(var(--black)); border-radius: 12px; box-shadow: var(--pref-dialog-shadow); overflow: hidden; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; opacity: 0; transform: translateY(30px) scale(0.95); transition: opacity 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); will-change: transform, opacity; }
+  .pref-prefs-overlay { position: fixed; inset: 0; display:none; align-items:center; justify-content:center; z-index:2147483647; background: rgba(12, 12, 15, 0); backdrop-filter: blur(0px); transition: background-color 0.3s ease, backdrop-filter 0.3s ease; will-change: opacity, backdrop-filter; }
+  .pref-prefs-overlay.is-open { display:flex; background: rgba(12, 12, 15, 0.65); backdrop-filter: blur(12px); }
+  .pref-prefs-overlay.is-closing { background: rgba(12, 12, 15, 0); backdrop-filter: blur(0px); }
+  .pref-prefs-overlay .pref-dialog { width: min(720px, calc(100% - 48px)); background: var(--surface); color: rgb(var(--black)); border-radius: 12px; box-shadow: var(--box-shadow); overflow: hidden; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; opacity: 0; transform: translateY(30px) scale(0.95); transition: opacity 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); will-change: transform, opacity; }
   .pref-prefs-overlay.is-open .pref-dialog { animation: dialogSlideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
   .pref-prefs-overlay.is-closing .pref-dialog { animation: dialogSlideDown 0.25s ease forwards; }
   @keyframes dialogSlideUp { from { opacity: 0; transform: translateY(30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
   @keyframes dialogSlideDown { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(20px) scale(0.98); } }
-  /* Dark theme handled via global CSS variables (see header.css) */
-    .pref-prefs-overlay .pref-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px 20px; border-bottom: none; }
-  html[data-theme="dark"] .pref-prefs-overlay .pref-header { border-bottom: none; }
-  /* 标题下方的横向分隔线，随主题变色 */
-  .pref-prefs-overlay .pref-divider { height: 1px; width: 100%; background: rgba(0,0,0,0.06); margin: 0; }
-  html[data-theme="dark"] .pref-prefs-overlay .pref-divider { background: rgba(255,255,255,0.04); }
+  html[data-theme="dark"] .pref-prefs-overlay .pref-dialog { background: var(--surface); color: rgb(var(--black)); }
+      .pref-prefs-overlay .pref-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px 20px; border-bottom: 1px solid rgba(0,0,0,0.06); }
+  html[data-theme="dark"] .pref-prefs-overlay .pref-header { border-bottom-color: rgba(255,255,255,0.04); }
   /* 仅针对 h2 偏好设置标题，以便 h4 回退到全局 h4 样式 */
   .pref-prefs-overlay h2.pref-title { margin:0; font-size:1.05rem; font-weight:700; color: rgb(var(--black)); }
       .pref-prefs-overlay .pref-close { background:transparent;border:0;font-size:1.35rem;line-height:1;cursor:pointer;padding:6px;border-radius:6px; color: rgb(var(--black)); }
@@ -544,7 +496,6 @@ function ensurePrefsOverlay() {
           <button type="button" class="pref-close" aria-label="${i18n.preferences.closeLabel}">&times;</button>
         </div>
       </div>
-      <div class="pref-divider" aria-hidden="true"></div>
       <div class="pref-body">
         <div class="pref-grid">
           <div class="pref-card" role="group" aria-label="${i18n.preferences.theme.ariaGroupLabel}">
@@ -737,37 +688,6 @@ function ensurePrefsOverlay() {
   }
 }
 
-// 将 Preferences 的计算样式同步到全局 CSS 变量，保证其它面板使用完全相同的视觉
-function syncPrefsVisuals() {
-  try {
-    if (!prefsOverlay) return;
-    const rootEl = document.documentElement;
-    const prefsDialog = prefsOverlay.querySelector('.pref-dialog');
-    const prefsOverlayEl = prefsOverlay;
-    if (!prefsDialog) return;
-    const dialogCS = getComputedStyle(prefsDialog);
-    const overlayCS = getComputedStyle(prefsOverlayEl);
-
-    // 优先使用 theme surface / box-shadow if available, otherwise use computed values
-    const themeSurface = getComputedStyle(rootEl).getPropertyValue('--surface') || '';
-    const themeBoxShadow = getComputedStyle(rootEl).getPropertyValue('--box-shadow') || '';
-
-    const dialogBg = (themeSurface && themeSurface.trim()) ? themeSurface.trim() : (dialogCS.backgroundColor || dialogCS.getPropertyValue('background-color'));
-    const dialogShadow = (themeBoxShadow && themeBoxShadow.trim()) ? themeBoxShadow.trim() : (dialogCS.boxShadow || dialogCS.getPropertyValue('box-shadow'));
-
-    const overlayBg = overlayCS.backgroundColor || overlayCS.getPropertyValue('background-color') || 'rgba(12,12,15,0.65)';
-    const overlayBlur = overlayCS.backdropFilter || overlayCS.getPropertyValue('backdrop-filter') || 'blur(12px)';
-
-    try { rootEl.style.setProperty('--pref-dialog-bg', dialogBg); } catch (e) {}
-    try { rootEl.style.setProperty('--pref-dialog-shadow', dialogShadow); } catch (e) {}
-    try { rootEl.style.setProperty('--pref-overlay-bg', overlayBg); } catch (e) {}
-    try { rootEl.style.setProperty('--pref-overlay-blur', overlayBlur.replace(/^blur\(?|\)?$/g, '').trim() ? overlayBlur : '12px'); } catch (e) {}
-  } catch (e) {
-    // 不要抛出异常，保持兼容性
-    console.warn('[Prefs Debug] syncPrefsVisuals error', e);
-  }
-}
-
 function openPrefsOverlay() {
   console.log('[Prefs Debug] openPrefsOverlay called');
   ensurePrefsOverlay();
@@ -860,18 +780,6 @@ function openPrefsOverlay() {
       }
     });
   }, 50); // 增加延迟确保动画开始后DOM稳定
-
-  // 在打开偏好面板后，同步其最终计算样式到全局 CSS 变量，
-  // 以确保 Search 和 Subscribe 使用与 Preferences 完全一致的背景/透明度/阴影。
-  try {
-    requestAnimationFrame(() => {
-      try {
-        syncPrefsVisuals();
-      } catch (e) {
-        console.warn('[Prefs Debug] syncPrefsVisuals failed', e);
-      }
-    });
-  } catch (e) {}
   
   document.body.dataset.prefSearchLock = 'true';
   document.body.style.overflow = 'hidden';
@@ -1263,39 +1171,6 @@ document.addEventListener('click', (event) => {
     : subscribeUnsubscribeUrl.manage;
   window.open(targetUrl, '_blank', 'noopener');
   showSubscribeToast('Opened the Buttondown unsubscribe page in a new tab. If your browser blocks it, allow popups for this site.', 'info');
-});
-
-// 当主题改变时：确保清除任何旧的内联 --pref-* 覆盖，
-// 并在已打开的 overlay 上强制一次重绘/同步，保证背景和文字颜色立即一致。
-document.addEventListener('prefs:theme-changed', function (ev) {
-  try {
-    // remove inline fallback vars that block stylesheet variables
-    try { document.documentElement.style.removeProperty('--pref-dialog-bg'); } catch (e) {}
-    try { document.documentElement.style.removeProperty('--pref-dialog-shadow'); } catch (e) {}
-    try { document.documentElement.style.removeProperty('--pref-overlay-bg'); } catch (e) {}
-    try { document.documentElement.style.removeProperty('--pref-overlay-blur'); } catch (e) {}
-
-    // if prefs overlay exists, re-sync its computed visuals back to vars
-    try { if (typeof syncPrefsVisuals === 'function') syncPrefsVisuals(); } catch (e) {}
-
-    // For any overlay that is currently open, force a small reflow so computed styles update
-    try {
-      const overlays = [prefsOverlay, searchOverlay, subscribeOverlay];
-      overlays.forEach((ov) => {
-        if (!ov) return;
-        if (ov.classList && ov.classList.contains && ov.classList.contains('is-open')) {
-          // Force reflow
-          // read layout and then schedule a micro task to allow repaint
-          void ov.offsetHeight;
-          requestAnimationFrame(() => {
-            try { void ov.offsetHeight; } catch (e) {}
-          });
-        }
-      });
-    } catch (e) {}
-  } catch (e) {
-    console.warn('[Prefs Debug] Error in prefs:theme-changed handler', e);
-  }
 });
 
 
