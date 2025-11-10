@@ -118,8 +118,26 @@ const subscribeUnsubscribeUrl = (() => {
 })();
 const subscribeUnsubLink = subscribeUnsubscribeUrl ? `<button type="button" class="pref-subscribe-unsub" data-subscribe-unsub>Manage / Unsubscribe</button>` : '';
 
-// 检测当前页面是否为中文
-const isZhPage = document.documentElement.lang === 'zh' || window.location.pathname.startsWith('/zh/');
+// 检测当前页面是否为中文 — 更稳健地考虑了可能存在的 basePath（例如 /Creation_notes/）
+const isZhPage = (() => {
+  try {
+    const htmlLangIsZh = document.documentElement.lang === 'zh';
+    const pathname = (window.location.pathname || '/');
+    // 若 basePath 是一个带路径的前缀（以 / 结尾），从 pathname 中剥离 basePath 再检测
+    let pathAfterBase = pathname;
+    try {
+      if (typeof basePath === 'string' && basePath !== '/' && pathname.startsWith(basePath)) {
+        pathAfterBase = pathname.substring(basePath.length);
+      }
+    } catch (e) {
+      // 忽略 basePath 处理错误，回退到直接检查 pathname
+      pathAfterBase = pathname;
+    }
+    return htmlLangIsZh || pathAfterBase.startsWith('/zh/') || pathAfterBase.startsWith('zh/');
+  } catch (e) {
+    return document.documentElement.lang === 'zh' || window.location.pathname.startsWith('/zh/');
+  }
+})();
 
 // 双语支持的文本内容
 const i18n = {
