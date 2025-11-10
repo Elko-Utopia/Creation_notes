@@ -241,17 +241,21 @@ document.documentElement.dataset.subscribeEndpoint = "https://buttondown.email/a
 document.documentElement.dataset.subscribeUser = "elkoutopia";</script> <script src="/Creation_notes/scripts/subscribe-form.js" defer></script> <script type="module" src="/Creation_notes/scripts/preferences.js"></script> <script type="module" src="/Creation_notes/scripts/lightbox.js"></script> <script type="module" src="/Creation_notes/scripts/lightbox-monitor.js"></script> <script type="module" src="/Creation_notes/scripts/thumbnail-fallback.js"></script> <script type="module">document.addEventListener("DOMContentLoaded",function(){try{const n=window.LightboxMonitor;n&&typeof n.enableFull=="function"&&n.enableFull()}catch{}});</script> <script type="module">(function(){try{if(typeof window>"u")return;const e=document.getElementById("lang-toggle"),a=document.getElementById("lang-label");if(!e||!a)return;const h=document.documentElement.lang||"",n=window.location.pathname||"/",l=n.endsWith("/")?n:n+"/",i=h==="zh"||/(^|\/)zh(\/|$)/.test(l)||/\/zh\/?$/.test(l);a.textContent=i?"ZH":"EN",e.addEventListener("click",function(){const o=window.location.pathname||"/",c=o.endsWith("/")?o:o+"/";if(document.documentElement.lang==="zh"||/^\/zh(\/|$)/.test(c)){let t=c;/^\/zh\//.test(t)&&(t=t.replace(/^\/zh/,"")),(!t||t==="")&&(t="/"),t=t.replace(/\/+/g,"/"),window.location.href=t}else{let t=c;/^\/zh\//.test(t)||(t=("/zh"+(t.startsWith("/")?"":"/")+t).replace(/\/+/g,"/")),t=t.replace(/\/+/g,"/"),window.location.href=t}})}catch(e){console.warn("语言切换初始化失败",e)}})();</script> <main data-astro-cid-bu6ondtq> <article class="md-content log-only" data-astro-cid-bu6ondtq> <h1 id="️-web-development-log">🛠️ Web Development Log</h1>
 <p>The entries below are grouped by major versions. Click each minor version to expand the details.</p>
 <h3 id="v10x-official-release">V1.0.X Official Release</h3>
-<p><strong>Nov 10, 2025</strong></p>
-<h4 id="v100">V1.0.0</h4>
-<p class="p-followed-by-list">Nov 10, 2025</p>
+<p><strong>Nov 10, 2025</strong><br>
+1, Added 404 page<br>
+2, Created site map</p>
+<h5 id="v100">V1.0.0</h5>
 <ol>
 <li>Added 404 page</li>
 <li>Created site map</li>
 </ol>
 <h3 id="v04x-multilingual-support--enhanced-search">V0.4.X Multilingual Support &#x26; Enhanced Search</h3>
-<p><strong>Nov 4, 2025 – Nov 9, 2025</strong></p>
-<h4 id="v042">V0.4.2</h4>
-<p class="p-followed-by-list">Nov 6, 2025 – Nov 9, 2025</p>
+<p><strong>Nov 4, 2025 – Nov 9, 2025</strong><br>
+1, Built the Chinese interface framework.<br>
+2, Added tag and search features.<br>
+3, Fixed layout issues and rebuilt several reusable components.<br>
+4, Moved the development log to its own dedicated page.</p>
+<h5 id="v042">V0.4.2</h5>
 <ol>
 <li>Implemented tag functionality.</li>
 <li>Moved the development log to a new dedicated page.</li>
@@ -267,59 +271,50 @@ document.documentElement.dataset.subscribeUser = "elkoutopia";</script> <script 
 <li>Implemented search indexing.</li>
 <li>Created a new version of the development log.</li>
 </ol>
-<h4 id="v041">V0.4.1</h4>
-<p class="p-followed-by-list">Nov 5, 2025</p>
+<h5 id="v041">V0.4.1</h5>
 <ol>
 <li>Adjusted body text font for better readability.</li>
 <li>Completed the initial translation for the Chinese interface.</li>
 <li>Optimized mobile layout and display.</li>
 </ol>
-<h4 id="v040">V0.4.0</h4>
-<p>Nov 4, 2025<br>
-Built the framework for the Chinese-language mode.</p>
+<h5 id="v040">V0.4.0</h5>
+<ol>
+<li>Built the framework for the Chinese-language mode.</li>
+<li>fix some bug for V0.3</li>
+</ol>
 <hr>
 <h3 id="v03x-subscription--comment-system">V0.3.X Subscription &#x26; Comment System</h3>
-<p class="p-followed-by-list"><strong>Oct 27, 2025 – Nov 3, 2025</strong></p>
-<ul>
-<li>Added subscription functionality using <strong>buttondown</strong>.</li>
-<li>Added a comment system using <strong>utteranc.es</strong>.</li>
-</ul>
-<h4 id="v032">V0.3.2</h4>
-<p class="p-followed-by-list">Oct 29, 2025 – Nov 3, 2025</p>
+<p><strong>Oct 27, 2025 – Nov 3, 2025</strong><br>
+1, Added subscription functionality using <strong>buttondown</strong>.<br>
+2, Added a comment system using <strong>utteranc.es</strong>.</p>
+<h5 id="v032">V0.3.2</h5>
 <ol>
 <li>Improved the subscription button's mobile display and completed testing.</li>
 <li>Added comment functionality using <strong>utteranc.es</strong>.</li>
 </ol>
-<h4 id="v031">V0.3.1</h4>
-<p>Oct 28, 2025<br>
-Used smaller thumbnails on article pages to reduce loading time.</p>
-<h4 id="v030">V0.3.0</h4>
-<p>Oct 27, 2025<br>
-Created a subscription feature based on <strong>buttondown</strong>.</p>
+<h5 id="v031">V0.3.1</h5>
+<p>Used smaller thumbnails on article pages to reduce loading time.</p>
+<h5 id="v030">V0.3.0</h5>
+<p>Created a subscription feature based on <strong>buttondown</strong>.</p>
 <hr>
 <h3 id="v02x-personalized-feature-updates">V0.2.X Personalized Feature Updates</h3>
-<p class="p-followed-by-list"><strong>Oct 22, 2025 – Oct 26, 2025</strong></p>
-<ul>
-<li>Developed modular lightbox and corner badge features</li>
-<li>Added a contact interface</li>
-<li>Implemented dark mode and a simple search</li>
-<li>Created a separate contact page</li>
-</ul>
-<h4 id="v024">V0.2.4</h4>
-<p class="p-followed-by-list">Oct 26, 2025</p>
+<p><strong>Oct 22, 2025 – Oct 26, 2025</strong><br>
+1, Developed modular lightbox and corner badge features<br>
+2, Added a contact interface<br>
+3, Implemented dark mode and a simple search<br>
+4, Created a separate contact page</p>
+<h5 id="v024">V0.2.4</h5>
 <ol>
 <li>Added support for adjusting image placement in lists.</li>
 <li>Streamlined static resources.</li>
 </ol>
-<h4 id="v023">V0.2.3</h4>
-<p class="p-followed-by-list">Oct 25, 2025</p>
+<h5 id="v023">V0.2.3</h5>
 <ol>
 <li>Added post-pinning and corner badge features.</li>
 <li>Created a simplified process for adding new blog and portfolio posts.</li>
 <li>Added text-centering and dark-mode-compatible Markdown highlighting.</li>
 </ol>
-<h4 id="v022">V0.2.2</h4>
-<p class="p-followed-by-list">Oct 24, 2025</p>
+<h5 id="v022">V0.2.2</h5>
 <ol>
 <li>Added dark mode and search capabilities.</li>
 <li>Moved featured portfolio items to the homepage.</li>
@@ -327,36 +322,32 @@ Created a subscription feature based on <strong>buttondown</strong>.</p>
 <li>Initialized blog and portfolio systems for automatic Markdown detection.</li>
 <li>Added a Contact page.</li>
 </ol>
-<h4 id="v021">V0.2.1</h4>
-<p class="p-followed-by-list">Oct 23, 2025</p>
+<h5 id="v021">V0.2.1</h5>
 <ol>
 <li>Optimized the lightbox and refactored it for reuse.</li>
 <li>Improved mobile layout and added a hamburger menu.</li>
 </ol>
-<h4 id="v020">V0.2.0</h4>
-<p class="p-followed-by-list">Oct 22, 2025</p>
+<h5 id="v020">V0.2.0</h5>
 <ol>
 <li>Implemented the image-zoom lightbox feature.</li>
 <li>Fixed GitHub display issues with directly referenced images.</li>
 </ol>
 <hr>
 <h3 id="v01x-basic-page-setup">V0.1.X Basic Page Setup</h3>
-<p class="p-followed-by-list"><strong>Oct 19, 2025 – Oct 21, 2025</strong></p>
-<ul>
-<li>Beginning of the project.</li>
-</ul>
-<h4 id="v012">V0.1.2</h4>
-<p class="p-followed-by-list">Oct 21, 2025</p>
+<p><strong>Oct 19, 2025 – Oct 21, 2025</strong><br>
+1, Beginning of the project.</p>
+<h5 id="v012">V0.1.2</h5>
 <ol>
 <li>Created the featured portfolio page.</li>
 <li>Added contact information to the footer.</li>
 <li>Improved overall page layout and visual hierarchy.</li>
 </ol>
-<h4 id="v011">V0.1.1</h4>
-<p>Oct 20, 2025<br>
-Created the initial layouts for the Home, Blog, Portfolio, and About pages.</p>
-<h4 id="v010">V0.1.0</h4>
-<p class="p-followed-by-list">Oct 19, 2025</p>
+<h5 id="v011">V0.1.1</h5>
+<ol>
+<li>Created the initial layouts for the Home, Blog, Portfolio, and About pages.</li>
+<li>add personal link</li>
+</ol>
+<h5 id="v010">V0.1.0</h5>
 <ol>
 <li>Created the project.</li>
 <li>Completed the initial homepage.</li>
