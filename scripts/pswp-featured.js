@@ -74,12 +74,18 @@ function setSizeOnLinkedImages(root) {
   });
 }
 
-;(async () => {
-  // close legacy overlay if somehow open
+async function initPhotoSwipeLightbox() {
+  // 关闭旧的灯箱覆盖层
   try { const lb = document.querySelector('.lightbox'); lb?.classList.remove('active'); document.body.style.overflow = ''; } catch {}
 
   await ensurePhotoSwipe();
-  const featuredRoot = document.querySelector('.pswp-featured') || document;
+  
+  const featuredRoot = document.querySelector('.pswp-featured');
+  
+  if (!featuredRoot) {
+    return;
+  }
+  
   wrapImagesForLightbox(featuredRoot);
   setSizeOnLinkedImages(featuredRoot);
 
@@ -95,6 +101,15 @@ function setSizeOnLinkedImages(root) {
     doubleTapAction: 'zoom',
     closeOnVerticalDrag: true,
   });
+  
   lightbox.init();
   window.__PSWP_READY__ = true;
-})();
+}
+
+// 确保 DOM 完全加载后再初始化
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initPhotoSwipeLightbox);
+} else {
+  // DOM 已经加载完成，直接执行
+  initPhotoSwipeLightbox();
+}
