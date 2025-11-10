@@ -1,24 +1,18 @@
 ﻿const THEME_KEY = 'theme-preference';
 const root = document.documentElement;
-// Safer base path detection: prefer build-time BASE_URL (if this script is bundled),
-// then <base href> in the HTML. Do NOT infer base from the current page path segment
-// because that causes redirects like /contact/search when running on /contact/.
+// 更稳健的 base path 检测：优先使用构建时的 BASE_URL（如果脚本已被打包），
+// 其次使用 HTML 中的 <base href>。不要仅从当前页面路径推断 base，因为这会在 /contact/ 下导致跳转到 /contact/search 之类的问题。
 const basePath = (() => {
   try {
-    // Prefer runtime-injected global (set by BaseHead) so scripts loaded from
-    // /<base>/public/... can discover the correct subpath on GH Pages.
+  // 优先使用 BaseHead 注入的运行时全局，这样从 /<base>/public/... 加载的脚本能发现 GH Pages 上的子路径
     if (typeof window !== 'undefined' && window.__ASTRO_BASE_URL__) {
-      // If an absolute base was injected (including origin), be careful:
-      // when running locally (localhost) the injected origin may point to
-      // the published GitHub Pages host. In that case prefer a path-only
-      // base so redirects resolve against the current origin.
+  // 如果注入的是带有 origin 的绝对 base，请小心：在本地运行时（localhost）注入的 origin 可能指向已发布的 GitHub Pages 主机。
+  // 此时应优先使用仅路径的 base，以便跳转使用当前的 origin
       try {
         const injected = String(window.__ASTRO_BASE_URL__);
         try {
           const u = new URL(injected);
-          // If current host differs from injected host (common in local dev),
-          // prefer the injected path-only base if available, otherwise use
-          // the pathname component of the injected URL.
+          // 当当前主机与注入主机不同（本地开发常见）时，优先使用注入的 path-only base（若存在），否则使用注入 URL 的 pathname
           if (typeof location !== 'undefined' && location.hostname && u.hostname && location.hostname !== u.hostname) {
             if (typeof window.__ASTRO_BASE_PATH__ === 'string' && window.__ASTRO_BASE_PATH__) {
               const p = String(window.__ASTRO_BASE_PATH__);
@@ -28,18 +22,18 @@ const basePath = (() => {
             return p.endsWith('/') ? p : `${p}/`;
           }
         } catch (e) {
-          // not a full URL, fall back to using injected as-is
+    // 不是完整 URL，则原样使用注入值
         }
         return injected.endsWith('/') ? injected : `${injected}/`;
       } catch (e) {
-        // fall through to other fallbacks
+  // 回退到其它备选方案
       }
     }
 
     const envBase = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.BASE_URL) || '';
     if (envBase) return envBase.endsWith('/') ? envBase : `${envBase}/`;
 
-    // try reading <base href> if available in browser
+  // 在浏览器中尝试读取 <base href>
     if (typeof document !== 'undefined') {
       try {
         const baseEl = document.querySelector('base');
@@ -48,18 +42,18 @@ const basePath = (() => {
           return href.endsWith('/') ? href : `${href}/`;
         }
       } catch (e) {
-        // ignore
+  // 忽略错误
       }
     }
 
-    // default to root when no explicit base is available
+  // 若没有显式 base，默认使用根目录
     return '/';
   } catch (_) {
     return '/';
   }
 })();
 
-// debug output so we can see what runtime base was detected in various environments
+// 调试输出：查看在不同环境下检测到的 runtime base
 try { console.debug('[prefs] basePath:', basePath); } catch (e) {}
 
 const runtimeConfig = (() => {
@@ -257,7 +251,7 @@ async function initializePreferences() {
   // initialize header language badge (EN / ZH) if present
   try {
     syncLangBadge();
-  } catch (e) { /* noop */ }
+  } catch (e) { /* 空操作 */ }
 
   // subscribe toggle - open a small subscribe dialog (created on demand)
   document.querySelectorAll('[data-subscribe-toggle]').forEach((button) => {
@@ -438,7 +432,7 @@ function ensureSearchOverlay() {
   document.addEventListener('keydown', onGlobalKeydown);
 }
 
-/* Preferences overlay (theme + language) - separate from search */
+/* 偏好设置覆盖层（主题 + 语言） - 与搜索分离 */
 let prefsOverlay = null;
 let prefsKeydownHandler = null;
 function ensurePrefsOverlay() {
@@ -458,7 +452,7 @@ function ensurePrefsOverlay() {
   html[data-theme="dark"] .pref-prefs-overlay .pref-dialog { background: var(--surface); color: rgb(var(--black)); }
       .pref-prefs-overlay .pref-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:18px 20px; border-bottom: 1px solid rgba(0,0,0,0.06); }
   html[data-theme="dark"] .pref-prefs-overlay .pref-header { border-bottom-color: rgba(255,255,255,0.04); }
-  /* Only target h2 pref titles here so h4 will fall back to global h4 styles */
+  /* 仅针对 h2 偏好设置标题，以便 h4 回退到全局 h4 样式 */
   .pref-prefs-overlay h2.pref-title { margin:0; font-size:1.05rem; font-weight:700; color: rgb(var(--black)); }
       .pref-prefs-overlay .pref-close { background:transparent;border:0;font-size:1.35rem;line-height:1;cursor:pointer;padding:6px;border-radius:6px; color: rgb(var(--black)); }
   .pref-prefs-overlay .pref-close:hover { background: rgba(0,0,0,0.04); }
@@ -479,13 +473,13 @@ function ensurePrefsOverlay() {
   .pref-prefs-overlay .pref-btn { display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:8px; border:1px solid rgba(0,0,0,0.06); background:transparent; cursor:pointer; font-weight:600; }
   .pref-prefs-overlay .pref-btn:hover { background: rgba(0,0,0,0.04); }
   html[data-theme="dark"] .pref-prefs-overlay .pref-btn:hover { background: rgba(255,255,255,0.03); }
-  /* Theme segmented control */
+  /* 主题分段控制 */
   .pref-prefs-overlay .segmented { position: relative; display:inline-flex; background: var(--surface); border:1px solid rgba(var(--gray),0.08); border-radius:999px; padding:4px; gap:4px; }
   .pref-prefs-overlay .segmented::before { content: ''; position: absolute; top: 4px; left: 4px; width: var(--indicator-width, 0); height: calc(100% - 8px); background: var(--accent); border-radius: 999px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); transform: translateX(var(--indicator-offset, 0)); transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); will-change: transform, width; z-index: 0; pointer-events: none; }
   .pref-prefs-overlay .segmented .seg-btn { position: relative; z-index: 1; appearance:none; border:0; background:transparent; padding:8px 12px; border-radius:999px; cursor:pointer; font-weight:600; color: rgb(var(--gray-dark)); display:inline-flex; align-items:center; gap:8px; transition: color 0.3s ease; }
   .pref-prefs-overlay .segmented .seg-btn.is-active { background: transparent; color: #fff; box-shadow: none; }
   .pref-prefs-overlay .segmented .seg-btn:focus { outline:2px solid rgba(var(--accent),0.12); outline-offset:2px; }
-  /* hide old switch styles (no-op but kept for compatibility) */
+  /* 隐藏旧的开关样式（空操作但保留以兼容） */
   .pref-prefs-overlay .pref-switch { display:none !important; }
   .pref-prefs-overlay .lang-switch .pref-lang-btn { border:1px solid rgba(0,0,0,0.06); }
   html[data-theme="dark"] .pref-prefs-overlay .lang-switch .pref-lang-btn { border:1px solid rgba(255,255,255,0.04); }
@@ -566,7 +560,7 @@ function ensurePrefsOverlay() {
       const width = btnRect.width;
       segmentedContainer.style.setProperty('--indicator-offset', `${offset}px`);
       segmentedContainer.style.setProperty('--indicator-width', `${width}px`);
-    } catch (e) { /* noop */ }
+  } catch (e) { /* 空操作 */ }
   }
 
   // segmented controls: theme and language (preserve function names for openPrefsOverlay)
@@ -583,7 +577,7 @@ function ensurePrefsOverlay() {
       });
       // Update indicator position after state change
       requestAnimationFrame(() => updateSegIndicator(seg));
-    } catch (e) { /* noop */ }
+  } catch (e) { /* 空操作 */ }
   }
   const themeSegBtns = prefsOverlay.querySelectorAll('.pref-seg-theme [data-theme-option]');
   themeSegBtns.forEach((btn) => {
@@ -621,7 +615,7 @@ function ensurePrefsOverlay() {
       });
       // Update indicator position after state change
       requestAnimationFrame(() => updateSegIndicator(seg));
-    } catch (e) { /* noop */ }
+  } catch (e) { /* 空操作 */ }
   }
   const langSegBtns = prefsOverlay.querySelectorAll('.pref-seg-lang [data-lang]');
   langSegBtns.forEach((btn) => {

@@ -136,9 +136,9 @@ function ensureOverlay() {
       .lb-image.lb-fadein{opacity:1;}
       
       /* 自动注入的响应式图片样式 */
-    /* Avoid matching images used by injected inline portfolio cards (.hero-img)
-      so the lightbox's runtime CSS does not change their layout when the
-      lightbox assets are present on the page. Targets only non-hero images. */
+    /* 避免匹配注入的内联作品集卡片使用的图片（.hero-img）
+      以便当页面上存在灯箱资源时，灯箱的运行时 CSS 不会改变它们的布局。
+      仅针对非 hero 图片。 */
     .md-content.pswp-featured img:not(.hero-img) {
         margin-left: auto;
         margin-right: auto;
@@ -288,7 +288,7 @@ function bindImage(node) {
       naturalHeight: node.naturalHeight,
       inInlineCard: !!(node.closest && node.closest('.inline-portfolio-card'))
     });
-  } catch (e) { /* ignore */ }
+  } catch (e) { /* 忽略 */ }
     // If the image hasn't finished loading or has zero layout size, defer binding
     // and attach a one-time load/error handler to attempt binding later. This
     // avoids binding images that are not rendered yet (which can cause
@@ -310,7 +310,7 @@ function bindImage(node) {
         node.addEventListener('error', onErr, { once: true });
         return;
       }
-    } catch (e) { /* ignore layout detection errors */ }
+  } catch (e) { /* 忽略：布局检测错误 */ }
 
     if (boundImages.has(node)) return;
 
@@ -554,7 +554,7 @@ function primeWithPreview(triggerImage) {
   // Debug: report computed preview src and dimensions
   try {
     console.debug('[lightbox.debug] primeWithPreview start', { previewSrc, naturalW, naturalH, complete: triggerImage.complete });
-  } catch (e) { /* ignore */ }
+  } catch (e) { /* 忽略 */ }
 
   monitor.log('onImageLoadStart', previewSrc, {
     naturalW, 

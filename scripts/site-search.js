@@ -1,5 +1,5 @@
-// Simple client-side site search for /search page
-// Loads /search-index.json and provides keyword + tag filtering
+// 简易客户端搜索，供 /search 页面使用
+// 加载 /search-index.json 并提供关键字与标签过滤功能
 
 (function () {
   let index = null;
@@ -13,16 +13,16 @@
   // 运行时基准 URL 解析：统一使用一个函数，确保对 /zh/ 或自定义 base 的支持
   function getRuntimeBase() {
     try {
-      // Prefer an injected absolute base if present
+  // 优先使用注入的绝对 base（如果存在）
       if (typeof window !== 'undefined' && window.__ASTRO_BASE_URL__) {
         let b = String(window.__ASTRO_BASE_URL__);
         if (/^\//.test(b)) {
-          // path-only, convert to absolute using current origin
+    // 若为 path-only（仅路径），使用当前 origin 合成绝对 URL
           try { b = location.origin.replace(/\/$/, '') + b; } catch (e) {}
         }
         return b.endsWith('/') ? b : b + '/';
       }
-      // If only a path-only base was injected, synthesize absolute base from origin
+  // 如果只注入了 path-only base，则以当前 origin 合成绝对 base
       if (typeof window !== 'undefined' && window.__ASTRO_BASE_PATH__) {
         let p = String(window.__ASTRO_BASE_PATH__);
         try { p = p.startsWith('/') ? p : '/' + p; } catch (e) {}
@@ -36,17 +36,15 @@
     try { return location.origin + '/'; } catch (e) { return '/'; }
   }
 
-  // Resolve an asset path (from index JSON) into an absolute URL that works
-  // across dev server and GH Pages subpath deployments.
+  // 将索引中的资源路径解析为在本地 dev 与 GH Pages 子路径下均可使用的绝对 URL
   function resolveAssetUrl(p) {
     if (!p) return null;
     const s = String(p).trim();
-    // Already absolute URL
+  // 已是绝对 URL，直接返回
     if (/^https?:\/\//i.test(s) || /^\/\//.test(s)) return s;
     try {
-      // If path starts with '/', treat it as site-root-relative. If a base path
-      // was injected (window.__ASTRO_BASE_PATH__), prepend it so '/assets/..'
-      // resolves to '/<base>/assets/...'
+  // 如果以 '/' 开头，则视为站点根相对路径。
+  // 若注入了 window.__ASTRO_BASE_PATH__，把它前置以保证 '/assets/...' 解析为 '/<base>/assets/...'
       if (s.startsWith('/')) {
         try {
           if (typeof window !== 'undefined' && window.__ASTRO_BASE_PATH__) {
@@ -55,14 +53,12 @@
             return new URL(s.replace(/^\//, ''), base).toString();
           }
         } catch (e) {
-          // fallback to document base
+          // 回退到 document.baseURI
         }
         return new URL(s, location.origin).toString();
       }
 
-      // Strip leading ../ segments (common in generated index) so assets like
-      // '../../assets/...' become 'assets/...', which we then resolve against
-      // the runtime base (which already includes the site subpath if present).
+  // 去除开头的 ../ 段（生成索引时常见），例如 '../../assets/...' -> 'assets/...'，然后基于运行时 base 解析
       const cleaned = s.replace(/^(?:\.\.\/)+/, '');
       const base = getRuntimeBase();
       try { return new URL(cleaned, base).toString(); } catch (e) { return new URL(cleaned, location.origin + '/').toString(); }
@@ -78,17 +74,16 @@
   async function loadIndex() {
     if (index) return index;
     try {
-      // Try multiple candidate URLs to be robust on dev server, GH Pages subpath,
-      // and when <base> or injected globals vary across environments.
+  // 在多种环境下尝试多个候选 URL（dev server、GH Pages 子路径、或 <base> / 注入全局值差异）以提高健壮性
       const runtimeBase = getRuntimeBase();
       console.debug('[site-search] loadIndex resolving base ->', runtimeBase);
 
-      // Build candidates in order of preference
+  // 按优先级构建候选 URL 列表
       const candidates = [];
       try { candidates.push(new URL('search-index.json', runtimeBase).toString()); } catch(e) {}
       try { candidates.push(new URL('search-index.json', document.baseURI).toString()); } catch(e) {}
       try { candidates.push(new URL('search-index.json', location.origin + '/').toString()); } catch(e) {}
-      // If path-only base present, try combining with origin
+  // 如果存在 path-only base，则尝试与当前 origin 组合
       try {
         if (typeof window !== 'undefined' && window.__ASTRO_BASE_PATH__) {
           const p = String(window.__ASTRO_BASE_PATH__);
@@ -96,10 +91,10 @@
           candidates.push(new URL('search-index.json', maybe).toString());
         }
       } catch (e) {}
-      // also try a relative fetch from current document location
+  // 还尝试从当前文档位置的相对路径去请求
       try { candidates.push(new URL('./search-index.json', location.href).toString()); } catch(e) {}
 
-      // de-duplicate while preserving order
+  // 去重并保留顺序
       const seen = new Set();
       const uniq = candidates.filter(u => {
         if (!u) return false;
@@ -108,20 +103,20 @@
         return true;
       });
 
-      async function tryFetchCandidates(list) {
+  async function tryFetchCandidates(list) {
         for (let i = 0; i < list.length; i++) {
           const url = list[i];
           try {
-            console.debug('[site-search] trying index url ->', url);
+            console.debug('[site-search] 尝试索引 URL ->', url);
             const r = await fetch(url);
             if (r && r.ok) {
-              console.debug('[site-search] fetched index from ->', url);
+              console.debug('[site-search] 成功从以下 URL 获取索引 ->', url);
               return await r.json();
             } else {
-              console.debug('[site-search] index fetch failed', url, r && r.status);
+              console.debug('[site-search] 索引请求失败', url, r && r.status);
             }
           } catch (e) {
-            console.debug('[site-search] index fetch error', url, e && e.message);
+            console.debug('[site-search] 索引请求异常', url, e && e.message);
           }
         }
         throw new Error('all index fetch attempts failed');
