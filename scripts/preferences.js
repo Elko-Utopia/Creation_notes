@@ -119,7 +119,26 @@ const subscribeUnsubscribeUrl = (() => {
 const subscribeUnsubLink = subscribeUnsubscribeUrl ? `<button type="button" class="pref-subscribe-unsub" data-subscribe-unsub>Manage / Unsubscribe</button>` : '';
 
 // 检测当前页面是否为中文
-const isZhPage = document.documentElement.lang === 'zh' || window.location.pathname.startsWith('/zh/');
+// 在 GitHub Pages 等使用 base path 的部署下，直接检查 pathname 是否以 "/zh/" 开头会失败
+// （例如部署在 `/Creation_notes/zh/...` 时）。为了兼容，先从 location.pathname 中剥离 basePath
+//（如果 basePath 不为根），再判断剩余路径是否以 zh 开头；同时保留对 <html lang> 的检查。
+let isZhPage = false;
+try {
+  const htmlLangIsZh = (typeof document !== 'undefined' && document.documentElement && document.documentElement.lang === 'zh');
+  let pathname = '/';
+  if (typeof location !== 'undefined' && location.pathname) pathname = location.pathname;
+  // basePath 在上方已被规范为以 '/' 结尾的字符串（例如 '/' 或 '/Creation_notes/'）
+  let normalized = pathname;
+  if (basePath && basePath !== '/' && pathname.startsWith(basePath)) {
+    normalized = pathname.slice(basePath.length - 0); // 去掉 base 前缀，保留以 'zh/...' 或 '/' 开头的子路径
+  }
+  // 如果剥离 base 后以 /zh/ 或 zh/ 开头，则为中文页面（也兼容根路径为 /zh/ 的情况）
+  const pathLooksZh = /^\/?zh(\/|$)/.test(normalized);
+  isZhPage = htmlLangIsZh || pathLooksZh;
+} catch (e) {
+  // 容错：若出错，回退到仅基于 html lang 的判断
+  try { isZhPage = (typeof document !== 'undefined' && document.documentElement && document.documentElement.lang === 'zh'); } catch (e2) { isZhPage = false; }
+}
 
 // 双语支持的文本内容
 const i18n = {
