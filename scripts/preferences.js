@@ -801,6 +801,7 @@ function ensurePrefsOverlay() {
       }
       const normBaseForStrip = (basePathname.endsWith('/') ? basePathname : (basePathname + '/'));
       const normCur = (curPath.endsWith('/') ? curPath : (curPath + '/'));
+  try { console.debug('[Prefs Debug] basePath debug: globalBase=', globalBase, 'basePathname=', basePathname, 'normBaseForStrip=', normBaseForStrip, 'normCur=', normCur); } catch(e){}
       // 去掉 base pathname 前缀，得到相对站点根的路径（例如 'blog/post/' 或 'zh/blog/post/'）
       let pathAfterBase = '';
       if (normBaseForStrip !== '/' && normCur.startsWith(normBaseForStrip)) {
@@ -809,6 +810,17 @@ function ensurePrefsOverlay() {
         // 若未以 base 前缀开头，则按普通方式去除首尾斜杠以取得相对路径
         pathAfterBase = curPath.replace(/^\/+|\/+$/g, '');
       }
+      // 防护：若计算结果仍然包含站点 base 名称（例如 'Creation_notes/...'），将其剥离
+      try {
+        const baseName = String(basePathname || '/').replace(/^\/+|\/+$/g, '');
+        if (baseName) {
+          if (pathAfterBase === baseName) {
+            pathAfterBase = '';
+          } else if (pathAfterBase.startsWith(baseName + '/')) {
+            pathAfterBase = pathAfterBase.slice((baseName + '/').length);
+          }
+        }
+      } catch (e) { /* 容错：不改变 pathAfterBase */ }
 
       if (v === 'zh') {
         // 切换到中文：若相对路径未以 zh/ 开头，则在其前加入 zh/
@@ -821,7 +833,6 @@ function ensurePrefsOverlay() {
           try { console.debug('[Prefs Debug] language->zh: resolved=', resolved, 'preNormalizeTarget=', target); } catch(e){}
           try { target = normalizeTarget(target, globalBase); } catch(e){}
           try { console.debug('[Prefs Debug] language->zh: finalTarget(normalized)=', target); } catch(e){}
-          debugger;
           window.location.assign(target);
         } else {
           // 已经是中文路径，直接跳转到同一路径以保证刷新
@@ -845,7 +856,6 @@ function ensurePrefsOverlay() {
           try { console.debug('[Prefs Debug] language->en(remove zh): resolved=', resolved, 'preNormalizeTarget=', target); } catch(e){}
           try { target = normalizeTarget(target, globalBase); } catch(e){}
           try { console.debug('[Prefs Debug] language->en(remove zh): finalTarget(normalized)=', target); } catch(e){}
-          debugger;
           window.location.assign(target);
         } else {
           // 已经是英文路径，跳转到当前路径以保证刷新
@@ -856,7 +866,6 @@ function ensurePrefsOverlay() {
           try { console.debug('[Prefs Debug] language->en(already): resolved=', resolved, 'preNormalizeTarget=', target); } catch(e){}
           try { target = normalizeTarget(target, globalBase); } catch(e){}
           try { console.debug('[Prefs Debug] language->en(already): finalTarget(normalized)=', target); } catch(e){}
-          debugger;
           window.location.assign(target);
         }
       }
