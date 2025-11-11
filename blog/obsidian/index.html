@@ -1,0 +1,308 @@
+<!DOCTYPE html><!--
+  NOTICE TO DEVELOPERS/TOOLS: showHero MUST be true for blog inner posts.
+  This HTML comment is intentionally placed next to the component invocation
+  so it's obvious when viewing the source. Do not remove or alter the
+  showHero prop below without explicit instruction from the site owner.
+
+  开发者/工具注意：博客内部文章的 showHero 必须为 true。
+  该 HTML 注释放置在组件调用旁以便在源码中显眼可见。未经站点所有者明确指示，
+  请勿删除或修改下面的 showHero 属性。
+--><html lang="en" data-astro-cid-ijeaxe2s> <head><!-- 全局元数据 --><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><!-- 行内同步主题初始化器：从 localStorage 或系统偏好中设置 html[data-theme]
+	该脚本在 CSS 加载前运行，以避免样式闪烁（FOUC）。 --><script type="module">(function(){if(typeof document>"u")return;function i(t){try{if(!(t instanceof HTMLElement))return;const e=t.getAttribute&&t.getAttribute("style");if(e&&e.indexOf("position: static")!==-1){try{t.style.removeProperty("position")}catch{}const o=window.getComputedStyle?window.getComputedStyle(t):null;o&&o.position==="static"&&(t.style.position="absolute",t.style.left||(t.style.left="50%"),t.style.top||(t.style.top="50%"),t.style.transform||(t.style.transform="translate(-50%, -50%)"))}}catch{}}function n(){try{document.querySelectorAll(".inline-portfolio-card .hero-img").forEach(i)}catch{}}document.readyState==="loading"?document.addEventListener("DOMContentLoaded",function(){n()}):n()})();</script><link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;24&quot; height=&quot;24&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;white&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot; class=&quot;icon icon-tabler icons-tabler-outline icon-tabler-planet&quot;><path stroke=&quot;none&quot; d=&quot;M0 0h24v24H0z&quot; fill=&quot;none&quot;/><path d=&quot;M18.816 13.58c2.292 2.138 3.546 4 3.092 4.9c-.745 1.46 -5.783 -.259 -11.255 -3.838c-5.47 -3.579 -9.304 -7.664 -8.56 -9.123c.464 -.91 2.926 -.444 5.803 .805&quot; /><path d=&quot;M12 12m-7 0a7 7 0 1 0 14 0a7 7 0 1 0 -14 0&quot; /></svg>"><link rel="sitemap" href="/sitemap-index.xml"><link rel="alternate" type="application/rss+xml" title="Elko's Creation Notes" href="https://elko-utopia.github.io/Creation_notes/rss.xml"><meta name="generator" content="Astro v5.13.10"><!-- 字体预加载 --><link rel="preload" href="/Creation_notes/fonts/SmileySans-Oblique.ttf.woff2" as="font" type="font/woff2" crossorigin><!-- 规范 URL --><link rel="canonical" href="https://elko-utopia.github.io/Creation_notes/blog/obsidian/"><script>window.__ASTRO_BASE_URL__ = "https://elko-utopia.github.io/Creation_notes/";window.__ASTRO_BASE_PATH__ = "/Creation_notes/";</script><!-- 主要 Meta 标签 --><title>Why you should try obsidian for note</title><meta name="title" content="Why you should try obsidian for note"><meta name="description" content="local Markdown for full data control, bidirectional links to weave a searchable knowledge network, and plugins to support study, research, and world-building."><!-- Open Graph / Facebook 元数据 --><meta property="og:type" content="website"><meta property="og:url" content="https://elko-utopia.github.io/Creation_notes/blog/obsidian/"><meta property="og:title" content="obsidian-1"><meta property="og:description" content="local Markdown for full data control, bidirectional links to weave a searchable knowledge network, and plugins to support study, research, and world-building."><meta property="og:image" content="https://elko-utopia.github.io/Creation_notes/_astro/blog-placeholder-1.Bx0Zcyzv.jpg"><!-- Twitter --><meta property="twitter:card" content="summary_large_image"><meta property="twitter:url" content="https://elko-utopia.github.io/Creation_notes/blog/obsidian/"><meta property="twitter:title" content="Why you should try obsidian for note"><meta property="twitter:description" content="local Markdown for full data control, bidirectional links to weave a searchable knowledge network, and plugins to support study, research, and world-building."><meta property="twitter:image" content="https://elko-utopia.github.io/Creation_notes/_astro/blog-placeholder-1.Bx0Zcyzv.jpg"><!-- 在运行时设置字体变量，避免构建期 CSS url 被 Vite 尝试解析导致警告 --><script type="text/javascript">(function(){const fontSmileySans = "/Creation_notes/fonts/SmileySans-Oblique.ttf.woff2";
+
+	(function(){
+		if (typeof window === 'undefined' || typeof document === 'undefined') return;
+		try {
+			var src = "url(\"" + (String(fontSmileySans || "") ) + "\") format('woff2')";
+			document.documentElement.style.setProperty('--font-smiley-sans-src', src);
+		} catch(e) { 
+			console.error('[字体调试] 设置字体时出错：', e);
+		}
+	})();
+})();</script><!-- 折叠列表功能已迁移到独立组件：FolderTool --><!-- 插件级：折叠列表样式与客户端行为 --><!-- 客户端脚本：仅在客户端加载（避免 SSR 执行浏览器 API） --><script type="module">
+  // 由 FolderTool 组件管理折叠列表的 DOM 构造与交互
+  (function(){
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+
+    function createFold(list){
+      try{
+        if (!list || list.dataset.foldInited === 'true') return;
+        if (list.closest('details') || list.closest('.list-fold-container')) return;
+
+        const container = document.createElement('div'); container.className = 'list-fold-container';
+        const trigger = document.createElement('a'); trigger.className = 'list-fold-trigger'; trigger.href = '#';
+        
+        // 计算列表项数量
+        const itemCount = list.querySelectorAll(':scope > li').length;
+        
+        // 检测当前页面语言
+        const isZh = document.documentElement.lang === 'zh' || window.location.pathname.includes('/zh/');
+        const expandText = isZh ? `展开列表 (${itemCount})` : `Expand list (${itemCount})`;
+        const collapseText = isZh ? '收起列表' : 'Collapse list';
+        
+        // 使用伪元素显示指示符；触发器包含 label 文本和数量
+        trigger.textContent = expandText;
+        trigger.setAttribute('role','button'); trigger.setAttribute('aria-expanded','false');
+        const content = document.createElement('div'); content.className = 'list-fold-content';
+
+        list.parentNode.insertBefore(container, list);
+        content.appendChild(list);
+        container.appendChild(trigger);
+        container.appendChild(content);
+        container.dataset.foldInited = 'true';
+
+        const listId = list.id || ('list-fold-' + Math.random().toString(36).slice(2,9));
+        list.id = listId; trigger.setAttribute('aria-controls', listId);
+
+        content.style.maxHeight = '0'; content.style.overflow = 'hidden'; content.style.transition = 'max-height 0.35s ease-out';
+
+        function toggle(e){ e && e.preventDefault && e.preventDefault();
+          const isOpen = container.classList.toggle('is-open'); trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+          if (isOpen){ trigger.textContent = collapseText; content.style.maxHeight = content.scrollHeight + 'px'; }
+          else { trigger.textContent = expandText; content.style.maxHeight = '0'; }
+        }
+
+        trigger.addEventListener('click', toggle);
+      }catch(e){ console.warn('[FolderTool] createFold error', e); }
+    }
+
+    function init(){
+      try{
+        const lists = document.querySelectorAll('.prose ul, .prose ol, .md-content ul, .md-content ol');
+        lists.forEach(function(list){ if (!(list instanceof HTMLElement)) return; if (list.querySelectorAll('li').length < 2) return; createFold(list); });
+      }catch(e){ console.warn('[FolderTool] init error', e); }
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  })();
+</script><!-- Diagnostic logging removed in cleanup: sanitizer kept below. --><!-- Ensure inline-portfolio-card foreground images hide the background once loaded
+			 to avoid visible double-layered images caused by background-image + <img>. --><script type="module">(function(){if(typeof document>"u")return;function o(t){try{const e=t&&t.closest&&t.closest(".hero-frame");if(e){e.classList.add("img-loaded");try{(!(t instanceof HTMLElement)||!t.classList||!t.classList.contains("hero-img--invisible"))&&e.style.removeProperty("background-image")}catch{}}}catch{}}function r(){try{document.querySelectorAll(".inline-portfolio-card .hero-img").forEach(e=>{e instanceof HTMLImageElement&&(e.complete&&e.naturalWidth&&e.naturalWidth>0?o(e):(e.addEventListener("load",function n(){o(e),e.removeEventListener("load",n)}),e.addEventListener("error",function n(){o(e),e.removeEventListener("error",n)})))})}catch(t){console.warn("[wiki-cards] image load init failed",t)}}document.readyState==="loading"?document.addEventListener("DOMContentLoaded",r):r()})();</script><!-- Defensive runtime sanitizer: fix images that accidentally receive `position: static` as an inline style
+	     Some other runtime may copy or normalize styles and introduce `position: static` into
+	     an <img>'s inline style which prevents the CSS rule (.hero-frame .hero-img { position:absolute })
+	     from taking effect. This script attempts to remove that inline `position` property so the
+	     stylesheet can control positioning. If removal doesn't take effect (rare), it falls back to
+	     setting position:absolute as a last-resort fix. It also observes future mutations for a short
+	     time to catch late-arriving scripts.
+	--><script type="module">(function(){try{var t="theme-preference",e=localStorage.getItem(t);if(e==="dark"||e==="light"){document.documentElement.dataset.theme=e;return}}catch{}try{var a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.dataset.theme=a?"dark":"light"}catch{}})();</script><!-- Wiki-style link -> inline card replacer
+			 Replaces <div class="inline-portfolio-card-placeholder" data-wiki="..."> placeholders
+			 (injected at build-time by remark-wiki-links.mjs) with the actual card HTML by
+			 looking up `search-index.json` generated at build-time.
+	--><script type="module">
+	(
+	function(){
+		if (typeof document === 'undefined') return;
+		// Determine site base URL safely at runtime. import.meta.env is not available
+		// in the browser, so prefer a global injected value, then document.baseURI,
+		// finally fallback to '/'. Ensure it ends with a slash.
+		const SITE_BASE = (function(){
+			try {
+				if (typeof window !== 'undefined' && window.__ASTRO_BASE_URL__) {
+					return String(window.__ASTRO_BASE_URL__).endsWith('/') ? String(window.__ASTRO_BASE_URL__) : String(window.__ASTRO_BASE_URL__) + '/';
+				}
+			} catch (e) {}
+			try {
+				if (typeof document !== 'undefined' && document.baseURI) {
+					const u = new URL(document.baseURI);
+					const p = u.pathname || '/';
+					return p.endsWith('/') ? p : p + '/';
+				}
+			} catch (e) {}
+			return '/';
+		})();
+
+		async function init(){
+			const placeholders = document.querySelectorAll('.inline-portfolio-card-placeholder');
+			if (!placeholders || placeholders.length === 0) return;
+			try {
+				// Prefer a small hydrate index that includes system-tagged pages.
+				// Fallback to the main search-index.json if hydrate file is missing.
+				let idx = [];
+				try {
+					const hRes = await fetch(SITE_BASE + 'wiki-hydrate-index.json');
+					if (hRes && hRes.ok) {
+						idx = await hRes.json();
+					} else {
+						const idxRes = await fetch(SITE_BASE + 'search-index.json');
+						idx = await idxRes.json();
+					}
+				} catch (e) {
+					// if both fetches fail, bail out
+					console.error('[wiki-cards] failed to fetch hydrate/search index', e);
+					return;
+				}
+				// Build a minimal runtime mapping that mirrors the build-time
+				// policy: exact-key lookup only, plus explicit `basename_zh`
+				// aliases for entries under `zh/`. No heuristic inference.
+				const mapBySource = new Map();
+				const mapByRel = new Map();
+				for (const item of (idx || [])){
+					const src = item.source ? String(item.source).replace(/\.mdx?$/i, '').replace(/^\/+/, '') : null;
+					if (src) {
+						// normalize source keys to lowercase so runtime lookup matches build-time keys
+						const key = String(src).toLowerCase();
+						if (!mapBySource.has(key)) mapBySource.set(key, item);
+					}
+					if (item.url) {
+						// also normalize relative/url keys to lowercase for robust lookup
+						mapByRel.set(String(item.url).replace(/^\/+|\/+$/g,'').toLowerCase(), item);
+					}
+				}
+
+				placeholders.forEach(ph => {
+					const target = (ph.dataset && ph.dataset.wiki) ? ph.dataset.wiki : '';
+					const label = (ph.dataset && ph.dataset.label) ? ph.dataset.label : '';
+					let item = null;
+					if (target) {
+						const rawKey = target.replace(/^\/+|\/+$/g,'').toLowerCase();
+						item = mapBySource.get(rawKey) || mapByRel.get(rawKey);
+					}
+
+					let siteBaseNoSlash = SITE_BASE === '/' ? '' : SITE_BASE.replace(/\/$/, '');
+					// If running on a non-localhost host and SITE_BASE is '/', prefer the
+					// GitHub Pages absolute host so runtime-hydrated links point to your
+					// published site rather than relative local paths.
+					if (siteBaseNoSlash === '') {
+						try {
+							if (typeof window !== 'undefined' && window.location && !/localhost|127\.0\.0\.1/.test(window.location.hostname)) {
+								siteBaseNoSlash = 'https://elko-utopia.github.io/Creation_notes';
+							}
+						} catch (e) {}
+					}
+					let href = '#';
+					let img = siteBaseNoSlash + '/assets/blog-placeholder-2.jpg';
+					let title = label || target;
+					let dateStr = '';
+					if (item) {
+						href = item.url || href;
+						if (item.heroImage) {
+							const hi = String(item.heroImage);
+							const m = hi.match(/(?:\.\.\/)+assets\/(.*)/);
+							if (m) img = (siteBaseNoSlash || '') + '/assets/' + m[1];
+							else if (hi.startsWith('/')) img = (siteBaseNoSlash || '') + hi;
+							else img = hi;
+						}
+						if (item.title) title = item.title;
+						if (item.pubDate) {
+							// Robust parse of YYYY-M-D or YYYY-MM-DD into UTC date
+							const m = String(item.pubDate).match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+							if (m) {
+								const y = Number(m[1]), mo = Number(m[2]) - 1, day = Number(m[3]);
+								const d = new Date(Date.UTC(y, mo, day));
+								if (!isNaN(d.valueOf())) dateStr = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' }).format(d);
+							}
+						}
+					} else {
+						// fallback: link to guessed path
+						href = (siteBaseNoSlash || '') + '/' + target.replace(/^\/+|\/+$/g,'') + '/';
+					}
+
+					// Create a block-level wrapper so runtime hydration matches build-time output
+					const wrap = document.createElement('div');
+					wrap.className = 'inline-portfolio-card-wrap';
+					const a = document.createElement('a');
+					// mark runtime-hydrated wiki/obsidian cards so global.css can target them
+					a.className = 'inline-portfolio-card obsidian-card';
+					a.href = href;
+					// Use background-image on hero-frame as a resilient fallback (matches server output)
+					// Ensure runtime-hydrated cards include the same conservative inline
+					// styles the server-template emits so they keep layout parity even
+					// when other scripts inject CSS later (e.g. the lightbox styles).
+					const objPos = (item && item.heroImagePosition) ? `object-position: ${String(item.heroImagePosition)};` : '';
+					// Do not force position in inline styles; let CSS (.hero-img) control positioning
+					// so the foreground image can be absolutely positioned to fully cover the frame.
+					const imgInline = `width: 100%; height: 100%; object-fit: cover; ${objPos}`;
+										a.innerHTML = `<span class="hero-frame" style="background-image:url('${img}');background-size:cover;background-position:center center">` +
+																 ` <img class="hero-img" src="${img}" alt="" loading="lazy" decoding="async" style="${imgInline}" />` +
+																 `</span><div class="meta"><h5 class="title site-heading">${title}</h5>` + (dateStr?`<h6 class="date">${dateStr}</h6>`:'') + `</div>`;
+										// Attach the resolved image path to the anchor for robustness and
+										// ensure the hero-frame explicitly has a background-image set on
+										// the element (some later runtime code was observed to clear the
+										// inline style in rare cases; setting it directly ensures the
+										// visible fallback is present immediately after hydration).
+										a.dataset.hi = img;
+										// Ensure the inline element reflects the background we intend to show.
+										try {
+											const hfEl = (function(){
+												const tmp = document.createElement('div'); tmp.innerHTML = a.innerHTML; return tmp.querySelector('.hero-frame');
+											})();
+											if (hfEl) {
+												hfEl.style.backgroundImage = `url('${img}')`;
+												hfEl.style.backgroundSize = 'cover';
+												hfEl.style.backgroundPosition = 'center center';
+											}
+										} catch(e) { /* 忽略 */ }
+										wrap.appendChild(a);
+					// hydrate: no debug logging in production
+					ph.replaceWith(wrap);
+				});
+			} catch (e) { console.error('[wiki-cards] failed to hydrate placeholders', e); }
+		}
+
+		if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+	})();
+	</script><link rel="stylesheet" href="/Creation_notes/_astro/about.Cv-21lgW.css">
+<style>.comments-inner[data-astro-cid-jvxsf75u]{width:100%}.comments-loading[data-astro-cid-jvxsf75u]{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1rem;color:rgb(var(--gray));font-size:.95rem}.loading-spinner[data-astro-cid-jvxsf75u]{width:32px;height:32px;border:3px solid rgb(var(--gray-light));border-top-color:rgb(var(--accent));border-radius:50%;animation:spin .8s linear infinite;margin-bottom:.75rem}@keyframes spin{to{transform:rotate(360deg)}}.comments-inner[data-astro-cid-jvxsf75u]{background:var(--surface);color:rgb(var(--gray-dark));border:none;border-radius:12px;padding:1rem .75rem 1.25rem;box-shadow:var(--box-shadow);margin-top:1.25rem}.comments-inner[data-astro-cid-jvxsf75u] .comments-debug[data-astro-cid-jvxsf75u]{color:rgb(var(--gray))}.comments-inner[data-astro-cid-jvxsf75u] .utterances{max-width:100%;width:100%}.comments-inner[data-astro-cid-jvxsf75u] iframe.utterances-frame{width:100%;min-height:320px;border:none}@media (max-width: 980px){.comments-inner[data-astro-cid-jvxsf75u]{max-width:calc(100% - 2rem);padding:0 1rem}}html,body{height:100%}body{display:flex;flex-direction:column;min-height:100vh}main[data-astro-cid-ijeaxe2s]{flex:1;width:calc(100% - 2em);max-width:100%;margin:0;padding:1.5em 1em}.hero-image[data-astro-cid-ijeaxe2s]{width:100%}.hero-image[data-astro-cid-ijeaxe2s] img[data-astro-cid-ijeaxe2s]{display:block;margin:0 auto;border-radius:12px;box-shadow:var(--box-shadow)}.prose[data-astro-cid-ijeaxe2s]{width:720px;max-width:calc(100% - 2em);margin:auto;padding:1em;color:rgb(var(--gray-dark))}.title[data-astro-cid-ijeaxe2s]{margin-bottom:1em;padding:1em 0;text-align:center;line-height:1}.title[data-astro-cid-ijeaxe2s] h1[data-astro-cid-ijeaxe2s]{margin:0 0 .5em;font-weight:900;line-height:1.1}.date[data-astro-cid-ijeaxe2s]{margin-bottom:.75em}.date[data-astro-cid-ijeaxe2s]{margin-bottom:.75em;font-weight:400;font-style:normal}.last-updated-on[data-astro-cid-ijeaxe2s]{font-style:normal;font-weight:400;font-size:1.2rem}.last-updated-on[data-astro-cid-ijeaxe2s] a[data-astro-cid-ijeaxe2s],.last-updated-on[data-astro-cid-ijeaxe2s] a[data-astro-cid-ijeaxe2s]:hover{text-decoration:none}.md-content img{margin-left:auto;margin-right:auto;display:block;object-fit:contain;border-radius:12px;box-shadow:var(--box-shadow);margin:clamp(1.5rem,5vw,2.5rem) auto;max-width:100%;height:auto}.hero-frame[data-astro-cid-ijeaxe2s]{width:100%;aspect-ratio:16 / 9;overflow:hidden;border-radius:12px;background:#f3f3f3;margin-bottom:1rem;position:relative}.hero-frame[data-astro-cid-ijeaxe2s] .hero-img[data-astro-cid-ijeaxe2s]{position:absolute;left:50%;top:0;transform:translate(-50%);width:var(--hero-width, 100%);height:100%;object-fit:cover;object-position:var(--hero-position);display:block}.hero-frame[data-astro-cid-ijeaxe2s] a[data-astro-cid-ijeaxe2s]{text-decoration:none;color:inherit}@media (max-width: 768px){.last-updated-on[data-astro-cid-ijeaxe2s]{font-size:1rem}}
+.lb-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:min(2rem,5vw);box-sizing:border-box;background:#181818bf;backdrop-filter:blur(12px);z-index:2147483646;opacity:0;visibility:hidden;pointer-events:none;cursor:zoom-out;transition:opacity var(--lb-duration, .15s) ease,visibility var(--lb-duration, .15s) ease}.lb-overlay.lb-open{opacity:1;visibility:visible;pointer-events:auto}.lb-stage{position:relative;display:block;overflow:hidden;box-sizing:border-box;background:#00000059;border-radius:12px;box-shadow:0 24px 48px #00000059;transform:scale(.96);transition:transform var(--lb-duration, .15s) ease}.lb-overlay.lb-open .lb-stage{transform:scale(1)}.lb-image{display:block;position:absolute;top:0;left:0;max-width:none;max-height:none;transform-origin:0 0;will-change:transform;user-select:none;touch-action:pinch-zoom;pointer-events:auto;cursor:grab;image-rendering:crisp-edges;image-rendering:pixelated}.lb-image:active{cursor:grabbing}@media (prefers-reduced-motion: reduce){.lb-overlay,.lb-stage{transition-duration:0ms}}@media (hover: none) and (pointer: coarse){.lb-stage{overflow:auto;-webkit-overflow-scrolling:touch}.lb-image{touch-action:pinch-zoom pan-x pan-y;cursor:default}.lb-image:active{cursor:default}}.lb-image{transform:translateZ(0);backface-visibility:hidden}html body .lb-overlay{position:fixed;inset:0;width:100vw;height:100vh;transform:none;will-change:auto;z-index:2147483646}
+.post-tags[data-astro-cid-txy4pyv6]{margin-top:1.25rem;display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap}.post-tag[data-astro-cid-txy4pyv6]{display:inline-block;padding:.5rem 1rem;border-radius:999px;font-size:1.15rem;font-weight:600;text-decoration:none;line-height:1;border:1px solid rgba(0,0,0,.06);transition:transform .12s ease,box-shadow .12s ease}.post-tag[data-astro-cid-txy4pyv6]:hover{transform:translateY(-3px);box-shadow:0 14px 30px #02061759}@media (max-width: 640px){.post-tag[data-astro-cid-txy4pyv6]{font-size:1.02rem;padding:.36rem .7rem}}
+</style></head> <body class="bilingual-post" data-astro-cid-ijeaxe2s> <header data-base="/Creation_notes/" data-astro-cid-3ef6ksr2> <nav data-astro-cid-3ef6ksr2> <h5 class="site-heading" data-astro-cid-3ef6ksr2> <a href="/Creation_notes/" data-astro-cid-3ef6ksr2>Elko&#39;s Creation Notes</a> </h5> <div class="internal-links" data-astro-cid-3ef6ksr2> <a href="/Creation_notes/" data-astro-cid-3ef6ksr2="true" data-astro-cid-eimmu3lg> Home </a>  <a href="/Creation_notes/blog/" class="active" data-astro-cid-3ef6ksr2="true" data-astro-cid-eimmu3lg> Blog </a>  <a href="/Creation_notes/portfolio/" data-astro-cid-3ef6ksr2="true" data-astro-cid-eimmu3lg> Portfolio </a>  <a href="/Creation_notes/about/" data-astro-cid-3ef6ksr2="true" data-astro-cid-eimmu3lg> About </a>  <a href="/Creation_notes/contact/" data-astro-cid-3ef6ksr2="true" data-astro-cid-eimmu3lg> Contact </a>  </div> <div class="right-side" data-astro-cid-3ef6ksr2> <!-- 移动端汉堡包菜单按钮 --> <button type="button" class="mobile-menu-btn" data-mobile-menu-toggle aria-label="Toggle mobile menu" data-astro-cid-3ef6ksr2> <span class="sr-only" data-astro-cid-3ef6ksr2>Toggle mobile menu</span> <span class="hamburger-icon" data-astro-cid-3ef6ksr2> <span data-astro-cid-3ef6ksr2></span> <span data-astro-cid-3ef6ksr2></span> <span data-astro-cid-3ef6ksr2></span> </span> </button> <div class="pref-controls" data-astro-cid-3ef6ksr2> <button type="button" class="subscribe-pill" data-subscribe-toggle aria-label="Subscribe" data-astro-cid-3ef6ksr2> <span class="subscribe-pill-label" data-astro-cid-3ef6ksr2>Subscribe</span> </button> <!-- 紧凑模式下显示的铃铛图标（与汉堡、放大镜图标样式一致） --> <button type="button" class="pref-btn subscribe-bell" data-subscribe-toggle aria-label="Subscribe" data-astro-cid-3ef6ksr2> <span class="sr-only" data-astro-cid-3ef6ksr2>Subscribe</span> <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" data-astro-cid-3ef6ksr2> <!-- 依据用户参考彻底重画：粗线、圆角、饱满轮廓 --> <!-- 整体稍微放大，clapper 下移以增加间距 --> <!-- 使用外部统一缩放变量控制尺寸，移除内联 scale 防止重复缩放 --> <g data-astro-cid-3ef6ksr2> <path d="M6.5 10c0-3.04 2.46-5.5 5.5-5.5s5.5 2.46 5.5 5.5v1.25c0 1.93.9 3.37 1.5 4.01a1 1 0 0 1-.83 1.66H5.83a1 1 0 0 1-.83-1.66c.6-.64 1.5-2.08 1.5-4.01V10z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" data-astro-cid-3ef6ksr2></path> <path d="M10.8 17.8a1.2 1.2 0 0 0 2.4 0" transform="translate(0,0.6)" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" data-astro-cid-3ef6ksr2></path> </g> </svg> </button> <button type="button" class="pref-btn search-btn" data-search-toggle aria-label="Open search" data-astro-cid-3ef6ksr2> <span class="sr-only" data-astro-cid-3ef6ksr2>Open search</span> <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" data-astro-cid-3ef6ksr2> <circle cx="11" cy="11" r="5.75" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" data-astro-cid-3ef6ksr2></circle> <line x1="15.8" y1="15.8" x2="21.2" y2="21.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" data-astro-cid-3ef6ksr2></line> </svg> </button> <!-- 偏好设置按钮：打开紧凑偏好对话框（主题 + 语言） --> <button type="button" class="pref-btn prefs-toggle" data-prefs-toggle aria-label="Preferences" data-astro-cid-3ef6ksr2> <span class="sr-only" data-astro-cid-3ef6ksr2>Preferences</span> <!-- 太阳/月亮合成图标与小型语言徽章 --> <span class="prefs-icon" aria-hidden="true" data-astro-cid-3ef6ksr2> <!-- 太阳图标（浅色模式可见） --> <svg class="icon icon-sun" viewBox="0 0 24 24" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" data-astro-cid-3ef6ksr2> <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" data-astro-cid-3ef6ksr2></circle> <g stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" data-astro-cid-3ef6ksr2> <path d="M12 2v2" vector-effect="non-scaling-stroke" data-astro-cid-3ef6ksr2></path> <path d="M12 20v2" vector-effect="non-scaling-stroke" data-astro-cid-3ef6ksr2></path> <path d="M4.93 4.93l1.41 1.41" vector-effect="non-scaling-stroke" data-astro-cid-3ef6ksr2></path> <path d="M17.66 17.66l1.41 1.41" vector-effect="non-scaling-stroke" data-astro-cid-3ef6ksr2></path> <path d="M2 12h2" vector-effect="non-scaling-stroke" data-astro-cid-3ef6ksr2></path> <path d="M20 12h2" vector-effect="non-scaling-stroke" data-astro-cid-3ef6ksr2></path> <path d="M4.93 19.07l1.41-1.41" vector-effect="non-scaling-stroke" data-astro-cid-3ef6ksr2></path> <path d="M17.66 6.34l1.41-1.41" vector-effect="non-scaling-stroke" data-astro-cid-3ef6ksr2></path> </g> </svg> <!-- 月亮图标（深色模式可见） --> <svg class="icon icon-moon" viewBox="0 0 24 24" width="100%" height="100%" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" data-astro-cid-3ef6ksr2> <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" stroke-width="1.8" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" fill="none" data-astro-cid-3ef6ksr2></path> </svg> <!-- 语言徽章移动到 prefs-icon 内，以便裁剪到图标边界 --> <span class="lang-badge" aria-hidden="true" data-astro-cid-3ef6ksr2>EN</span> </span> </button> </div> </div> </nav> <!-- 移动端下拉菜单 --> <div class="mobile-nav-dropdown" data-mobile-nav data-astro-cid-3ef6ksr2> <div class="mobile-nav-content" data-astro-cid-3ef6ksr2> <div class="mobile-nav-links" data-astro-cid-3ef6ksr2> <a href="/Creation_notes/" data-astro-cid-3ef6ksr2="true" data-astro-cid-eimmu3lg> Home </a>  <a href="/Creation_notes/blog/" class="active" data-astro-cid-3ef6ksr2="true" data-astro-cid-eimmu3lg> Blog </a>  <a href="/Creation_notes/portfolio/" data-astro-cid-3ef6ksr2="true" data-astro-cid-eimmu3lg> Portfolio </a>  <a href="/Creation_notes/about/" data-astro-cid-3ef6ksr2="true" data-astro-cid-eimmu3lg> About </a>  <a href="/Creation_notes/contact/" data-astro-cid-3ef6ksr2="true" data-astro-cid-eimmu3lg> Contact </a>  </div> </div> </div> </header> <!-- 中文模式提示横幅（仅当 lang=zh 时显示） --> <div class="zh-banner" data-zh-banner data-astro-cid-3ef6ksr2> <div class="zh-banner-content" data-astro-cid-3ef6ksr2> <!-- 中文版提示已隐藏；保留 banner 结构以便将来启用 --> <span class="zh-banner-icon" aria-hidden="true" style="display:none" data-astro-cid-3ef6ksr2></span> <span class="zh-banner-text" aria-hidden="true" style="display:none" data-astro-cid-3ef6ksr2></span> </div> </div> <script type="module">document.addEventListener("DOMContentLoaded",function(){const o=document.querySelector("header");let i=document.querySelector("[data-mobile-menu-toggle]"),n=document.querySelector("[data-mobile-nav]");const L=document.querySelector(".internal-links"),h=document.querySelector(".right-side");if(!o)return;let p=null,l=null,s=null,m=!1;function R(){try{const t=document.querySelector(".internal-links");if(!t)return 0;const e=t.cloneNode(!0);e.style.position="absolute",e.style.left="-9999px",e.style.top="-9999px",e.style.visibility="hidden",e.style.display="flex",e.style.whiteSpace="nowrap",document.body.appendChild(e);const r=e.getBoundingClientRect(),y=r&&r.width?r.width:0;return document.body.removeChild(e),y||0}catch{return 0}}function v(){m||(m=!0,requestAnimationFrame(function(){setTimeout(function(){try{const t=document.querySelector(".internal-links");if(!t)return;const e=t.getBoundingClientRect();e&&e.width>0&&(s={left:e.left,right:e.right,width:e.width},a())}catch{}m=!1},45)}))}let c=40,u=50;try{const t=o.getAttribute("data-collapse-a"),e=o.getAttribute("data-collapse-b");if(t!==null&&(c=Number(t)||c),e!==null&&(u=Number(e)||u),c>=u){const r=c;c=Math.min(r,u),u=Math.max(r,u)}}catch{}function w(t){try{o.classList.toggle("compact",!!t),p=!!t}catch{}}function k(){try{if(!L||!h)return!1;let t=L.getBoundingClientRect();if(!t||t.width===0||t.right===0){const f=R();if(f&&f>0){s={left:0,right:f,width:f};try{window.__LAST_GOOD_LINKS_RECT=s}catch{}}const S=o.querySelector("h5"),q=S?S.getBoundingClientRect():{right:0},C=(h.getBoundingClientRect().left||0)-(q.right||0);if(n&&n.classList&&n.classList.contains("active"))return!0;if(s){if(C>=s.width+c)return!1;t=s,v()}else{if(C>=160+c)return!1;v()}}else t&&t.width>0&&(s={left:t.left,right:t.right,width:t.width});const e=h.getBoundingClientRect(),r=o.querySelector("h5"),y=r?r.getBoundingClientRect():{right:0},M=t.left-(y.right||0),T=(e.left||0)-t.right;return!!(n&&n.classList&&n.classList.contains("active")||M<c||T<c)}catch{return!1}}function a(){const t=k();t!==p&&w(t)}const b=a;let g=null;window.addEventListener("resize",function(){b(),g&&clearTimeout(g),g=setTimeout(function(){try{a()}catch{}},120)}),window.visualViewport&&typeof window.visualViewport.addEventListener=="function"&&window.visualViewport.addEventListener("resize",a),window.addEventListener("orientationchange",b);function E(){if(!(!n||!i)){try{const t=o.getBoundingClientRect();n instanceof HTMLElement&&(n.style.top=Math.round(t.bottom)+"px")}catch{}n.classList.add("active"),i.classList.add("active"),i.setAttribute("aria-expanded","true"),n.setAttribute("aria-hidden","false"),w(!0),l=function(t){try{if(!n||!i)return;const e=t.target;if(n.contains(e)||i.contains(e))return;d()}catch{}},document.addEventListener("click",l,!0),document.addEventListener("touchstart",l,!0)}}function d(){if(!(!n||!i)){n.classList.remove("active"),i.classList.remove("active"),i.setAttribute("aria-expanded","false"),n.setAttribute("aria-hidden","true"),a();try{l&&(document.removeEventListener("click",l,!0),document.removeEventListener("touchstart",l,!0),l=null)}catch{}}}i&&n?(i.addEventListener("click",function(t){n.classList.contains("active")?d():E()}),n.querySelectorAll&&n.querySelectorAll("a").forEach(t=>t.addEventListener("click",function(){d()}))):(document.addEventListener("click",function(t){try{const e=t.target&&t.target.closest&&t.target.closest("[data-mobile-menu-toggle]");if(!e||(n||(n=document.querySelector("[data-mobile-nav]")),i||(i=e),!n))return;n.classList.contains("active")?d():E()}catch{}},!0),document.addEventListener("click",function(t){try{if(!(t.target&&t.target.closest&&t.target.closest("[data-mobile-nav] a")))return;n&&n.classList.contains("active")&&d()}catch{}},!0)),a(),window.addEventListener("load",a)});</script> <!-- 运行时对 p-followed-by-list 的回退已移除：现在通过 remark 插件在构建时添加 -->  <script>window.__SITE_PREFS = Object.assign({}, window.__SITE_PREFS || {}, {
+  subscribeEndpoint: "https://buttondown.email/api/emails/embed-subscribe/elkoutopia",
+  subscribeUser: "elkoutopia"
+});
+document.documentElement.dataset.subscribeEndpoint = "https://buttondown.email/api/emails/embed-subscribe/elkoutopia";
+document.documentElement.dataset.subscribeUser = "elkoutopia";</script> <script src="/Creation_notes/scripts/subscribe-form.js" defer></script> <script type="module" src="/Creation_notes/scripts/preferences.js"></script> <script type="module" src="/Creation_notes/scripts/lightbox.js"></script> <script type="module" src="/Creation_notes/scripts/lightbox-monitor.js"></script> <script type="module" src="/Creation_notes/scripts/thumbnail-fallback.js"></script> <script type="module">document.addEventListener("DOMContentLoaded",function(){try{const n=window.LightboxMonitor;n&&typeof n.enableFull=="function"&&n.enableFull()}catch{}});</script> <script type="module">(function(){try{let a=function(e){if(!e)return"/";let t=String(e);return t.startsWith("/")||(t="/"+t),t.endsWith("/")||(t=t+"/"),t},o=function(){try{if(window.__ASTRO_BASE_PATH__)return a(window.__ASTRO_BASE_PATH__)}catch{}try{if(document.baseURI){const e=new URL(document.baseURI);return a(e.pathname)}}catch{}try{const e=document.querySelector("header")?.dataset?.base||"/";return a(e)}catch{}return"/"},h=function(e,t){let r=String(t||"");r=r.replace(/^\/+/,"");const n=String(e||"/").replace(/^\//,"").replace(/\/$/,"");return n&&r.startsWith(n+"/")?"/"+r.replace(/^\/+/,""):e==="/"||!n?"/"+r:e.replace(/\/$/,"")+"/"+r};var w=a,W=o,_=h;if(typeof window>"u")return;const u=document.getElementById("lang-toggle"),d=document.getElementById("lang-label");if(!u||!d)return;const m=document.documentElement.lang||"",s=window.location.pathname||"/",f=s.endsWith("/")?s:s+"/",g=m==="zh"||/(^|\/)zh(\/|$)/.test(f)||/\/zh\/?$/.test(f);d.textContent=g?"ZH":"EN";const i=o();u.addEventListener("click",function(){const e=window.location.pathname||"/",t=e.endsWith("/")?e:e+"/",r=document.documentElement.lang==="zh"||/^\/zh(\/|$)/.test(t)||t.startsWith(i+"zh/");let n=t;if(t.startsWith(i))n=t.slice(i.length);else{n=t.replace(/^\/+/,"");const l=i.replace(/^\//,"").replace(/\/$/,"");l&&n.startsWith(l+"/")&&(n=n.slice(l.length+1))}n=n.replace(/^zh\//,"").replace(/^\/+/,"");let p=r?n:"zh/"+n,c=h(i,p||"");c=c.replace(/\/+/g,"/"),c.endsWith("/")||(c=c+"/"),window.location.href=c})}catch(a){console.warn("语言切换初始化失败",a)}})();</script> <main data-astro-cid-ijeaxe2s> <article data-astro-cid-ijeaxe2s> <div class="hero" data-astro-cid-ijeaxe2s> <div class="prose" data-astro-cid-ijeaxe2s> <div class="title" data-astro-cid-ijeaxe2s> <div class="hero-frame" style="--hero-position: 50% 50%; --hero-width: 101%;" data-astro-cid-ijeaxe2s> <img class="hero-img" src="/Creation_notes/assets/header_picture/obsidian1.png" alt="" loading="lazy" decoding="async" data-full="/Creation_notes/assets/header_picture/obsidian1.png" style="object-position: 50% 50%;" data-astro-cid-ijeaxe2s> </div><h1 class="site-heading" data-astro-cid-ijeaxe2s>Why you should try obsidian for note</h1> <div class="date" data-astro-cid-ijeaxe2s> <time datetime="2025-10-26T00:00:00.000Z">Oct 26, 2025</time>  <p class="post-tags" data-astro-cid-txy4pyv6><a class="post-tag" style="background:#0ea5e9; color:#fff; border-color:#0ea5e933" href="/Creation_notes/search?tag=Obsidian" data-astro-cid-txy4pyv6>Obsidian</a></p>  </div> <hr data-astro-cid-ijeaxe2s>  </div> <article class="md-content pswp-featured" data-astro-cid-ijeaxe2s>  <p>As an art student, I have been using Obsidian for note-taking for almost two years. Counting the time I spent experimenting with other note-taking tools before that, I have over four years of experience in total.
+During this time, I have tried almost every mainstream note-taking app, but in the end, only Obsidian stayed. The reason is simple—it allows me to <strong>fully control my knowledge and creative work</strong>.</p>
+<hr>
+<h3 id="i-the-limitations-of-traditional-note-taking-tools"><strong>I. The Limitations of Traditional Note-Taking Tools</strong></h3>
+<p>If you are used to taking notes in Word or similar software, you have probably faced this problem:
+When the number of notes is still small, everything seems orderly; but once you accumulate dozens or even hundreds of files, no folder structure can help you quickly locate what you need.</p>
+<p>This problem becomes especially serious when studying grammar, programming, or art theory. Knowledge points are often fragmented and interconnected, yet Word's linear file structure isolates every document, preventing cross-reference.
+For example, when I take notes on English grammar, I often recall related grammatical ideas. If I put everything into one document, the content becomes messy; if I split them into several files, it becomes hard to reconnect them when needed.</p>
+<p>I once tried to build my original world-building notes using dozens of Word files. Years later, I realized I had written the same concept four or five times because I forgot which folder contained the original version. Whenever a new idea came up, I had to decide where to put it.
+This process was inefficient and broke my creative flow. Over time, the more notes I made, the heavier the burden became.</p>
+<hr>
+<h3 id="ii-the-core-advantage-of-obsidian-connecting-everything"><strong>II. The Core Advantage of Obsidian: Connecting Everything</strong></h3>
+<p>Obsidian completely changes this situation.
+Its <strong>bidirectional links</strong> allow your notes to connect with each other like Wikipedia, forming a living and expanding knowledge network.</p>
+<p>You can break every tiny concept into a single note—even if it's just one or two sentences—and link them together to create a structured thinking system.
+This means you no longer depend on complex folder hierarchies to "find" your content, because everything is already interconnected.</p>
+<p>When I write stories, I can instantly create a new note for each idea or character and add links to related concepts. Later, when I read the story, I can click the link to review or expand on those concepts immediately.</p>
+<p>When I first discovered bidirectional linking, I decided almost instantly to migrate all my notes to Obsidian—even though I didn't yet fully understand Markdown syntax.
+At that moment, I realized that this flexible, interconnected way of working was exactly what I had been searching for.</p>
+<p>This transformation—from static documents to a dynamic network—is the true reason I abandoned Word and fully adopted Obsidian.</p>
+<hr>
+<h3 id="iii-freedom-and-control"><strong>III. Freedom and Control</strong></h3>
+<p>Most note-taking tools lock you into their own ecosystems.
+They either restrict export options, allow only partial content export, or worse, encrypt and bind your data to their cloud, making migration difficult.</p>
+<p>Obsidian takes the opposite approach.
+All your notes are stored locally as plain Markdown files. You can open, edit, sync, and back them up with any text editor.
+Your data truly belongs to you.</p>
+<p>Moreover, all of Obsidian's local functions are completely free, making it one of the most cost-effective options for students and independent creators.</p>
+<hr>
+<h3 id="iv-plugins-and-extensibility"><strong>IV. Plugins and Extensibility</strong></h3>
+<p>Obsidian has a large and active plugin ecosystem.
+From task management, time tracking, data visualization, and table editing to academic citation and code snippets—there's a plugin for almost every need.
+These plugins cover everything from writing to research, planning, and creative work.</p>
+<p>Even if you have no coding background, you can still build an environment perfectly suited to your workflow with the help of AI or community resources.
+In this sense, Obsidian functions more like a <strong>knowledge platform</strong> than a single piece of software.</p>
+<hr>
+<h3 id="v-the-power-of-markdown-simplicity"><strong>V. The Power of Markdown Simplicity</strong></h3>
+<p>At its core, Obsidian is built on Markdown—a minimal, open, and universal text markup format.
+It is not tied to any platform and will never become obsolete because of software updates.
+You can work across devices and operating systems, editing the same notes with any tool you prefer.</p>
+<p>This plain-text structure ensures that your knowledge system is <strong>portable, maintainable, and scalable</strong>.
+No matter how many years pass, your notes will remain accessible and reusable, never trapped in a closed ecosystem.</p>
+<hr>
+<h3 id="vi-continuous-sharing-and-future-plans"><strong>VI. Continuous Sharing and Future Plans</strong></h3>
+<p>This article is only the beginning of my Obsidian series.
+In the future, I will share more about my hands-on practices: how to build a note system, how to organize creative projects through links, and how to make Obsidian a true "second brain."</p>
+<p>I will also discuss use<strong>free alternatives to paid features</strong>, such as using third-party tools to replicate the Sync function. All of these experiences come from long-term personal use, aimed at helping more people unlock Obsidian's full potential at minimal cost.</p>
+<hr>
+<h3 id="conclusion"><strong>Conclusion</strong></h3>
+<p>Whether for creation, study, or daily documentation, Obsidian offers an unprecedented level of freedom and structured thinking.
+It not only helps you record knowledge but also builds meaningful connections between ideas, forming <strong>a personal network of understanding</strong>.</p>
+<p>For me, Obsidian is no longer just a note-taking app. It has become a way of thinking—one that allows ideas to keep growing.</p>
+<hr>
+<p>Click the link below to experience the power of Obsidian for yourself:
+<a href="https://obsidian.md">https://obsidian.md</a></p> <!-- 页面可选的额外插槽：允许页面在内容底部注入自定义块（例如 about 页面底部按钮） --> <div class="page-extra" data-astro-cid-ijeaxe2s>  </div> </article> </div> </div> </article> </main> <!-- 评论区（可选，通过 showComments 控制） --> <section id="comments" style="width:100%;margin:0 auto;padding:1rem;" data-astro-cid-jvxsf75u> <!-- 加载提示（不在盒子内，简洁内联样式） --> <div class="comments-loading" id="comments-loading" aria-live="polite" data-astro-cid-jvxsf75u> <div class="loading-spinner" aria-hidden="true" data-astro-cid-jvxsf75u></div> <span class="loading-text" data-astro-cid-jvxsf75u>Loading comments...</span> </div> <!-- 内层限制宽度，默认更宽以匹配文章内容区 --> <div class="comments-inner" style="max-width:920px;margin:0 auto;padding:0 1rem;" data-astro-cid-jvxsf75u> <!-- 调试界面已移除 --> <script type="module">(function(){try{let c=function(){try{var t=document.documentElement,e=t.getAttribute("data-theme")||t.dataset.theme||"";if(e){if(/dark/i.test(e))return"photon-dark";if(/light/i.test(e))return"github-light"}if(t.classList){var n=Array.from(t.classList);if(n.some(function(r){return/dark/i.test(r)}))return"photon-dark";if(n.some(function(r){return/light/i.test(r)}))return"github-light"}return window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"photon-dark":"github-light"}catch{return"github-light"}},m=function(){var t=document.getElementById("comments");if(!t)return null;var e=t.querySelector("iframe");if(e){try{if(e instanceof HTMLIFrameElement){var n=new URL(e.src);s=n.origin}}catch{}return o(),e}var r=document.getElementById("comments-loading");r&&(r.style.display="none");var a=document.createElement("script");a.src="https://utteranc.es/client.js",a.setAttribute("repo",f),a.setAttribute("issue-term","og:title"),a.setAttribute("label","comment"),a.setAttribute("theme",i),a.crossOrigin="anonymous",a.async=!0,t.appendChild(a);try{var l=document.getElementById("comments");l&&l.setAttribute("data-utterances-loader","called")}catch{}return a},o=function(){try{var t=document.querySelector("#comments iframe");try{if(t&&t instanceof HTMLIFrameElement){var e=new URL(t.src);s=e.origin;var n=t.contentWindow;if(n)try{n.postMessage({type:"set-theme",theme:i},s)}catch{}}}catch{}}catch{}};var v=c,g=m,y=o,f="Elko-Utopia/Creation_notes",s="https://utteranc.es",i=c(),u=m();u&&(u.onload=function(){o()},u.onerror=function(){}),(function(){var t=0,e=20,n=setInterval(function(){t++;var r=document.querySelector("#comments iframe");if(r){clearInterval(n),o();return}t>=e&&clearInterval(n)},500)})();try{var d=new MutationObserver(function(){var t=c();t!==i&&(i=t,o())});d.observe(document.documentElement,{attributes:!0,attributeFilter:["class","data-theme"]})}catch{}window.addEventListener("themechange",function(t){var e=c();e!==i&&(i=e,o())})}catch{}})();</script> <noscript>Please enable JavaScript to view and post comments.</noscript>  </div></section> <footer data-astro-cid-sz7xmlte>
+&copy; 2025 Elko-Utopia. All rights reserved.
+<!-- 订阅表单已移到博客与作品页面右上角的浮动组件 --> <div class="social-links" data-astro-cid-sz7xmlte> <!-- Email --> <a href="mailto:elkoutopia@gmail.com" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Email</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" data-astro-cid-sz7xmlte> <path fill="currentColor" d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v.217l-8 4.8-8-4.8V4zm0 1.383v6.617a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V5.383l-7.555 4.533a1 1 0 0 1-1.11 0L0 5.383z" data-astro-cid-sz7xmlte></path> </svg> </a> <!-- Instagram --> <a href="https://www.instagram.com/elkoutopia/" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>Instagram</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" data-astro-cid-sz7xmlte> <path fill="currentColor" d="M5 1h6a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4H5a4 4 0 0 1-4-4V5a4 4 0 0 1 4-4zm0 1.5A2.5 2.5 0 0 0 2.5 5v6A2.5 2.5 0 0 0 5 13.5h6A2.5 2.5 0 0 0 13.5 11V5A2.5 2.5 0 0 0 11 2.5H5zm3 2a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7zm0 1.5A2 2 0 1 0 10 9a2 2 0 0 0-2-2zm3.25-1.25a.75.75 0 1 1 0 1.5.75.75 0 0 1 0-1.5z" data-astro-cid-sz7xmlte></path> </svg> </a> <!-- GitHub --> <a href="https://github.com/Elko-Utopia" target="_blank" data-astro-cid-sz7xmlte> <span class="sr-only" data-astro-cid-sz7xmlte>GitHub</span> <svg viewBox="0 0 16 16" aria-hidden="true" width="32" height="32" data-astro-cid-sz7xmlte> <path fill="currentColor" d="M8 .5A7.5 7.5 0 0 0 5.4 15.1c.4.07.55-.18.55-.4 0-.2-.01-.73-.01-1.43-2.25.49-2.73-1.09-2.73-1.09-.36-.93-.89-1.18-.89-1.18-.73-.5.06-.49.06-.49.81.06 1.24.83 1.24.83.72 1.22 1.89.87 2.36.66.07-.52.28-.87.51-1.07-1.79-.21-3.66-.9-3.66-4.01 0-.89.32-1.62.84-2.19-.08-.21-.36-1.07.08-2.24 0 0 .67-.22 2.2.86a7.7 7.7 0 0 1 4 0c1.53-1.08 2.2-.86 2.2-.86.44 1.17.16 2.03.08 2.24.52.57.84 1.3.84 2.19 0 3.12-1.88 3.8-3.67 4.01.29.25.55.74.55 1.5 0 1.08-.01 1.95-.01 2.22 0 .22.15.48.55.4A7.5 7.5 0 0 0 8 .5Z" data-astro-cid-sz7xmlte></path> </svg> </a> </div> </footer>  <!-- 为图片添加 data-full 属性以便 lightbox 识别 --> <script type="module">document.addEventListener("DOMContentLoaded",function(){try{document.querySelectorAll(".md-content.pswp-featured img").forEach(function(t){try{if(!(t instanceof HTMLImageElement))return;t.dataset.full||(t.dataset.full=t.src)}catch{}}),setTimeout(function(){if(typeof window.initLightboxAuto=="function")try{window.initLightboxAuto()}catch(t){console.warn("initLightboxAuto() 调用出错",t)}},50)}catch(n){console.warn("lightbox init error",n)}});</script>  <!-- Debug logging removed from layout; use global.css for typography rules --> </body></html>
