@@ -83,17 +83,33 @@ function resolveWithBase(path) {
   if (!path || typeof path !== 'string') return path;
   if (/^https?:\/\//i.test(path)) return path;
   if (path.startsWith('/')) {
-    const base = basePath.endsWith('/') ? basePath.slice(0, -1) : basePath;
-    // 如果传入的 path 已经包含 base 前缀，则直接返回，避免重复拼接（例如 '/Creation_notes/...'）
+    const rawBase = basePath.endsWith('/') ? basePath.slice(0, -1) : basePath;
+    // 如果 base 是绝对 URL（带 origin），优先返回带 origin 的目标，避免把绝对 base 当作路径重复拼接
     try {
-      if (base && base !== '/' && (path === base || path.startsWith(base + '/'))) {
-        return path;
+      const parsedBase = new URL(rawBase);
+      const origin = parsedBase.origin;
+      const basePathname = parsedBase.pathname.replace(/\/$/, '') || '';
+      // 如果传入的 path 已经包含 base 的 pathname 前缀，则直接返回带 origin 的绝对 URL，避免重复
+      if (basePathname && (path === basePathname || path.startsWith(basePathname + '/'))) {
+        return origin + path;
       }
+      // 如果没有 pathname（即 base 指向根），直接使用 origin + path
+      if (!basePathname || basePathname === '') return origin + path;
+      // 否则组合 origin + pathname + path
+      return origin + basePathname + path;
     } catch (e) {
-      // 容错，继续走后续逻辑
+      // base 不是绝对 URL，按原先逻辑处理
+      const base = rawBase;
+      try {
+        if (base && base !== '/' && (path === base || path.startsWith(base + '/'))) {
+          return path;
+        }
+      } catch (err) {
+        // 容错
+      }
+      if (!base || base === '/') return path;
+      return `${base}${path}`;
     }
-    if (!base || base === '/') return path;
-    return `${base}${path}`;
   }
   return path;
 }
@@ -794,6 +810,7 @@ function ensurePrefsOverlay() {
           try { console.debug('[Prefs Debug] language->zh: resolved=', resolved, 'preNormalizeTarget=', target); } catch(e){}
           try { target = normalizeTarget(target, globalBase); } catch(e){}
           try { console.debug('[Prefs Debug] language->zh: finalTarget(normalized)=', target); } catch(e){}
+          debugger;
           window.location.assign(target);
         } else {
           // 已经是中文路径，直接跳转到同一路径以保证刷新
@@ -817,6 +834,7 @@ function ensurePrefsOverlay() {
           try { console.debug('[Prefs Debug] language->en(remove zh): resolved=', resolved, 'preNormalizeTarget=', target); } catch(e){}
           try { target = normalizeTarget(target, globalBase); } catch(e){}
           try { console.debug('[Prefs Debug] language->en(remove zh): finalTarget(normalized)=', target); } catch(e){}
+          debugger;
           window.location.assign(target);
         } else {
           // 已经是英文路径，跳转到当前路径以保证刷新
@@ -827,6 +845,7 @@ function ensurePrefsOverlay() {
           try { console.debug('[Prefs Debug] language->en(already): resolved=', resolved, 'preNormalizeTarget=', target); } catch(e){}
           try { target = normalizeTarget(target, globalBase); } catch(e){}
           try { console.debug('[Prefs Debug] language->en(already): finalTarget(normalized)=', target); } catch(e){}
+          debugger;
           window.location.assign(target);
         }
       }
