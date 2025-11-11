@@ -701,15 +701,17 @@ function ensurePrefsOverlay() {
       const curPath = window.location.pathname || '/';
       // 使用文件顶部的全局 basePath（已规范为以 '/' 结尾），避免在多个地方硬编码 '/Creation_notes/'
       const globalBase = (typeof basePath !== 'undefined' && basePath) ? basePath : '/';
+      // 规范化带尾部斜杠的 base 和当前路径，保证在 base 或当前路径缺少尾部斜杠时也能正确剥离
+      const normGlobalBase = (globalBase.endsWith('/') ? globalBase : (globalBase + '/'));
+      const normCur = (curPath.endsWith('/') ? curPath : (curPath + '/'));
       // 去掉 base 前缀，得到相对站点根的路径（例如 'blog/post/' 或 'zh/blog/post/'）
-      let pathAfterBase = curPath;
-      if (globalBase !== '/' && curPath.startsWith(globalBase)) {
-        pathAfterBase = curPath.slice(globalBase.length);
-      } else if (pathAfterBase.startsWith('/')) {
-        pathAfterBase = pathAfterBase.slice(1);
+      let pathAfterBase = '';
+      if (normGlobalBase !== '/' && normCur.startsWith(normGlobalBase)) {
+        pathAfterBase = normCur.slice(normGlobalBase.length);
+      } else {
+        // 若未以 base 开头（例如 base 缺尾斜杠或 curPath 无尾斜杠），去除首尾斜杠以取得相对路径
+        pathAfterBase = curPath.replace(/^\/+|\/+$/g, '');
       }
-      // 确保以不以 '/' 开头，方便后续拼接
-      pathAfterBase = pathAfterBase.replace(/^\//, '');
 
       if (v === 'zh') {
         // 切换到中文：若相对路径未以 zh/ 开头，则在其前加入 zh/
