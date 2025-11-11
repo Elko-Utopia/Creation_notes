@@ -665,15 +665,14 @@ function ensurePrefsOverlay() {
       const seg = prefsOverlay.querySelector('.pref-seg-lang');
       if (!seg) return;
       const path = (window.location.pathname || '/');
+      // 规范化当前路径与候选 base，确保尾部斜杠一致以便正确检测
       const normalized = path.endsWith('/') ? path : path + '/';
-      
-  // 检测 base 路径
+      const candidateBase = '/Creation_notes/';
       let basePath = '/';
-      if (normalized.startsWith('/Creation_notes/')) {
-        basePath = '/Creation_notes/';
+      if (normalized.startsWith(candidateBase)) {
+        basePath = candidateBase;
       }
-      
-  // 检查 base 之后的路径是否以 zh/ 开头
+      // 检查 base 之后的路径是否以 zh/ 开头
       const pathAfterBase = normalized.substring(basePath.length);
       const isZh = document.documentElement.lang === 'zh' || pathAfterBase.startsWith('zh/');
       
@@ -717,11 +716,19 @@ function ensurePrefsOverlay() {
         // 切换到中文：若相对路径未以 zh/ 开头，则在其前加入 zh/
         if (!/^zh(\/|$)/.test(pathAfterBase)) {
           const newRel = '/zh/' + pathAfterBase;
-          const target = resolveWithBase(newRel.replace(/\/+/g, '/')) || (globalBase + 'zh/' + pathAfterBase);
+          // 调试信息：记录构造目标的每一步，方便 F12 中查看
+          try { console.debug('[Prefs Debug] language->zh: curPath=', curPath, 'globalBase=', globalBase, 'pathAfterBase=', pathAfterBase, 'newRel=', newRel); } catch(e){}
+          const resolved = resolveWithBase(newRel.replace(/\/+/g, '/'));
+          const target = resolved || (globalBase + 'zh/' + pathAfterBase);
+          try { console.debug('[Prefs Debug] language->zh: resolved=', resolved, 'finalTarget=', target); } catch(e){}
           window.location.assign(target);
         } else {
           // 已经是中文路径，直接跳转到同一路径以保证刷新
-          const target = resolveWithBase('/' + pathAfterBase.replace(/\/+/g, '/')) || ('/' + pathAfterBase);
+          const newRel = '/' + pathAfterBase.replace(/\/+/g, '/');
+          try { console.debug('[Prefs Debug] language->zh(already): curPath=', curPath, 'globalBase=', globalBase, 'pathAfterBase=', pathAfterBase, 'newRel=', newRel); } catch(e){}
+          const resolved = resolveWithBase(newRel) || null;
+          const target = resolved || ('/' + pathAfterBase);
+          try { console.debug('[Prefs Debug] language->zh(already): resolved=', resolved, 'finalTarget=', target); } catch(e){}
           window.location.assign(target);
         }
       } else {
@@ -729,11 +736,18 @@ function ensurePrefsOverlay() {
         if (/^zh(\/|$)/.test(pathAfterBase)) {
           const withoutZh = pathAfterBase.replace(/^zh(\/)?/, '');
           const newRel = '/' + withoutZh;
-          const target = (withoutZh && withoutZh.length) ? (resolveWithBase(newRel.replace(/\/+/g, '/')) || (globalBase + withoutZh)) : (globalBase);
+          try { console.debug('[Prefs Debug] language->en(remove zh): curPath=', curPath, 'globalBase=', globalBase, 'pathAfterBase=', pathAfterBase, 'withoutZh=', withoutZh, 'newRel=', newRel); } catch(e){}
+          const resolved = (withoutZh && withoutZh.length) ? resolveWithBase(newRel.replace(/\/+/g, '/')) : null;
+          const target = (withoutZh && withoutZh.length) ? (resolved || (globalBase + withoutZh)) : (globalBase);
+          try { console.debug('[Prefs Debug] language->en(remove zh): resolved=', resolved, 'finalTarget=', target); } catch(e){}
           window.location.assign(target);
         } else {
           // 已经是英文路径，跳转到当前路径以保证刷新
-          const target = resolveWithBase('/' + pathAfterBase.replace(/\/+/g, '/')) || ('/' + pathAfterBase);
+          const newRel = '/' + pathAfterBase.replace(/\/+/g, '/');
+          try { console.debug('[Prefs Debug] language->en(already): curPath=', curPath, 'globalBase=', globalBase, 'pathAfterBase=', pathAfterBase, 'newRel=', newRel); } catch(e){}
+          const resolved = resolveWithBase(newRel) || null;
+          const target = resolved || ('/' + pathAfterBase);
+          try { console.debug('[Prefs Debug] language->en(already): resolved=', resolved, 'finalTarget=', target); } catch(e){}
           window.location.assign(target);
         }
       }
@@ -864,9 +878,10 @@ function openPrefsOverlay() {
         if (langSeg) {
           const path = (window.location.pathname || '/');
           const normalized = path.endsWith('/') ? path : path + '/';
+          const candidateBase = '/Creation_notes/';
           let basePath = '/';
-          if (normalized.startsWith('/Creation_notes/')) {
-            basePath = '/Creation_notes/';
+          if (normalized.startsWith(candidateBase)) {
+            basePath = candidateBase;
           }
           const pathAfterBase = normalized.substring(basePath.length);
           const isZh = document.documentElement.lang === 'zh' || pathAfterBase.startsWith('zh/');
