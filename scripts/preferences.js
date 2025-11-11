@@ -98,6 +98,46 @@ function resolveWithBase(path) {
   return path;
 }
 
+// 将生成的 target 进行规范化：
+// - 移除多余的 base 名称片段（例如多次出现的 'Creation_notes'）
+// - 保证当 site base 存在时目标路径中只出现一次 base
+function normalizeTarget(target, globalBase) {
+  try {
+    const normGlobal = (globalBase && globalBase !== '/') ? (globalBase.endsWith('/') ? globalBase : (globalBase + '/')) : '/';
+    const baseName = normGlobal === '/' ? '' : normGlobal.replace(/^\/+|\/+$/g, '');
+
+    // 处理绝对 URL 与相对路径两种情况
+    let urlObj = null;
+    try {
+      // 如果是绝对 URL，会成功构造
+      urlObj = new URL(target, window.location.origin);
+    } catch (e) {
+      urlObj = null;
+    }
+
+    function cleanPath(pathname) {
+      const parts = pathname.split('/').filter(Boolean).filter(p => p !== baseName);
+      // 如果需要将 base 放回开头，则在最前面加入 baseName
+      if (baseName) parts.unshift(baseName);
+      return '/' + parts.join('/');
+    }
+
+    if (urlObj) {
+      const cleaned = cleanPath(urlObj.pathname);
+      urlObj.pathname = cleaned;
+      return urlObj.toString();
+    } else {
+      // 以 '/' 开头的相对路径
+      if (typeof target === 'string' && target.startsWith('/')) {
+        return cleanPath(target);
+      }
+    }
+  } catch (e) {
+    // 容错：若规范化失败则返回原始 target
+  }
+  return target;
+}
+
 const subscribeUnsubscribeUrl = (() => {
   let raw = null;
   try {
@@ -727,16 +767,20 @@ function ensurePrefsOverlay() {
           // 调试信息：记录构造目标的每一步，方便 F12 中查看
           try { console.debug('[Prefs Debug] language->zh: curPath=', curPath, 'globalBase=', globalBase, 'pathAfterBase=', pathAfterBase, 'newRel=', newRel); } catch(e){}
           const resolved = resolveWithBase(newRel.replace(/\/+/g, '/'));
-          const target = resolved || (globalBase + 'zh/' + pathAfterBase);
-          try { console.debug('[Prefs Debug] language->zh: resolved=', resolved, 'finalTarget=', target); } catch(e){}
+          let target = resolved || (globalBase + 'zh/' + pathAfterBase);
+          try { console.debug('[Prefs Debug] language->zh: resolved=', resolved, 'preNormalizeTarget=', target); } catch(e){}
+          try { target = normalizeTarget(target, globalBase); } catch(e){}
+          try { console.debug('[Prefs Debug] language->zh: finalTarget(normalized)=', target); } catch(e){}
           window.location.assign(target);
         } else {
           // 已经是中文路径，直接跳转到同一路径以保证刷新
           const newRel = '/' + pathAfterBase.replace(/\/+/g, '/');
           try { console.debug('[Prefs Debug] language->zh(already): curPath=', curPath, 'globalBase=', globalBase, 'pathAfterBase=', pathAfterBase, 'newRel=', newRel); } catch(e){}
           const resolved = resolveWithBase(newRel) || null;
-          const target = resolved || ('/' + pathAfterBase);
-          try { console.debug('[Prefs Debug] language->zh(already): resolved=', resolved, 'finalTarget=', target); } catch(e){}
+          let target = resolved || ('/' + pathAfterBase);
+          try { console.debug('[Prefs Debug] language->zh(already): resolved=', resolved, 'preNormalizeTarget=', target); } catch(e){}
+          try { target = normalizeTarget(target, globalBase); } catch(e){}
+          try { console.debug('[Prefs Debug] language->zh(already): finalTarget(normalized)=', target); } catch(e){}
           window.location.assign(target);
         }
       } else {
@@ -746,16 +790,20 @@ function ensurePrefsOverlay() {
           const newRel = '/' + withoutZh;
           try { console.debug('[Prefs Debug] language->en(remove zh): curPath=', curPath, 'globalBase=', globalBase, 'pathAfterBase=', pathAfterBase, 'withoutZh=', withoutZh, 'newRel=', newRel); } catch(e){}
           const resolved = (withoutZh && withoutZh.length) ? resolveWithBase(newRel.replace(/\/+/g, '/')) : null;
-          const target = (withoutZh && withoutZh.length) ? (resolved || (globalBase + withoutZh)) : (globalBase);
-          try { console.debug('[Prefs Debug] language->en(remove zh): resolved=', resolved, 'finalTarget=', target); } catch(e){}
+          let target = (withoutZh && withoutZh.length) ? (resolved || (globalBase + withoutZh)) : (globalBase);
+          try { console.debug('[Prefs Debug] language->en(remove zh): resolved=', resolved, 'preNormalizeTarget=', target); } catch(e){}
+          try { target = normalizeTarget(target, globalBase); } catch(e){}
+          try { console.debug('[Prefs Debug] language->en(remove zh): finalTarget(normalized)=', target); } catch(e){}
           window.location.assign(target);
         } else {
           // 已经是英文路径，跳转到当前路径以保证刷新
           const newRel = '/' + pathAfterBase.replace(/\/+/g, '/');
           try { console.debug('[Prefs Debug] language->en(already): curPath=', curPath, 'globalBase=', globalBase, 'pathAfterBase=', pathAfterBase, 'newRel=', newRel); } catch(e){}
           const resolved = resolveWithBase(newRel) || null;
-          const target = resolved || ('/' + pathAfterBase);
-          try { console.debug('[Prefs Debug] language->en(already): resolved=', resolved, 'finalTarget=', target); } catch(e){}
+          let target = resolved || ('/' + pathAfterBase);
+          try { console.debug('[Prefs Debug] language->en(already): resolved=', resolved, 'preNormalizeTarget=', target); } catch(e){}
+          try { target = normalizeTarget(target, globalBase); } catch(e){}
+          try { console.debug('[Prefs Debug] language->en(already): finalTarget(normalized)=', target); } catch(e){}
           window.location.assign(target);
         }
       }
