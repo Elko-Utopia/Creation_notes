@@ -104,32 +104,55 @@ function resolveWithBase(path) {
 function normalizeTarget(target, globalBase) {
   try {
     const normGlobal = (globalBase && globalBase !== '/') ? (globalBase.endsWith('/') ? globalBase : (globalBase + '/')) : '/';
-    const baseName = normGlobal === '/' ? '' : normGlobal.replace(/^\/+|\/+$/g, '');
+    // 计算 base 的路径片段（仅取 pathname 部分），保证当 globalBase 是绝对 URL 时也能正确提取
+    let basePathname = '/';
+    try {
+      const parsed = new URL(normGlobal, window.location.origin);
+      basePathname = parsed.pathname || '/';
+    } catch (e) {
+      // 回退：normGlobal 可能已经是路径
+      basePathname = normGlobal;
+    }
+    const baseParts = basePathname.split('/').filter(Boolean); // e.g. ['Creation_notes']
 
     // 处理绝对 URL 与相对路径两种情况
     let urlObj = null;
-    try {
-      // 如果是绝对 URL，会成功构造
-      urlObj = new URL(target, window.location.origin);
-    } catch (e) {
-      urlObj = null;
+    try { urlObj = new URL(target, window.location.origin); } catch (e) { urlObj = null; }
+
+    function removeBaseSequence(parts, seq) {
+      if (!seq || seq.length === 0) return parts.slice();
+      const res = [];
+      for (let i = 0; i < parts.length;) {
+        let match = true;
+        for (let j = 0; j < seq.length; j++) {
+          if (parts[i + j] !== seq[j]) { match = false; break; }
+        }
+        if (match) {
+          i += seq.length; // skip the sequence
+        } else {
+          res.push(parts[i]);
+          i++;
+        }
+      }
+      return res;
     }
 
-    function cleanPath(pathname) {
-      const parts = pathname.split('/').filter(Boolean).filter(p => p !== baseName);
-      // 如果需要将 base 放回开头，则在最前面加入 baseName
-      if (baseName) parts.unshift(baseName);
-      return '/' + parts.join('/');
+    function buildPath(parts, prefixSeq) {
+      const finalParts = prefixSeq && prefixSeq.length ? prefixSeq.concat(parts) : parts;
+      return '/' + finalParts.join('/');
     }
 
     if (urlObj) {
-      const cleaned = cleanPath(urlObj.pathname);
-      urlObj.pathname = cleaned;
+      const parts = urlObj.pathname.split('/').filter(Boolean);
+      const cleanedParts = removeBaseSequence(parts, baseParts);
+      const finalPath = buildPath(cleanedParts, baseParts);
+      urlObj.pathname = finalPath;
       return urlObj.toString();
     } else {
-      // 以 '/' 开头的相对路径
       if (typeof target === 'string' && target.startsWith('/')) {
-        return cleanPath(target);
+        const parts = target.split('/').filter(Boolean);
+        const cleanedParts = removeBaseSequence(parts, baseParts);
+        return buildPath(cleanedParts, baseParts);
       }
     }
   } catch (e) {
