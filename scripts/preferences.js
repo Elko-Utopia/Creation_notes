@@ -84,6 +84,14 @@ function resolveWithBase(path) {
   if (/^https?:\/\//i.test(path)) return path;
   if (path.startsWith('/')) {
     const base = basePath.endsWith('/') ? basePath.slice(0, -1) : basePath;
+    // 如果传入的 path 已经包含 base 前缀，则直接返回，避免重复拼接（例如 '/Creation_notes/...'）
+    try {
+      if (base && base !== '/' && (path === base || path.startsWith(base + '/'))) {
+        return path;
+      }
+    } catch (e) {
+      // 容错，继续走后续逻辑
+    }
     if (!base || base === '/') return path;
     return `${base}${path}`;
   }
