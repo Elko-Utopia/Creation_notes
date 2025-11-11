@@ -22,7 +22,7 @@
   {
     "title": "Why you should try obsidian for note",
     "url": "/Creation_notes/blog/obsidian/",
-    "heroImage": "assets/header_picture/obsidian1.png",
+    "heroImage": "assets/header_picture/obsidian1.webp",
     "heroImagePosition": "50% 50%",
     "heroImageWidth": "101%",
     "source": "blog/obsidian.md",
@@ -32,7 +32,7 @@
   {
     "title": "Welcome to My Blog",
     "url": "/Creation_notes/blog/welcome/",
-    "heroImage": "assets/blog-placeholder-1.jpg",
+    "heroImage": "assets/blog-placeholder-1.webp",
     "heroImagePosition": "50% 50%",
     "heroImageWidth": "101%",
     "source": "blog/welcome.md",
@@ -42,7 +42,7 @@
   {
     "title": "为什么你应该尝试Obsidian来做笔记",
     "url": "/Creation_notes/zh/blog/obsidian/",
-    "heroImage": "assets/header_picture/obsidian1.png",
+    "heroImage": "assets/header_picture/obsidian1.webp",
     "heroImagePosition": "50% 50%",
     "heroImageWidth": "101%",
     "source": "zh/blog/obsidian.md",
@@ -52,7 +52,7 @@
   {
     "title": "欢迎来到我的博客",
     "url": "/Creation_notes/zh/blog/welcome/",
-    "heroImage": "assets/blog-placeholder-1.jpg",
+    "heroImage": "assets/blog-placeholder-1.webp",
     "heroImagePosition": "50% 50%",
     "heroImageWidth": "101%",
     "source": "zh/blog/welcome.md",
@@ -102,7 +102,7 @@
   {
     "title": "Sketch and Painting in Senior High School",
     "url": "/Creation_notes/portfolio/HighSchool_Sketch/",
-    "heroImage": "assets/portfolio/portfolio1/Featured6-sketching.png",
+    "heroImage": "assets/portfolio/portfolio1/Featured6-sketching.webp",
     "heroImagePosition": "50% 20%",
     "heroImageWidth": "101%",
     "source": "portfolio/HighSchool_Sketch.md",
@@ -112,7 +112,7 @@
   {
     "title": "Featured Works With Detail",
     "url": "/Creation_notes/portfolio/portfolio1-featured/",
-    "heroImage": "assets/portfolio/portfolio1/Featured1-character_design.png",
+    "heroImage": "assets/portfolio/portfolio1/Featured1-character_design.webp",
     "heroImagePosition": "70% 16%",
     "heroImageWidth": "120%",
     "source": "portfolio/portfolio1-featured.md",
@@ -122,7 +122,7 @@
   {
     "title": "高中时期的素描和绘画",
     "url": "/Creation_notes/zh/portfolio/HighSchool_Sketch/",
-    "heroImage": "assets/portfolio/portfolio1/Featured6-sketching.png",
+    "heroImage": "assets/portfolio/portfolio1/Featured6-sketching.webp",
     "heroImagePosition": "50% 20%",
     "heroImageWidth": "101%",
     "source": "zh/portfolio/HighSchool_Sketch.md",
@@ -132,7 +132,7 @@
   {
     "title": "精选作品详情",
     "url": "/Creation_notes/zh/portfolio/portfolio1-featured/",
-    "heroImage": "assets/portfolio/portfolio1/Featured1-character_design.png",
+    "heroImage": "assets/portfolio/portfolio1/Featured1-character_design.webp",
     "heroImagePosition": "70% 16%",
     "heroImageWidth": "120%",
     "source": "zh/portfolio/portfolio1-featured.md",
@@ -162,7 +162,7 @@
   {
     "title": "Webpage Production Log",
     "url": "/Creation_notes/website-log/",
-    "heroImage": "assets/blog-placeholder-1.jpg",
+    "heroImage": "assets/blog-placeholder-1.webp",
     "heroImagePosition": "50% 50%",
     "heroImageWidth": "101%",
     "source": "website-log.md",
@@ -172,7 +172,7 @@
   {
     "title": "网页制作日志",
     "url": "/Creation_notes/zh/website-log/",
-    "heroImage": "assets/blog-placeholder-1.jpg",
+    "heroImage": "assets/blog-placeholder-1.webp",
     "heroImagePosition": "50% 50%",
     "heroImageWidth": "101%",
     "source": "zh/website-log.md",

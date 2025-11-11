@@ -77,8 +77,8 @@ function initLightbox({ selector = DEFAULT_SELECTOR, viewportPadding, transition
   registeredSelectors.add(normalized);
   ensureObserver();
   
-  // 自动预加载所有图片
-  autoPreloadImages(normalized);
+  // 不在 init 阶段立即预加载。预加载将被延迟到 window.load +
+  // requestIdleCallback 时机，以避免与首屏资源竞争（见文件末尾的调度器）。
 }
 
 /**
@@ -107,6 +107,43 @@ function autoPreloadImages(selector) {
     }
   });
 }
+
+// Delay preload scheduler:
+// - Wait until window.load (all resources loaded)
+// - Use requestIdleCallback when available to run during idle time
+// - Respect Save-Data and very slow connections
+(function schedulePreloadAfterLoad() {
+  if (typeof window === 'undefined') return;
+
+  function shouldPreload() {
+    try {
+      if (navigator.connection) {
+        if (navigator.connection.saveData) return false;
+        const et = navigator.connection.effectiveType || '';
+        if (/2g|slow-2g/.test(et)) return false;
+      }
+    } catch (e) {}
+    return true;
+  }
+
+  function runPreload() {
+    if (!shouldPreload()) return;
+    // If selectors were registered via initLightbox, use them; otherwise fallback
+    const sels = registeredSelectors.size ? Array.from(registeredSelectors) : [DEFAULT_SELECTOR];
+    for (const s of sels) {
+      try { autoPreloadImages(s); } catch (e) {}
+    }
+  }
+
+  window.addEventListener('load', () => {
+    // schedule during idle time to avoid blocking rendering
+    if (typeof requestIdleCallback === 'function') {
+      try { requestIdleCallback(runPreload, { timeout: 2000 }); } catch (e) { setTimeout(runPreload, 1500); }
+    } else {
+      setTimeout(runPreload, 1500);
+    }
+  });
+})();
 
 function ensureOverlay() {
   if (overlayEl) return;
@@ -714,16 +751,25 @@ async function openLightbox(triggerImage) {
   isOpen = true;
   overlayEl.setAttribute('aria-hidden', 'false');
   overlayEl.classList.add('lb-open');
-      // Ensure image is visible and force a paint/reflow so pixels are rasterized
-      imageEl.style.visibility = 'visible';
-      // trigger layout/readback
-      void imageEl.offsetWidth;
-      // use will-change briefly to hint repaint, then clear it
-      imageEl.style.willChange = 'transform, opacity';
-      requestAnimationFrame(() => {
-        imageEl.style.willChange = '';
-        setTimeout(() => { imageEl.classList.add('lb-fadein'); }, 10);
-      });
+  // Ensure overlay/panel is painted before revealing the image to avoid
+  // the thumbnail appearing without the overlay background/border.
+  try {
+    // Force a reflow on the overlay element so its styles are applied.
+    void overlayEl.offsetWidth;
+  } catch (e) {}
+
+  // Reveal image on the next animation frame so the overlay has time to
+  // render; keep the will-change hint and fadein scheduling as before.
+  requestAnimationFrame(() => {
+    imageEl.style.visibility = 'visible';
+    // trigger layout/readback for the image
+    void imageEl.offsetWidth;
+    imageEl.style.willChange = 'transform, opacity';
+    requestAnimationFrame(() => {
+      imageEl.style.willChange = '';
+      setTimeout(() => { imageEl.classList.add('lb-fadein'); }, 10);
+    });
+  });
   const beforePrime = performance.now();  
   // 获取预览图src用于后续检查
   const previewSrc = triggerImage.currentSrc || triggerImage.src;
