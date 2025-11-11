@@ -785,17 +785,28 @@ function ensurePrefsOverlay() {
       } catch (e) {}
 
       const curPath = window.location.pathname || '/';
-      // 使用文件顶部的全局 basePath（已规范为以 '/' 结尾），避免在多个地方硬编码 '/Creation_notes/'
+      // 使用文件顶部的全局 basePath（可能是绝对 URL 或仅路径），避免在多个地方硬编码 '/Creation_notes/'
       const globalBase = (typeof basePath !== 'undefined' && basePath) ? basePath : '/';
-      // 规范化带尾部斜杠的 base 和当前路径，保证在 base 或当前路径缺少尾部斜杠时也能正确剥离
-      const normGlobalBase = (globalBase.endsWith('/') ? globalBase : (globalBase + '/'));
+      // 为了正确剥离当前路径的站点前缀（不论 base 是绝对 URL 还是路径形式），
+      // 我们只取 base 的 pathname 部分用于比较和切割。
+      let basePathname = '/';
+      try {
+        if (globalBase && /^https?:\/\//i.test(String(globalBase))) {
+          basePathname = (new URL(String(globalBase))).pathname || '/';
+        } else {
+          basePathname = String(globalBase) || '/';
+        }
+      } catch (e) {
+        basePathname = String(globalBase) || '/';
+      }
+      const normBaseForStrip = (basePathname.endsWith('/') ? basePathname : (basePathname + '/'));
       const normCur = (curPath.endsWith('/') ? curPath : (curPath + '/'));
-      // 去掉 base 前缀，得到相对站点根的路径（例如 'blog/post/' 或 'zh/blog/post/'）
+      // 去掉 base pathname 前缀，得到相对站点根的路径（例如 'blog/post/' 或 'zh/blog/post/'）
       let pathAfterBase = '';
-      if (normGlobalBase !== '/' && normCur.startsWith(normGlobalBase)) {
-        pathAfterBase = normCur.slice(normGlobalBase.length);
+      if (normBaseForStrip !== '/' && normCur.startsWith(normBaseForStrip)) {
+        pathAfterBase = normCur.slice(normBaseForStrip.length);
       } else {
-        // 若未以 base 开头（例如 base 缺尾斜杠或 curPath 无尾斜杠），去除首尾斜杠以取得相对路径
+        // 若未以 base 前缀开头，则按普通方式去除首尾斜杠以取得相对路径
         pathAfterBase = curPath.replace(/^\/+|\/+$/g, '');
       }
 
