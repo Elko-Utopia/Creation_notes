@@ -832,12 +832,9 @@ function ensurePrefsOverlay() {
         } else {
           // 已经是中文路径，直接跳转到同一路径以保证刷新
           const newRel = '/' + pathAfterBase.replace(/\/+/g, '/');
-          try { console.debug('[Prefs Debug] language->zh(already): curPath=', curPath, 'globalBase=', globalBase, 'pathAfterBase=', pathAfterBase, 'newRel=', newRel); } catch(e){}
           const resolved = resolveWithBase(newRel) || null;
           let target = resolved || ('/' + pathAfterBase);
-          try { console.debug('[Prefs Debug] language->zh(already): resolved=', resolved, 'preNormalizeTarget=', target); } catch(e){}
           try { target = normalizeTarget(target, globalBase); } catch(e){}
-          try { console.debug('[Prefs Debug] language->zh(already): finalTarget(normalized)=', target); } catch(e){}
           window.location.assign(target);
         }
       } else {
@@ -845,22 +842,16 @@ function ensurePrefsOverlay() {
         if (/^zh(\/|$)/.test(pathAfterBase)) {
           const withoutZh = pathAfterBase.replace(/^zh(\/)?/, '');
           const newRel = '/' + withoutZh;
-          try { console.debug('[Prefs Debug] language->en(remove zh): curPath=', curPath, 'globalBase=', globalBase, 'pathAfterBase=', pathAfterBase, 'withoutZh=', withoutZh, 'newRel=', newRel); } catch(e){}
           const resolved = (withoutZh && withoutZh.length) ? resolveWithBase(newRel.replace(/\/+/g, '/')) : null;
           let target = (withoutZh && withoutZh.length) ? (resolved || (globalBase + withoutZh)) : (globalBase);
-          try { console.debug('[Prefs Debug] language->en(remove zh): resolved=', resolved, 'preNormalizeTarget=', target); } catch(e){}
           try { target = normalizeTarget(target, globalBase); } catch(e){}
-          try { console.debug('[Prefs Debug] language->en(remove zh): finalTarget(normalized)=', target); } catch(e){}
           window.location.assign(target);
         } else {
           // 已经是英文路径，跳转到当前路径以保证刷新
           const newRel = '/' + pathAfterBase.replace(/\/+/g, '/');
-          try { console.debug('[Prefs Debug] language->en(already): curPath=', curPath, 'globalBase=', globalBase, 'pathAfterBase=', pathAfterBase, 'newRel=', newRel); } catch(e){}
           const resolved = resolveWithBase(newRel) || null;
           let target = resolved || ('/' + pathAfterBase);
-          try { console.debug('[Prefs Debug] language->en(already): resolved=', resolved, 'preNormalizeTarget=', target); } catch(e){}
           try { target = normalizeTarget(target, globalBase); } catch(e){}
-          try { console.debug('[Prefs Debug] language->en(already): finalTarget(normalized)=', target); } catch(e){}
           window.location.assign(target);
         }
       }
@@ -1196,8 +1187,7 @@ async function onSearchSubmit(event) {
     target += `?q=${encodeURIComponent(query)}`;
     // 规范化重复斜杠
     try { target = target.replace(/([^:]\/)\/+/g, '$1/'); } catch (e) {}
-    // 调试日志，便于排查为何没有跳转
-    console.debug('[prefs] search redirect target:', target, 'current:', location.href);
+  // debug output removed
 
     // 如果当前已经在搜索页面（/search 或 /zh/search），直接更新查询参数并重新加载
     const normalizedPath = location.pathname.replace(/\/$/, '');

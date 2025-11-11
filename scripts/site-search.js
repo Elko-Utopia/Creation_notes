@@ -123,6 +123,35 @@
       }
 
       index = await tryFetchCandidates(uniq);
+      // Defensive normalization: if the site is deployed under a non-root base
+      // (e.g. '/Creation_notes/') but the fetched index contains entries whose
+      // `url` values are missing that base (for example because an index from
+      // the site root was returned), prepend the detected base path to those
+      // urls so client-side links point to the published subpath.
+      try {
+        const rb = getRuntimeBase();
+        let bp = '/';
+        try { bp = new URL(rb).pathname || '/'; } catch (e) { bp = rb || '/'; }
+        // ensure base path ends with slash
+        if (typeof bp === 'string' && !bp.endsWith('/')) bp = bp + '/';
+        if (bp && bp !== '/') {
+          // Normalize each item's url if it appears to be origin-root relative
+          index = (Array.isArray(index) ? index : []).map(it => {
+            try {
+              if (!it || !it.url || typeof it.url !== 'string') return it;
+              const u = String(it.url);
+              // If url already contains the base path, leave it alone
+              if (u.indexOf(bp) === 0) return it;
+              // If it's an absolute path starting with '/', but missing the base, prepend it
+              if (u.startsWith('/')) {
+                return Object.assign({}, it, { url: (bp.replace(/\/$/, '') + u) });
+              }
+              // For relative urls (no leading slash), resolve against base
+              try { return Object.assign({}, it, { url: new URL(u, rb).toString().replace(/^https?:\/\/[^\/]+/, '') }); } catch (e) { return it; }
+            } catch (e) { return it; }
+          });
+        }
+      } catch (e) { /* ignore normalization errors */ }
       // 运行时防护：若索引里仍存在带有 system 标签的条目，则在客户端过滤掉这些条目。
       try {
         const before = Array.isArray(index) ? index.length : 0;
