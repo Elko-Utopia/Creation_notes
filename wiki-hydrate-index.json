@@ -1,7 +1,7 @@
 [
   {
     "title": "About Me",
-    "url": "/about/",
+    "url": "/Creation_notes/about/",
     "heroImage": null,
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -11,7 +11,7 @@
   },
   {
     "title": "关于我",
-    "url": "/zh/about/",
+    "url": "/Creation_notes/zh/about/",
     "heroImage": null,
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -21,7 +21,7 @@
   },
   {
     "title": "Why you should try obsidian for note",
-    "url": "/blog/obsidian/",
+    "url": "/Creation_notes/blog/obsidian/",
     "heroImage": "assets/header_picture/obsidian1.png",
     "heroImagePosition": "50% 50%",
     "heroImageWidth": "101%",
@@ -31,7 +31,7 @@
   },
   {
     "title": "Welcome to My Blog",
-    "url": "/blog/welcome/",
+    "url": "/Creation_notes/blog/welcome/",
     "heroImage": "assets/blog-placeholder-1.jpg",
     "heroImagePosition": "50% 50%",
     "heroImageWidth": "101%",
@@ -41,7 +41,7 @@
   },
   {
     "title": "为什么你应该尝试Obsidian来做笔记",
-    "url": "/zh/blog/obsidian/",
+    "url": "/Creation_notes/zh/blog/obsidian/",
     "heroImage": "assets/header_picture/obsidian1.png",
     "heroImagePosition": "50% 50%",
     "heroImageWidth": "101%",
@@ -51,7 +51,7 @@
   },
   {
     "title": "欢迎来到我的博客",
-    "url": "/zh/blog/welcome/",
+    "url": "/Creation_notes/zh/blog/welcome/",
     "heroImage": "assets/blog-placeholder-1.jpg",
     "heroImagePosition": "50% 50%",
     "heroImageWidth": "101%",
@@ -61,7 +61,7 @@
   },
   {
     "title": "Contact",
-    "url": "/contact/",
+    "url": "/Creation_notes/contact/",
     "heroImage": null,
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -71,7 +71,7 @@
   },
   {
     "title": "联系",
-    "url": "/zh/contact/",
+    "url": "/Creation_notes/zh/contact/",
     "heroImage": null,
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -81,7 +81,7 @@
   },
   {
     "title": "HOME",
-    "url": "/home/",
+    "url": "/Creation_notes/home/",
     "heroImage": null,
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -91,7 +91,7 @@
   },
   {
     "title": "HOME",
-    "url": "/zh/home/",
+    "url": "/Creation_notes/zh/home/",
     "heroImage": null,
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -101,7 +101,7 @@
   },
   {
     "title": "Sketch and Painting in Senior High School",
-    "url": "/portfolio/HighSchool_Sketch/",
+    "url": "/Creation_notes/portfolio/HighSchool_Sketch/",
     "heroImage": "assets/portfolio/portfolio1/Featured6-sketching.png",
     "heroImagePosition": "50% 20%",
     "heroImageWidth": "101%",
@@ -111,7 +111,7 @@
   },
   {
     "title": "Featured Works With Detail",
-    "url": "/portfolio/portfolio1-featured/",
+    "url": "/Creation_notes/portfolio/portfolio1-featured/",
     "heroImage": "assets/portfolio/portfolio1/Featured1-character_design.png",
     "heroImagePosition": "70% 16%",
     "heroImageWidth": "120%",
@@ -121,7 +121,7 @@
   },
   {
     "title": "高中时期的素描和绘画",
-    "url": "/zh/portfolio/HighSchool_Sketch/",
+    "url": "/Creation_notes/zh/portfolio/HighSchool_Sketch/",
     "heroImage": "assets/portfolio/portfolio1/Featured6-sketching.png",
     "heroImagePosition": "50% 20%",
     "heroImageWidth": "101%",
@@ -131,7 +131,7 @@
   },
   {
     "title": "精选作品详情",
-    "url": "/zh/portfolio/portfolio1-featured/",
+    "url": "/Creation_notes/zh/portfolio/portfolio1-featured/",
     "heroImage": "assets/portfolio/portfolio1/Featured1-character_design.png",
     "heroImagePosition": "70% 16%",
     "heroImageWidth": "120%",
@@ -141,7 +141,7 @@
   },
   {
     "title": "text",
-    "url": "/text/",
+    "url": "/Creation_notes/text/",
     "heroImage": null,
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -151,7 +151,7 @@
   },
   {
     "title": "text",
-    "url": "/zh/text/",
+    "url": "/Creation_notes/zh/text/",
     "heroImage": null,
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -161,7 +161,7 @@
   },
   {
     "title": "Webpage Production Log",
-    "url": "/website-log/",
+    "url": "/Creation_notes/website-log/",
     "heroImage": "assets/blog-placeholder-1.jpg",
     "heroImagePosition": "50% 50%",
     "heroImageWidth": "101%",
@@ -171,7 +171,7 @@
   },
   {
     "title": "网页制作日志",
-    "url": "/zh/website-log/",
+    "url": "/Creation_notes/zh/website-log/",
     "heroImage": "assets/blog-placeholder-1.jpg",
     "heroImagePosition": "50% 50%",
     "heroImageWidth": "101%",

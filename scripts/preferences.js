@@ -65,8 +65,7 @@ const basePath = (() => {
   }
 })();
 
-// 调试输出：查看在不同环境下检测到的 runtime base
-try { console.debug('[prefs] basePath:', basePath); } catch (e) {}
+// debug output removed
 
 const runtimeConfig = (() => {
   try {
@@ -577,7 +576,7 @@ function ensureSearchOverlay() {
         } catch (err) {
           target = '/' + rel;
         }
-        try { console.debug('[prefs] browse tags target:', target); } catch (e) {}
+  // debug output removed
         window.location.assign(target);
       });
     }
@@ -801,7 +800,7 @@ function ensurePrefsOverlay() {
       }
       const normBaseForStrip = (basePathname.endsWith('/') ? basePathname : (basePathname + '/'));
       const normCur = (curPath.endsWith('/') ? curPath : (curPath + '/'));
-  try { console.debug('[Prefs Debug] basePath debug: globalBase=', globalBase, 'basePathname=', basePathname, 'normBaseForStrip=', normBaseForStrip, 'normCur=', normCur); } catch(e){}
+  // debug output removed
       // 去掉 base pathname 前缀，得到相对站点根的路径（例如 'blog/post/' 或 'zh/blog/post/'）
       let pathAfterBase = '';
       if (normBaseForStrip !== '/' && normCur.startsWith(normBaseForStrip)) {
@@ -826,13 +825,9 @@ function ensurePrefsOverlay() {
         // 切换到中文：若相对路径未以 zh/ 开头，则在其前加入 zh/
         if (!/^zh(\/|$)/.test(pathAfterBase)) {
           const newRel = '/zh/' + pathAfterBase;
-          // 调试信息：记录构造目标的每一步，方便 F12 中查看
-          try { console.debug('[Prefs Debug] language->zh: curPath=', curPath, 'globalBase=', globalBase, 'pathAfterBase=', pathAfterBase, 'newRel=', newRel); } catch(e){}
           const resolved = resolveWithBase(newRel.replace(/\/+/g, '/'));
           let target = resolved || (globalBase + 'zh/' + pathAfterBase);
-          try { console.debug('[Prefs Debug] language->zh: resolved=', resolved, 'preNormalizeTarget=', target); } catch(e){}
           try { target = normalizeTarget(target, globalBase); } catch(e){}
-          try { console.debug('[Prefs Debug] language->zh: finalTarget(normalized)=', target); } catch(e){}
           window.location.assign(target);
         } else {
           // 已经是中文路径，直接跳转到同一路径以保证刷新
