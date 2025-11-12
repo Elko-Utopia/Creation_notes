@@ -53,6 +53,16 @@ const pointerState = {
   dragReady: false,
   hasDragged: false,
 };
+// 增加多指/捏合支持的内部状态
+pointerState.pointers = new Map(); // pointerId -> {clientX, clientY}
+pointerState.pinchActive = false;
+pointerState.pinch = {
+  startDist: 0,
+  startScale: 1,
+  originImageX: 0,
+  originImageY: 0,
+  ids: []
+};
 
 /**
  * 初始化轻量灯箱并绑定选择器对应的图片。
@@ -267,6 +277,8 @@ function ensureOverlay() {
   imageEl.alt = '';
   imageEl.decoding = 'async';
   imageEl.draggable = false;
+  // Prevent browser native gestures from interfering; handle pinch in JS
+  try { imageEl.style.touchAction = 'none'; } catch (e) {}
   // Use a stable transform origin (left-top) to make translate/scale math
   // deterministic when swapping preview -> full images.
   imageEl.style.transformOrigin = '0 0';
@@ -1303,9 +1315,77 @@ function onPointerDown(event) {
   } catch (_) {
     // pointer capture 在部分浏览器上可能不支持，忽略即可。
   }
+
+  // Track this pointer for multi-touch handling
+  try { pointerState.pointers.set(event.pointerId, { clientX: event.clientX, clientY: event.clientY }); } catch (e) {}
+
+  // If two pointers are active, start pinch mode
+  if (pointerState.pointers.size === 2) {
+    // cancel single-finger long-press drag
+    window.clearTimeout(pointerState.longPressTimer);
+    pointerState.longPressTimer = 0;
+    pointerState.dragReady = false;
+    pointerState.hasDragged = false;
+
+    const ids = Array.from(pointerState.pointers.keys());
+    const a = pointerState.pointers.get(ids[0]);
+    const b = pointerState.pointers.get(ids[1]);
+    const dx = b.clientX - a.clientX;
+    const dy = b.clientY - a.clientY;
+    const dist = Math.hypot(dx, dy) || 1;
+
+    // midpoint in client coords
+    const midX = (a.clientX + b.clientX) / 2;
+    const midY = (a.clientY + b.clientY) / 2;
+    // convert midpoint to image-space coords
+    const imgX = (midX - state.translateX) / state.scale;
+    const imgY = (midY - state.translateY) / state.scale;
+
+    pointerState.pinchActive = true;
+    pointerState.pinch.startDist = dist;
+    pointerState.pinch.startScale = state.scale;
+    pointerState.pinch.originImageX = imgX;
+    pointerState.pinch.originImageY = imgY;
+    pointerState.pinch.ids = ids;
+  }
 }
 
 function onPointerMove(event) {
+  // Update tracked pointer position if present
+  if (pointerState.pointers.has(event.pointerId)) {
+    pointerState.pointers.set(event.pointerId, { clientX: event.clientX, clientY: event.clientY });
+  }
+
+  // If pinch active, handle pinch-to-zoom
+  if (pointerState.pinchActive && pointerState.pinch.ids.length === 2) {
+    const ids = pointerState.pinch.ids;
+    const a = pointerState.pointers.get(ids[0]);
+    const b = pointerState.pointers.get(ids[1]);
+    if (!a || !b) return;
+    const dx = b.clientX - a.clientX;
+    const dy = b.clientY - a.clientY;
+    const dist = Math.hypot(dx, dy) || 1;
+    const scaleFactor = dist / pointerState.pinch.startDist;
+    let nextScale = pointerState.pinch.startScale * scaleFactor;
+    nextScale = Math.max(state.minScale, Math.min(state.maxScale, nextScale));
+
+    // midpoint in client coordinates
+    const midX = (a.clientX + b.clientX) / 2;
+    const midY = (a.clientY + b.clientY) / 2;
+
+    // Keep the image point under the midpoint stable while scaling
+    const imgX = pointerState.pinch.originImageX;
+    const imgY = pointerState.pinch.originImageY;
+    state.scale = nextScale;
+    state.translateX = midX - imgX * state.scale;
+    state.translateY = midY - imgY * state.scale;
+    constrainTranslation();
+    applyTransform();
+    skipCloseClick = true;
+    return;
+  }
+
+  // Single-finger drag handling (preserve previous behavior)
   if (!pointerState.active || event.pointerId !== pointerState.pointerId) return;
 
   const deltaX = event.clientX - pointerState.startX;
@@ -1327,28 +1407,34 @@ function onPointerMove(event) {
 }
 
 function onPointerUp(event) {
-  if (!pointerState.active || event.pointerId !== pointerState.pointerId) return;
+  // Remove this pointer from tracked pointers
+  try { pointerState.pointers.delete(event.pointerId); } catch (e) {}
 
-  window.clearTimeout(pointerState.longPressTimer);
-  pointerState.longPressTimer = 0;
-
-  try {
-    imageEl.releasePointerCapture(event.pointerId);
-  } catch (_) {
-    // 捕获可能未开启，忽略错误。
+  // If we were in pinch mode and now fewer than 2 pointers remain, end pinch
+  if (pointerState.pinchActive && pointerState.pointers.size < 2) {
+    pointerState.pinchActive = false;
+    pointerState.pinch.ids = [];
   }
 
-  if (pointerState.hasDragged) {
-    skipCloseClick = true;
-    window.setTimeout(() => {
-      skipCloseClick = false;
-    }, 0);
-  }
+  // If this was the primary single-pointer interaction, handle end
+  if (pointerState.pointerId === event.pointerId) {
+    window.clearTimeout(pointerState.longPressTimer);
+    pointerState.longPressTimer = 0;
 
-  pointerState.active = false;
-  pointerState.pointerId = null;
-  pointerState.hasDragged = false;
-  pointerState.dragReady = false;
+    try {
+      imageEl.releasePointerCapture(event.pointerId);
+    } catch (_) {}
+
+    if (pointerState.hasDragged) {
+      skipCloseClick = true;
+      window.setTimeout(() => { skipCloseClick = false; }, 0);
+    }
+
+    pointerState.active = false;
+    pointerState.pointerId = null;
+    pointerState.hasDragged = false;
+    pointerState.dragReady = false;
+  }
 }
 
 function onPointerCancel(event) {
