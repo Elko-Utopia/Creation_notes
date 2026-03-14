@@ -315,7 +315,7 @@
       return;
     }
   const runtimeBase = getRuntimeBase();
-  const placeholder = new URL('assets/blog-placeholder-2.jpg', runtimeBase).toString();
+  const placeholder = new URL('assets/blog-placeholder-2.webp', runtimeBase).toString();
     out.innerHTML = items.map(it => {
       const title = escapeHtml(it.title || 'Untitled');
       // 在 keyword 搜索下优先展示命中的段落并高亮关键词；
