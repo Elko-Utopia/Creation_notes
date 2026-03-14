@@ -53,16 +53,80 @@ const pointerState = {
   dragReady: false,
   hasDragged: false,
 };
-// 增加多指/捏合支持的内部状态
-pointerState.pointers = new Map(); // pointerId -> {clientX, clientY}
-pointerState.pinchActive = false;
-pointerState.pinch = {
-  startDist: 0,
-  startScale: 1,
-  originImageX: 0,
-  originImageY: 0,
-  ids: []
-};
+
+// ---- OpenSeadragon helper: load from CDN on demand and open large images ----
+function ensureOpenSeadragon(timeoutMs = 5000) {
+  return new Promise((resolve, reject) => {
+    if (typeof window === 'undefined') return reject(new Error('no window'));
+    if (window.OpenSeadragon) return resolve(window.OpenSeadragon);
+    // Avoid adding multiple script tags
+    const existing = document.querySelector('script[data-osd-loader]');
+    if (existing) {
+      existing.addEventListener('load', () => resolve(window.OpenSeadragon));
+      existing.addEventListener('error', () => reject(new Error('OSD load failed')));
+      return;
+    }
+    const s = document.createElement('script');
+    s.setAttribute('data-osd-loader', '1');
+    s.src = 'https://openseadragon.github.io/openseadragon/openseadragon.min.js';
+    s.async = true;
+    const to = setTimeout(() => { reject(new Error('OpenSeadragon load timeout')); }, timeoutMs);
+    s.onload = () => { clearTimeout(to); resolve(window.OpenSeadragon); };
+    s.onerror = (e) => { clearTimeout(to); reject(new Error('OpenSeadragon load error')); };
+    document.head.appendChild(s);
+  });
+}
+
+function openWithOpenSeadragon(imageUrl, opts = {}) {
+  try {
+    // Create or reuse a modal container
+    let modal = document.getElementById('osd-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'osd-modal';
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:99999;display:flex;align-items:center;justify-content:center;';
+      const closeBtn = document.createElement('button');
+      closeBtn.textContent = 'Close';
+      closeBtn.style.cssText = 'position:absolute;top:12px;right:12px;z-index:100000;padding:8px 12px;border-radius:6px;background:#fff;color:#000;border:none;';
+      closeBtn.id = 'osd-close-btn';
+      modal.appendChild(closeBtn);
+      const viewer = document.createElement('div');
+      viewer.id = 'osd-viewer';
+      viewer.style.cssText = 'width:100%;height:100%;touch-action:none;';
+      modal.appendChild(viewer);
+      document.body.appendChild(modal);
+      closeBtn.addEventListener('click', () => {
+        try { if (window._osdViewer) { window._osdViewer.destroy(); window._osdViewer = null; } } catch(e){}
+        modal.style.display = 'none';
+      });
+    } else {
+      modal.style.display = '';
+    }
+
+    // Init OpenSeadragon viewer
+    try {
+      if (window._osdViewer) {
+        try { window._osdViewer.destroy(); } catch(e){}
+        window._osdViewer = null;
+      }
+      window._osdViewer = window.OpenSeadragon({
+        id: 'osd-viewer',
+        prefixUrl: opts.prefixUrl || 'https://openseadragon.github.io/openseadragon/images/',
+        tileSources: { type: 'image', url: imageUrl },
+        gestureSettingsTouch: { pinchToZoom: true, flickEnabled: true },
+        showNavigator: !!opts.showNavigator,
+        defaultZoomLevel: 0
+      });
+    } catch (e) {
+      console.warn('OpenSeadragon init failed', e);
+      throw e;
+    }
+  } catch (err) {
+    console.error('openWithOpenSeadragon failed', err);
+    throw err;
+  }
+}
+
 
 /**
  * 初始化轻量灯箱并绑定选择器对应的图片。
@@ -277,8 +341,6 @@ function ensureOverlay() {
   imageEl.alt = '';
   imageEl.decoding = 'async';
   imageEl.draggable = false;
-  // Prevent browser native gestures from interfering; handle pinch in JS
-  try { imageEl.style.touchAction = 'none'; } catch (e) {}
   // Use a stable transform origin (left-top) to make translate/scale math
   // deterministic when swapping preview -> full images.
   imageEl.style.transformOrigin = '0 0';
@@ -675,6 +737,28 @@ function onImageClick(event) {
 
   const target = event.currentTarget;
   if (!(target instanceof HTMLImageElement)) return;
+
+  // 默认使用 OpenSeadragon 作为灯箱替代；若加载或初始化失败则回退到原有 lightbox
+  try {
+    const full = resolveSource(target);
+    if (full) {
+      ensureOpenSeadragon().then(() => {
+        try {
+          openWithOpenSeadragon(target.dataset.dzi || full, { showNavigator: true });
+          monitor.log('onOpenWithOSD', full);
+        } catch (e) {
+          console.warn('OSD open failed, falling back to lightbox', e);
+          openLightbox(target);
+        }
+      }).catch((err) => {
+        console.warn('OSD load failed, falling back to lightbox', err);
+        openLightbox(target);
+      });
+      return;
+    }
+  } catch (e) {
+    console.warn('OSD branch error, fallback to lightbox', e);
+  }
 
   // 检查缩略图是否已完全加载
   if (!target.complete || !target.naturalWidth || !target.naturalHeight) {
@@ -1315,77 +1399,9 @@ function onPointerDown(event) {
   } catch (_) {
     // pointer capture 在部分浏览器上可能不支持，忽略即可。
   }
-
-  // Track this pointer for multi-touch handling
-  try { pointerState.pointers.set(event.pointerId, { clientX: event.clientX, clientY: event.clientY }); } catch (e) {}
-
-  // If two pointers are active, start pinch mode
-  if (pointerState.pointers.size === 2) {
-    // cancel single-finger long-press drag
-    window.clearTimeout(pointerState.longPressTimer);
-    pointerState.longPressTimer = 0;
-    pointerState.dragReady = false;
-    pointerState.hasDragged = false;
-
-    const ids = Array.from(pointerState.pointers.keys());
-    const a = pointerState.pointers.get(ids[0]);
-    const b = pointerState.pointers.get(ids[1]);
-    const dx = b.clientX - a.clientX;
-    const dy = b.clientY - a.clientY;
-    const dist = Math.hypot(dx, dy) || 1;
-
-    // midpoint in client coords
-    const midX = (a.clientX + b.clientX) / 2;
-    const midY = (a.clientY + b.clientY) / 2;
-    // convert midpoint to image-space coords
-    const imgX = (midX - state.translateX) / state.scale;
-    const imgY = (midY - state.translateY) / state.scale;
-
-    pointerState.pinchActive = true;
-    pointerState.pinch.startDist = dist;
-    pointerState.pinch.startScale = state.scale;
-    pointerState.pinch.originImageX = imgX;
-    pointerState.pinch.originImageY = imgY;
-    pointerState.pinch.ids = ids;
-  }
 }
 
 function onPointerMove(event) {
-  // Update tracked pointer position if present
-  if (pointerState.pointers.has(event.pointerId)) {
-    pointerState.pointers.set(event.pointerId, { clientX: event.clientX, clientY: event.clientY });
-  }
-
-  // If pinch active, handle pinch-to-zoom
-  if (pointerState.pinchActive && pointerState.pinch.ids.length === 2) {
-    const ids = pointerState.pinch.ids;
-    const a = pointerState.pointers.get(ids[0]);
-    const b = pointerState.pointers.get(ids[1]);
-    if (!a || !b) return;
-    const dx = b.clientX - a.clientX;
-    const dy = b.clientY - a.clientY;
-    const dist = Math.hypot(dx, dy) || 1;
-    const scaleFactor = dist / pointerState.pinch.startDist;
-    let nextScale = pointerState.pinch.startScale * scaleFactor;
-    nextScale = Math.max(state.minScale, Math.min(state.maxScale, nextScale));
-
-    // midpoint in client coordinates
-    const midX = (a.clientX + b.clientX) / 2;
-    const midY = (a.clientY + b.clientY) / 2;
-
-    // Keep the image point under the midpoint stable while scaling
-    const imgX = pointerState.pinch.originImageX;
-    const imgY = pointerState.pinch.originImageY;
-    state.scale = nextScale;
-    state.translateX = midX - imgX * state.scale;
-    state.translateY = midY - imgY * state.scale;
-    constrainTranslation();
-    applyTransform();
-    skipCloseClick = true;
-    return;
-  }
-
-  // Single-finger drag handling (preserve previous behavior)
   if (!pointerState.active || event.pointerId !== pointerState.pointerId) return;
 
   const deltaX = event.clientX - pointerState.startX;
@@ -1407,34 +1423,28 @@ function onPointerMove(event) {
 }
 
 function onPointerUp(event) {
-  // Remove this pointer from tracked pointers
-  try { pointerState.pointers.delete(event.pointerId); } catch (e) {}
+  if (!pointerState.active || event.pointerId !== pointerState.pointerId) return;
 
-  // If we were in pinch mode and now fewer than 2 pointers remain, end pinch
-  if (pointerState.pinchActive && pointerState.pointers.size < 2) {
-    pointerState.pinchActive = false;
-    pointerState.pinch.ids = [];
+  window.clearTimeout(pointerState.longPressTimer);
+  pointerState.longPressTimer = 0;
+
+  try {
+    imageEl.releasePointerCapture(event.pointerId);
+  } catch (_) {
+    // 捕获可能未开启，忽略错误。
   }
 
-  // If this was the primary single-pointer interaction, handle end
-  if (pointerState.pointerId === event.pointerId) {
-    window.clearTimeout(pointerState.longPressTimer);
-    pointerState.longPressTimer = 0;
-
-    try {
-      imageEl.releasePointerCapture(event.pointerId);
-    } catch (_) {}
-
-    if (pointerState.hasDragged) {
-      skipCloseClick = true;
-      window.setTimeout(() => { skipCloseClick = false; }, 0);
-    }
-
-    pointerState.active = false;
-    pointerState.pointerId = null;
-    pointerState.hasDragged = false;
-    pointerState.dragReady = false;
+  if (pointerState.hasDragged) {
+    skipCloseClick = true;
+    window.setTimeout(() => {
+      skipCloseClick = false;
+    }, 0);
   }
+
+  pointerState.active = false;
+  pointerState.pointerId = null;
+  pointerState.hasDragged = false;
+  pointerState.dragReady = false;
 }
 
 function onPointerCancel(event) {
