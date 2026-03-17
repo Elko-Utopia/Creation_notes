@@ -77,46 +77,70 @@ function openWithOpenSeadragon(imageUrl, opts = {}) {
     if (!modal) {
       modal = document.createElement('div');
       modal.id = 'osd-modal';
-      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:99999;display:flex;align-items:center;justify-content:center;';
+      // Use absolute positioning and block display for stability with OSD dimensions
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:99999;display:block;';
+      
       const closeBtn = document.createElement('button');
       closeBtn.textContent = 'Close';
-      closeBtn.style.cssText = 'position:absolute;top:12px;right:12px;z-index:100000;padding:8px 12px;border-radius:6px;background:#fff;color:#000;border:none;';
+      closeBtn.style.cssText = 'position:absolute;top:20px;right:20px;z-index:100001;padding:10px 16px;border-radius:6px;background:rgba(255,255,255,0.9);color:#000;border:none;cursor:pointer;font-weight:bold;';
       closeBtn.id = 'osd-close-btn';
       modal.appendChild(closeBtn);
+      
       const viewer = document.createElement('div');
       viewer.id = 'osd-viewer';
-      viewer.style.cssText = 'width:100%;height:100%;touch-action:none;';
+      viewer.style.cssText = 'width:100%;height:100%;';
       modal.appendChild(viewer);
+      
       document.body.appendChild(modal);
       closeBtn.addEventListener('click', () => {
-        try { if (window._osdViewer) { window._osdViewer.destroy(); window._osdViewer = null; } } catch(e){}
+        if (window._osdViewer) {
+          try { window._osdViewer.destroy(); } catch(e){}
+          window._osdViewer = null;
+        }
         modal.style.display = 'none';
       });
     } else {
-      modal.style.display = '';
+      modal.style.display = 'block';
     }
 
     // Init OpenSeadragon viewer
-    try {
-      if (window._osdViewer) {
-        try { window._osdViewer.destroy(); } catch(e){}
-        window._osdViewer = null;
-      }
-      window._osdViewer = window.OpenSeadragon({
-        id: 'osd-viewer',
-        prefixUrl: opts.prefixUrl || 'https://openseadragon.github.io/openseadragon/images/',
-        tileSources: { type: 'image', url: imageUrl },
-        gestureSettingsTouch: { pinchToZoom: true, flickEnabled: true },
-        showNavigator: !!opts.showNavigator,
-        defaultZoomLevel: 0
-      });
-    } catch (e) {
-      console.warn('OpenSeadragon init failed', e);
-      throw e;
+    if (window._osdViewer) {
+      try { window._osdViewer.destroy(); } catch(e){}
+      window._osdViewer = null;
     }
+
+    // Force reflow
+    const viewerEl = document.getElementById('osd-viewer');
+
+    window._osdViewer = window.OpenSeadragon({
+      id: 'osd-viewer',
+      prefixUrl: 'https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/images/',
+      tileSources: { type: 'image', url: imageUrl },
+      gestureSettingsTouch: { pinchToZoom: true, flickEnabled: true },
+      showNavigator: true,
+      navigatorPosition: 'TOP_RIGHT',
+      navigatorAutoFade: false,
+      navigatorWidth: 150,
+      navigatorHeight: 100,
+      defaultZoomLevel: 0,
+      minZoomImageRatio: 0.1,
+      maxZoomPixelRatio: 3,
+      visibilityRatio: 1,
+      animationTime: 0.5,
+    });
+
+    // Fix the "hidden until moved" bug by forcing a resize check
+    window._osdViewer.addHandler('open', () => {
+      setTimeout(() => {
+        if (window._osdViewer) {
+          window._osdViewer.viewport.goHome(true);
+          window._osdViewer.forceRedraw();
+        }
+      }, 50);
+    });
+
   } catch (err) {
     console.error('openWithOpenSeadragon failed', err);
-    throw err;
   }
 }
 
@@ -131,55 +155,6 @@ function initLightbox({ selector = DEFAULT_SELECTOR, viewportPadding, transition
 
   if (typeof viewportPadding === 'number' && Number.isFinite(viewportPadding)) {
     settings.viewportPadding = Math.max(0, viewportPadding);
-  }
-
-  if (!document.getElementById('lightbox-styles-injected')) {
-    const style = document.createElement('style');
-    style.id = 'lightbox-styles-injected';
-    style.textContent = `
-      .md-content.pswp-featured img:not(.hero-img) {
-        margin-left: auto;
-        margin-right: auto;
-        display: block;
-        object-fit: contain;
-        max-width: 100%;
-        height: auto;
-        border-radius: 12px;
-        box-shadow: var(--box-shadow, 0 6px 24px rgba(0, 0, 0, 0.08));
-        margin: clamp(1.5rem, 5vw, 2.5rem) auto;
-        cursor: pointer;
-      }
-      
-      .md-content.pswp-featured img:not(.hero-img).landscape {
-        max-width: 100%;
-        width: 100%;
-        height: auto;
-        max-height: none;
-      }
-      
-      .md-content.pswp-featured img:not(.hero-img).portrait {
-        max-height: 70vh;
-        width: auto;
-        max-width: 80%;
-      }
-      
-      .md-content.pswp-featured img:not(.hero-img).square {
-        max-width: 60%;
-        width: 60%;
-        height: auto;
-      }
-      
-      @media (max-width: 720px) {
-        .md-content.pswp-featured img:not(.hero-img).portrait {
-          max-height: 60vh;
-          max-width: 90%;
-        }
-        .md-content.pswp-featured img:not(.hero-img).square {
-          max-width: 80%;
-        }
-      }
-    `;
-    document.head.appendChild(style);
   }
 
   bindImages(normalized);
@@ -256,6 +231,8 @@ function bindImage(node) {
   // Do not bind images that are inside inline portfolio cards (injected wiki-link cards)
   // — these images are UI/teaser images and should not open in the site-wide lightbox.
   if (node.closest && node.closest('.inline-portfolio-card')) return;
+  // 跳过带有 no-lightbox 标记的容器内的图片
+  if (node.closest && node.closest('.no-lightbox')) return;
   // Do not bind images inside masonry galleries - they have their own lightbox handling
   if (node.closest && node.closest('.md-masonry-wrapper')) return;
 
@@ -290,65 +267,11 @@ function bindImage(node) {
       }
   } catch (e) {  }
 
-    if (boundImages.has(node)) return;
+  if (boundImages.has(node)) return;
 
     boundImages.add(node);
     node.addEventListener('click', onImageClick);
   try { console.debug('[lightbox.debug] bindImage bound listener', { src: node.src, currentSrc: node.currentSrc }); } catch(e){}
-  
-  // ...existing code...
-  updateImageCursor(node);
-  
-  // ...existing code...
-  if (!node.complete) {
-    node.addEventListener('load', () => {
-      updateImageCursor(node);
-      classifyImageOrientation(node);
-    }, { once: true });
-    
-    node.addEventListener('error', () => {
-      updateImageCursor(node);
-    }, { once: true });
-  }
-  
-  // ...existing code...
-  classifyImageOrientation(node);
-}
-
- 
-function updateImageCursor(img) {
-  if (!img.complete || !img.naturalWidth || !img.naturalHeight) {
-    // ...existing code...
-    img.style.cursor = 'wait';
-    img.title = 'Image loading, please wait...';
-  } else {
-    // ...existing code...
-    img.style.cursor = 'pointer';
-    img.title = 'Click to view the larger image';
-  }
-}
-
- 
-function classifyImageOrientation(img) {
-  if (!img.naturalWidth || !img.naturalHeight) {
-    // ...existing code...
-    if (!img.complete) {
-      img.addEventListener('load', () => classifyImageOrientation(img), { once: true });
-      return;
-    }
-  }
-  
-  const aspectRatio = img.naturalWidth / img.naturalHeight;
-  
-  img.classList.remove('landscape', 'portrait', 'square');
-  
-  if (aspectRatio > 1.1) {
-    img.classList.add('landscape');
-  } else if (aspectRatio < 0.9) {
-    img.classList.add('portrait');
-  } else {
-    img.classList.add('square');
-  }
 }
 
 function ensureObserver() {

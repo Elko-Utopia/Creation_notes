@@ -80,26 +80,6 @@
     "pubDate": "2025-10-24T00:00:00.000Z"
   },
   {
-    "title": "HOME",
-    "url": "/Creation_notes/home/",
-    "heroImage": null,
-    "heroImagePosition": null,
-    "heroImageWidth": null,
-    "source": "home.md",
-    "lang": "en",
-    "pubDate": null
-  },
-  {
-    "title": "HOME",
-    "url": "/Creation_notes/zh/home/",
-    "heroImage": null,
-    "heroImagePosition": null,
-    "heroImageWidth": null,
-    "source": "zh/home.md",
-    "lang": "zh",
-    "pubDate": null
-  },
-  {
     "title": "Sketch and Painting in Senior High School",
     "url": "/Creation_notes/portfolio/collections/HighSchool_Sketch/",
     "heroImage": "assets/portfolio/Featured6-sketching.webp",
@@ -510,7 +490,7 @@
     "pubDate": "2021-01-01T00:00:00.000Z"
   },
   {
-    "title": "圆环中的田野",
+    "title": "The Field Within a Circle",
     "url": "/Creation_notes/zh/portfolio/individual/featured8/",
     "heroImage": "assets/portfolio/Featured8-sketching.webp",
     "heroImagePosition": null,
