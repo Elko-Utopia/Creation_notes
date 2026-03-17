@@ -1,388 +1,204 @@
-﻿const DEFAULT_SELECTOR = 'main img';
+/**
+ * lightbox.js — PhotoSwipe v5 封装
+ *
+ * 排除容器：.inline-portfolio-card、.no-lightbox、.md-masonry-wrapper
+ * 图片源：data-full > data-lightbox-src > currentSrc > src
+ *
+ * window.initLightbox({ selector })
+ * window.initLightboxAuto()
+ */
+(function () {
+  'use strict';
+  if (typeof window === 'undefined' || typeof document === 'undefined') return;
 
-const boundImages = new WeakSet();
-const registeredSelectors = new Set();
+  const DEFAULT_SELECTOR = '.md-content.pswp-featured img';
+  const EXCLUDED = ['.inline-portfolio-card', '.no-lightbox', '.md-masonry-wrapper'];
 
- 
-const isDev = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+  const boundImages = new WeakSet();
+  const registeredSelectors = new Set();
+  let mutationObserver;
+  let pswpLoaded = false;
+  let PhotoSwipe;
 
- 
-const monitor = {
-  log: function() {}
-};
+  /* ─── 加载 PhotoSwipe（只加载一次） ─────── */
+  function loadPhotoSwipe() {
+    if (pswpLoaded) return Promise.resolve();
+    pswpLoaded = true;
 
- 
-let observer;
-let openRequestId = 0;
+    if (!document.getElementById('pswp-base-css')) {
+      const link = document.createElement('link');
+      link.id = 'pswp-base-css';
+      link.rel = 'stylesheet';
+      link.href = 'https://cdn.jsdelivr.net/npm/photoswipe@5/dist/photoswipe.css';
+      document.head.appendChild(link);
+    }
 
-let isOpen = false;
-let skipCloseClick = false;
-let scrollLockSnapshot = null;
+    return import('https://cdn.jsdelivr.net/npm/photoswipe@5/dist/photoswipe.esm.min.js')
+      .then(function (mod) { PhotoSwipe = mod.default; });
+  }
 
-const settings = {
-  viewportPadding: 48,
-  transitionDurationMs: 150,
-};
+  /* ─── 工具 ───────────────────────────────── */
+  function resolveSource(img) {
+    return img.dataset.full || img.dataset.lightboxSrc || img.currentSrc || img.src || null;
+  }
 
-const state = {
-  naturalWidth: 0,
-  naturalHeight: 0,
-  scale: 1,
-  initialScale: 1,
-  minScale: 0.5,
-  maxScale: 3,
-  translateX: 0,
-  translateY: 0,
-};
+  function isExcluded(node) {
+    return EXCLUDED.some(function (sel) { return node.closest && node.closest(sel); });
+  }
 
-const pointerState = {
-  active: false,
-  pointerId: null,
-  startX: 0,
-  startY: 0,
-  originX: 0,
-  originY: 0,
-  longPressTimer: 0,
-  dragReady: false,
-  hasDragged: false,
-};
+  /* ─── 收集同页图片组 ────────────────────── */
+  function collectGallery(clickedImg) {
+    const scope =
+      clickedImg.closest('article') ||
+      clickedImg.closest('.md-content') ||
+      clickedImg.closest('main') ||
+      document;
 
- 
-function ensureOpenSeadragon(timeoutMs = 5000) {
-  return new Promise((resolve, reject) => {
-    if (typeof window === 'undefined') return reject(new Error('no window'));
-    if (window.OpenSeadragon) return resolve(window.OpenSeadragon);
-    // Avoid adding multiple script tags
-    const existing = document.querySelector('script[data-osd-loader]');
-    if (existing) {
-      existing.addEventListener('load', () => resolve(window.OpenSeadragon));
-      existing.addEventListener('error', () => reject(new Error('OSD load failed')));
+    const items = [];
+    let startIndex = 0;
+
+    scope.querySelectorAll('img').forEach(function (img) {
+      if (isExcluded(img)) return;
+      if (!boundImages.has(img)) return;
+      const src = resolveSource(img);
+      if (!src) return;
+      if (img === clickedImg) startIndex = items.length;
+      items.push({
+        src: src,
+        width: img.naturalWidth || 1600,
+        height: img.naturalHeight || 900,
+        alt: img.alt || '',
+        element: img,
+        msrc: img.currentSrc || img.src,
+      });
+    });
+
+    return { items: items, startIndex: startIndex };
+  }
+
+  /* ─── 打开灯箱 ───────────────────────────── */
+  function openLightbox(clickedImg) {
+    loadPhotoSwipe().then(function () {
+      if (!PhotoSwipe) return;
+
+      const { items, startIndex } = collectGallery(clickedImg);
+      if (!items.length) return;
+
+      const pswp = new PhotoSwipe({
+        dataSource: items,
+        index: startIndex,
+
+        bgOpacity: 0.9,
+        spacing: 0.1,
+        loop: false,
+        pinchToClose: true,
+        closeOnVerticalDrag: true,
+        showHideAnimationType: 'zoom',
+
+        getThumbBoundsFn: function (index) {
+          const item = items[index];
+          if (!item || !item.element) return null;
+          const rect = item.element.getBoundingClientRect();
+          return { x: rect.left, y: rect.top + (window.scrollY || 0), w: rect.width };
+        },
+      });
+
+      /* ── 滚轮缩放：帧级响应，以鼠标位置为中心 ── */
+      let wheelRaf = null;
+      pswp.on('wheel', function (e) {
+        e.preventDefault();
+        const oe = e.originalEvent;
+
+        if (wheelRaf) return; // 节流：每帧最多处理一次
+        wheelRaf = requestAnimationFrame(function () { wheelRaf = null; });
+
+        const delta = oe.deltaY !== undefined ? oe.deltaY : (oe.detail || 0);
+        const slide = pswp.currSlide;
+        const current = slide.currZoomLevel;
+        const minZoom = slide.zoomLevels.fit;
+        const maxZoom = slide.zoomLevels.max * 2;
+
+        // 小步长：每档 4%
+        const factor = delta < 0 ? 1.04 : 0.96;
+        const next = Math.min(maxZoom, Math.max(minZoom, current * factor));
+
+        if (next === current) return;
+
+        // duration=0：立即到位，不产生动画叠加跳位
+        slide.zoomTo(next, { x: oe.clientX, y: oe.clientY }, 0);
+      });
+
+      pswp.init();
+    }).catch(function (err) {
+      console.error('[lightbox] PhotoSwipe 加载失败', err);
+    });
+  }
+
+  /* ─── 绑定图片 ───────────────────────────── */
+  function bindImage(node) {
+    if (!(node instanceof HTMLImageElement)) return;
+    if (isExcluded(node)) return;
+    if (boundImages.has(node)) return;
+
+    if (!node.complete || node.naturalWidth === 0) {
+      node.addEventListener('load', function () { bindImage(node); }, { once: true });
       return;
     }
-    const s = document.createElement('script');
-    s.setAttribute('data-osd-loader', '1');
-    s.src = 'https://openseadragon.github.io/openseadragon/openseadragon.min.js';
-    s.async = true;
-    const to = setTimeout(() => { reject(new Error('OpenSeadragon load timeout')); }, timeoutMs);
-    s.onload = () => { clearTimeout(to); resolve(window.OpenSeadragon); };
-    s.onerror = (e) => { clearTimeout(to); reject(new Error('OpenSeadragon load error')); };
-    document.head.appendChild(s);
-  });
-}
-
-function openWithOpenSeadragon(imageUrl, opts = {}) {
-  try {
-    // Create or reuse a modal container
-    let modal = document.getElementById('osd-modal');
-    if (!modal) {
-      modal = document.createElement('div');
-      modal.id = 'osd-modal';
-      // Use absolute positioning and block display for stability with OSD dimensions
-      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:99999;display:block;';
-      
-      const closeBtn = document.createElement('button');
-      closeBtn.textContent = 'Close';
-      closeBtn.style.cssText = 'position:absolute;top:20px;right:20px;z-index:100001;padding:10px 16px;border-radius:6px;background:rgba(255,255,255,0.9);color:#000;border:none;cursor:pointer;font-weight:bold;';
-      closeBtn.id = 'osd-close-btn';
-      modal.appendChild(closeBtn);
-      
-      const viewer = document.createElement('div');
-      viewer.id = 'osd-viewer';
-      viewer.style.cssText = 'width:100%;height:100%;';
-      modal.appendChild(viewer);
-      
-      document.body.appendChild(modal);
-      closeBtn.addEventListener('click', () => {
-        if (window._osdViewer) {
-          try { window._osdViewer.destroy(); } catch(e){}
-          window._osdViewer = null;
-        }
-        modal.style.display = 'none';
-      });
-    } else {
-      modal.style.display = 'block';
-    }
-
-    // Init OpenSeadragon viewer
-    if (window._osdViewer) {
-      try { window._osdViewer.destroy(); } catch(e){}
-      window._osdViewer = null;
-    }
-
-    // Force reflow
-    const viewerEl = document.getElementById('osd-viewer');
-
-    window._osdViewer = window.OpenSeadragon({
-      id: 'osd-viewer',
-      prefixUrl: 'https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/images/',
-      tileSources: { type: 'image', url: imageUrl },
-      gestureSettingsTouch: { pinchToZoom: true, flickEnabled: true },
-      showNavigator: true,
-      navigatorPosition: 'TOP_RIGHT',
-      navigatorAutoFade: false,
-      navigatorWidth: 150,
-      navigatorHeight: 100,
-      defaultZoomLevel: 0,
-      minZoomImageRatio: 0.1,
-      maxZoomPixelRatio: 3,
-      visibilityRatio: 1,
-      animationTime: 0.5,
-    });
-
-    // Fix the "hidden until moved" bug by forcing a resize check
-    window._osdViewer.addHandler('open', () => {
-      setTimeout(() => {
-        if (window._osdViewer) {
-          window._osdViewer.viewport.goHome(true);
-          window._osdViewer.forceRedraw();
-        }
-      }, 50);
-    });
-
-  } catch (err) {
-    console.error('openWithOpenSeadragon failed', err);
-  }
-}
-
-
- 
-function initLightbox({ selector = DEFAULT_SELECTOR, viewportPadding, transitionDuration } = {}) {
-  if (typeof window === 'undefined' || typeof document === 'undefined') {
-    return;
-  }
-
-  const normalized = typeof selector === 'string' && selector.trim() ? selector.trim() : DEFAULT_SELECTOR;
-
-  if (typeof viewportPadding === 'number' && Number.isFinite(viewportPadding)) {
-    settings.viewportPadding = Math.max(0, viewportPadding);
-  }
-
-  bindImages(normalized);
-  registeredSelectors.add(normalized);
-  ensureObserver();
-  
-
-}
-
- 
-function initLightboxAuto() {
-  const images = document.querySelectorAll('.md-content.pswp-featured img[data-full]');
-  monitor.log('onInitialization', '.md-content.pswp-featured img[data-full]', images.length);
-  
-  if (images.length > 0) {
-    initLightbox({ selector: '.md-content.pswp-featured img[data-full]' });
-  }
-}
-
- 
-function autoPreloadImages(selector) {
-  const images = document.querySelectorAll(selector);
-  images.forEach(img => {
-    if (img.dataset.full) {
-      
-      setTimeout(() => {
-        const fullImg = new Image();
-        fullImg.src = img.dataset.full;
-      }, 100);
-    }
-  });
-}
-
- 
-(function schedulePreloadAfterLoad() {
-  if (typeof window === 'undefined') return;
-
-  function shouldPreload() {
-    try {
-      if (navigator.connection) {
-        if (navigator.connection.saveData) return false;
-        const et = navigator.connection.effectiveType || '';
-        if (/2g|slow-2g/.test(et)) return false;
-      }
-    } catch (e) {}
-    return true;
-  }
-
-  function runPreload() {
-    if (!shouldPreload()) return;
-    // If selectors were registered via initLightbox, use them; otherwise fallback
-    const sels = registeredSelectors.size ? Array.from(registeredSelectors) : [DEFAULT_SELECTOR];
-    for (const s of sels) {
-      try { autoPreloadImages(s); } catch (e) {}
-    }
-  }
-
-  window.addEventListener('load', () => {
-    // schedule during idle time to avoid blocking rendering
-    if (typeof requestIdleCallback === 'function') {
-      try { requestIdleCallback(runPreload, { timeout: 2000 }); } catch (e) { setTimeout(runPreload, 1500); }
-    } else {
-      setTimeout(runPreload, 1500);
-    }
-  });
-})();
-
-function bindImages(selector) {
-  document.querySelectorAll(selector).forEach(bindImage);
-}
-
-function bindImage(node) {
-  if (!(node instanceof HTMLImageElement)) return;
-  // Do not bind images that are inside inline portfolio cards (injected wiki-link cards)
-  // — these images are UI/teaser images and should not open in the site-wide lightbox.
-  if (node.closest && node.closest('.inline-portfolio-card')) return;
-  // 跳过带有 no-lightbox 标记的容器内的图片
-  if (node.closest && node.closest('.no-lightbox')) return;
-  // Do not bind images inside masonry galleries - they have their own lightbox handling
-  if (node.closest && node.closest('.md-masonry-wrapper')) return;
-
-  // ...existing code...
-  try {
-    console.debug('[lightbox.debug] bindImage candidate', {
-      src: node.src,
-      currentSrc: node.currentSrc,
-      complete: node.complete,
-      naturalWidth: node.naturalWidth,
-      naturalHeight: node.naturalHeight,
-      inInlineCard: !!(node.closest && node.closest('.inline-portfolio-card'))
-    });
-  } catch (e) {  }
-    // ...existing code...
-    try {
-      const hasLayout = node.offsetWidth > 0 && node.offsetHeight > 0;
-      if (!node.complete || !hasLayout) {
-        console.debug('[lightbox.debug] bindImage deferred (not ready)', { src: node.src, complete: node.complete, offsetWidth: node.offsetWidth, offsetHeight: node.offsetHeight });
-        const onReady = function onReady() {
-          try { node.removeEventListener('load', onReady); node.removeEventListener('error', onErr); } catch(e){}
-          // Re-run bindImage when the image is ready
-          try { bindImage(node); } catch(e) { console.warn('[lightbox.debug] bindImage rebind failed', e); }
-        };
-        const onErr = function onErr() {
-          try { node.removeEventListener('load', onReady); node.removeEventListener('error', onErr); } catch(e){}
-          console.debug('[lightbox.debug] bindImage deferred image error', { src: node.src });
-        };
-        node.addEventListener('load', onReady, { once: true });
-        node.addEventListener('error', onErr, { once: true });
-        return;
-      }
-  } catch (e) {  }
-
-  if (boundImages.has(node)) return;
 
     boundImages.add(node);
-    node.addEventListener('click', onImageClick);
-  try { console.debug('[lightbox.debug] bindImage bound listener', { src: node.src, currentSrc: node.currentSrc }); } catch(e){}
-}
-
-function ensureObserver() {
-  if (observer || typeof MutationObserver === 'undefined') return;
-
-  observer = new MutationObserver((mutations) => {
-    if (!registeredSelectors.size) return;
-    for (const mutation of mutations) {
-      mutation.addedNodes.forEach((node) => {
-        if (!(node instanceof Element)) return;
-        scanNodeForImages(node);
-      });
-    }
-  });
-
-  observer.observe(document.documentElement, { childList: true, subtree: true });
-}
-
- 
-
-function onImageClick(event) {
-  if (event.button && event.button !== 0) return;
-  event.preventDefault();
-
-  const target = event.currentTarget;
-  if (!(target instanceof HTMLImageElement)) return;
-
-  const full = resolveSource(target);
-  if (full) {
-    ensureOpenSeadragon().then(() => {
-      try {
-        openWithOpenSeadragon(target.dataset.dzi || full, { showNavigator: true });
-      } catch (e) {
-        console.error('OSD open failed', e);
-      }
-    }).catch((err) => {
-      console.error('OSD load failed', err);
+    node.addEventListener('click', function (e) {
+      e.preventDefault();
+      openLightbox(node);
     });
   }
-}
 
- 
-
- 
-
-function computeWheelScale(event) {
-  const { deltaY, deltaMode } = event;
-  if (deltaY === 0) return 1;
-
-  const step = deltaMode === 1 ? 0.2 : deltaMode === 2 ? 0.45 : 0.0025;
-  return Math.exp(-deltaY * step);
-}
-
-function resolveSource(image) {
-  if (image.dataset && image.dataset.full) {
-    return image.dataset.full;
+  function bindImages(selector) {
+    document.querySelectorAll(selector).forEach(bindImage);
   }
-  if (image.dataset && image.dataset.lightboxSrc) {
-    return image.dataset.lightboxSrc;
-  }
-  return image.currentSrc || image.src || null;
-}
 
-function loadSourceImage(original, src) {
-  return new Promise((resolve, reject) => {
-    const loader = new Image();
-    loader.decoding = 'async';
-
-    if (original && original.crossOrigin) {
-      loader.crossOrigin = original.crossOrigin;
-    }
-    if (original && original.referrerPolicy) {
-      loader.referrerPolicy = original.referrerPolicy;
-    }
-    if (original && original.srcset) {
-      loader.srcset = original.srcset;
-      if (original.sizes) {
-        loader.sizes = original.sizes;
-      }
-    }
-
-    loader.addEventListener(
-      'load',
-      () => {
-        const finalize = () =>
-          resolve({
-            src: loader.currentSrc || loader.src,
-            width: loader.naturalWidth,
-            height: loader.naturalHeight,
-            alt: original ? original.alt || '' : '',
+  /* ─── MutationObserver ───────────────────── */
+  function ensureObserver() {
+    if (mutationObserver || typeof MutationObserver === 'undefined') return;
+    mutationObserver = new MutationObserver(function (mutations) {
+      mutations.forEach(function (m) {
+        m.addedNodes.forEach(function (node) {
+          if (!(node instanceof Element)) return;
+          registeredSelectors.forEach(function (sel) {
+            if (node.matches && node.matches(sel)) bindImage(node);
+            node.querySelectorAll(sel).forEach(bindImage);
           });
+        });
+      });
+    });
+    mutationObserver.observe(document.documentElement, { childList: true, subtree: true });
+  }
 
-        if (typeof loader.decode === 'function') {
-          loader.decode().then(finalize).catch(finalize);
-        } else {
-          finalize();
-        }
-      },
-      { once: true }
-    );
+  /* ─── 公开 API ───────────────────────────── */
+  function initLightbox(opts) {
+    const selector = (opts && opts.selector) ? String(opts.selector).trim() : DEFAULT_SELECTOR;
+    bindImages(selector);
+    registeredSelectors.add(selector);
+    ensureObserver();
+    loadPhotoSwipe().catch(function () {});
+  }
 
-    loader.addEventListener('error', reject, { once: true });
-    loader.src = src;
-  });
-}
+  function initLightboxAuto() {
+    initLightbox({ selector: DEFAULT_SELECTOR });
+  }
 
-function clamp(value, min, max) {
-  return Math.min(Math.max(value, min), max);
-}
+  function autoInit() {
+    bindImages(DEFAULT_SELECTOR);
+    registeredSelectors.add(DEFAULT_SELECTOR);
+    ensureObserver();
+    loadPhotoSwipe().catch(function () {});
+  }
 
- 
-window.initLightbox = initLightbox;
-window.initLightboxAuto = initLightboxAuto;
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', autoInit);
+  } else {
+    autoInit();
+  }
 
+  window.initLightbox = initLightbox;
+  window.initLightboxAuto = initLightboxAuto;
+})();

@@ -753,14 +753,8 @@ function ensurePrefsOverlay() {
       const path = (window.location.pathname || '/');
       // 规范化当前路径与候选 base，确保尾部斜杠一致以便正确检测
       const normalized = path.endsWith('/') ? path : path + '/';
-      const candidateBase = '/Creation_notes/';
-      let basePath = '/';
-      if (normalized.startsWith(candidateBase)) {
-        basePath = candidateBase;
-      }
-      // 检查 base 之后的路径是否以 zh/ 开头
-      const pathAfterBase = normalized.substring(basePath.length);
-      const isZh = document.documentElement.lang === 'zh' || pathAfterBase.startsWith('zh/');
+      // base 固定为 '/'，直接用 html[lang] 判断中文
+      const isZh = document.documentElement.lang === 'zh' || normalized.startsWith('/zh/');
       
       seg.querySelectorAll('[data-lang]').forEach((btn) => {
         const v = btn.getAttribute('data-lang');
@@ -982,13 +976,8 @@ function openPrefsOverlay() {
         if (langSeg) {
           const path = (window.location.pathname || '/');
           const normalized = path.endsWith('/') ? path : path + '/';
-          const candidateBase = '/Creation_notes/';
-          let basePath = '/';
-          if (normalized.startsWith(candidateBase)) {
-            basePath = candidateBase;
-          }
-          const pathAfterBase = normalized.substring(basePath.length);
-          const isZh = document.documentElement.lang === 'zh' || pathAfterBase.startsWith('zh/');
+          // base 固定为 '/'，直接用 html[lang] 判断中文
+          const isZh = document.documentElement.lang === 'zh' || normalized.startsWith('/zh/');
           
           langSeg.querySelectorAll('[data-lang]').forEach((btn) => {
             const v = btn.getAttribute('data-lang');

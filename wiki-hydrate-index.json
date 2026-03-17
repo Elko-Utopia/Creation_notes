@@ -1,7 +1,7 @@
 [
   {
     "title": "About Me",
-    "url": "/Creation_notes/about/",
+    "url": "/about/",
     "heroImage": null,
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -11,7 +11,7 @@
   },
   {
     "title": "关于我",
-    "url": "/Creation_notes/zh/about/",
+    "url": "/zh/about/",
     "heroImage": null,
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -21,7 +21,7 @@
   },
   {
     "title": "Why you should try obsidian for note",
-    "url": "/Creation_notes/blog/obsidian/",
+    "url": "/blog/obsidian/",
     "heroImage": "assets/header_picture/obsidian1.webp",
     "heroImagePosition": "50% 50%",
     "heroImageWidth": "101%",
@@ -31,7 +31,7 @@
   },
   {
     "title": "Welcome to My Blog",
-    "url": "/Creation_notes/blog/welcome/",
+    "url": "/blog/welcome/",
     "heroImage": "assets/blog-placeholder-1.webp",
     "heroImagePosition": "50% 50%",
     "heroImageWidth": "101%",
@@ -41,7 +41,7 @@
   },
   {
     "title": "为什么你应该尝试Obsidian来做笔记",
-    "url": "/Creation_notes/zh/blog/obsidian/",
+    "url": "/zh/blog/obsidian/",
     "heroImage": "assets/header_picture/obsidian1.webp",
     "heroImagePosition": "50% 50%",
     "heroImageWidth": "101%",
@@ -51,7 +51,7 @@
   },
   {
     "title": "欢迎来到我的博客",
-    "url": "/Creation_notes/zh/blog/welcome/",
+    "url": "/zh/blog/welcome/",
     "heroImage": "assets/blog-placeholder-1.webp",
     "heroImagePosition": "50% 50%",
     "heroImageWidth": "101%",
@@ -61,7 +61,7 @@
   },
   {
     "title": "Contact",
-    "url": "/Creation_notes/contact/",
+    "url": "/contact/",
     "heroImage": null,
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -71,7 +71,7 @@
   },
   {
     "title": "联系",
-    "url": "/Creation_notes/zh/contact/",
+    "url": "/zh/contact/",
     "heroImage": null,
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -81,7 +81,7 @@
   },
   {
     "title": "Sketch and Painting in Senior High School",
-    "url": "/Creation_notes/portfolio/HighSchool_Sketch/",
+    "url": "/portfolio/HighSchool_Sketch/",
     "heroImage": "assets/portfolio/Featured6-sketching.webp",
     "heroImagePosition": "50% 20%",
     "heroImageWidth": "101%",
@@ -91,7 +91,7 @@
   },
   {
     "title": "Featured Works With Detail",
-    "url": "/Creation_notes/portfolio/portfolio1-featured/",
+    "url": "/portfolio/portfolio1-featured/",
     "heroImage": "assets/portfolio/Featured1-character_design.webp",
     "heroImagePosition": "70% 16%",
     "heroImageWidth": "120%",
@@ -101,7 +101,7 @@
   },
   {
     "title": "Threshold Step",
-    "url": "/Creation_notes/portfolio/featured1/",
+    "url": "/portfolio/featured1/",
     "heroImage": "assets/portfolio/Featured1-character_design.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -111,7 +111,7 @@
   },
   {
     "title": "Seth - The Untamed Scientist",
-    "url": "/Creation_notes/portfolio/featured2/",
+    "url": "/portfolio/featured2/",
     "heroImage": "assets/portfolio/Featured2-character_design.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -121,7 +121,7 @@
   },
   {
     "title": "Shargol (Discarded Draft)",
-    "url": "/Creation_notes/portfolio/featured3/",
+    "url": "/portfolio/featured3/",
     "heroImage": "assets/portfolio/Featured3-character_design.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -131,7 +131,7 @@
   },
   {
     "title": "Still Life Combination With Light",
-    "url": "/Creation_notes/portfolio/featured4/",
+    "url": "/portfolio/featured4/",
     "heroImage": "assets/portfolio/Featured4-painting.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -141,7 +141,7 @@
   },
   {
     "title": "Still Life Combination With Gypsum Sculpture",
-    "url": "/Creation_notes/portfolio/featured5/",
+    "url": "/portfolio/featured5/",
     "heroImage": "assets/portfolio/Featured5-painting.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -151,7 +151,7 @@
   },
   {
     "title": "Homer Plaster Statue Sketch",
-    "url": "/Creation_notes/portfolio/featured6/",
+    "url": "/portfolio/featured6/",
     "heroImage": "assets/portfolio/Featured6-sketching.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -161,7 +161,7 @@
   },
   {
     "title": "Seneca Plaster Statue Sketch",
-    "url": "/Creation_notes/portfolio/featured7/",
+    "url": "/portfolio/featured7/",
     "heroImage": "assets/portfolio/Featured7-sketching.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -171,7 +171,7 @@
   },
   {
     "title": "The Field Within a Circle",
-    "url": "/Creation_notes/portfolio/featured8/",
+    "url": "/portfolio/featured8/",
     "heroImage": "assets/portfolio/Featured8-sketching.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -181,7 +181,7 @@
   },
   {
     "title": "High School Sketch 10",
-    "url": "/Creation_notes/portfolio/highschool10/",
+    "url": "/portfolio/highschool10/",
     "heroImage": "assets/portfolio/highschool-10.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -191,7 +191,7 @@
   },
   {
     "title": "High School Sketch 11",
-    "url": "/Creation_notes/portfolio/highschool11/",
+    "url": "/portfolio/highschool11/",
     "heroImage": "assets/portfolio/highschool-11.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -201,7 +201,7 @@
   },
   {
     "title": "High School Sketch 12",
-    "url": "/Creation_notes/portfolio/highschool12/",
+    "url": "/portfolio/highschool12/",
     "heroImage": "assets/portfolio/highschool-12.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -211,7 +211,7 @@
   },
   {
     "title": "High School Sketch 13",
-    "url": "/Creation_notes/portfolio/highschool13/",
+    "url": "/portfolio/highschool13/",
     "heroImage": "assets/portfolio/highschool-13.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -221,7 +221,7 @@
   },
   {
     "title": "High School Sketch 16",
-    "url": "/Creation_notes/portfolio/highschool16/",
+    "url": "/portfolio/highschool16/",
     "heroImage": "assets/portfolio/highschool-16.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -231,7 +231,7 @@
   },
   {
     "title": "High School Sketch 17",
-    "url": "/Creation_notes/portfolio/highschool17/",
+    "url": "/portfolio/highschool17/",
     "heroImage": "assets/portfolio/highschool-17.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -241,7 +241,7 @@
   },
   {
     "title": "High School Sketch 18",
-    "url": "/Creation_notes/portfolio/highschool18/",
+    "url": "/portfolio/highschool18/",
     "heroImage": "assets/portfolio/highschool-18.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -251,7 +251,7 @@
   },
   {
     "title": "High School Sketch 19",
-    "url": "/Creation_notes/portfolio/highschool19/",
+    "url": "/portfolio/highschool19/",
     "heroImage": "assets/portfolio/highschool-19.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -261,7 +261,7 @@
   },
   {
     "title": "High School Sketch 2",
-    "url": "/Creation_notes/portfolio/highschool2/",
+    "url": "/portfolio/highschool2/",
     "heroImage": "assets/portfolio/highschool-2.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -271,7 +271,7 @@
   },
   {
     "title": "High School Sketch 20",
-    "url": "/Creation_notes/portfolio/highschool20/",
+    "url": "/portfolio/highschool20/",
     "heroImage": "assets/portfolio/highschool-20.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -281,7 +281,7 @@
   },
   {
     "title": "High School Sketch 21",
-    "url": "/Creation_notes/portfolio/highschool21/",
+    "url": "/portfolio/highschool21/",
     "heroImage": "assets/portfolio/highschool-21.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -291,7 +291,7 @@
   },
   {
     "title": "High School Sketch 22",
-    "url": "/Creation_notes/portfolio/highschool22/",
+    "url": "/portfolio/highschool22/",
     "heroImage": "assets/portfolio/highschool-22.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -301,7 +301,7 @@
   },
   {
     "title": "High School Sketch 26",
-    "url": "/Creation_notes/portfolio/highschool26/",
+    "url": "/portfolio/highschool26/",
     "heroImage": "assets/portfolio/highschool-26.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -311,7 +311,7 @@
   },
   {
     "title": "High School Sketch 27",
-    "url": "/Creation_notes/portfolio/highschool27/",
+    "url": "/portfolio/highschool27/",
     "heroImage": "assets/portfolio/highschool-27.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -321,7 +321,7 @@
   },
   {
     "title": "High School Sketch 28",
-    "url": "/Creation_notes/portfolio/highschool28/",
+    "url": "/portfolio/highschool28/",
     "heroImage": "assets/portfolio/highschool-28.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -331,7 +331,7 @@
   },
   {
     "title": "High School Sketch 29",
-    "url": "/Creation_notes/portfolio/highschool29/",
+    "url": "/portfolio/highschool29/",
     "heroImage": "assets/portfolio/highschool-29.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -341,7 +341,7 @@
   },
   {
     "title": "High School Sketch 3",
-    "url": "/Creation_notes/portfolio/highschool3/",
+    "url": "/portfolio/highschool3/",
     "heroImage": "assets/portfolio/highschool-3.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -351,7 +351,7 @@
   },
   {
     "title": "High School Sketch 5",
-    "url": "/Creation_notes/portfolio/highschool5/",
+    "url": "/portfolio/highschool5/",
     "heroImage": "assets/portfolio/highschool-5.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -361,7 +361,7 @@
   },
   {
     "title": "High School Sketch 6",
-    "url": "/Creation_notes/portfolio/highschool6/",
+    "url": "/portfolio/highschool6/",
     "heroImage": "assets/portfolio/highschool-6.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -371,7 +371,7 @@
   },
   {
     "title": "High School Sketch 7",
-    "url": "/Creation_notes/portfolio/highschool7/",
+    "url": "/portfolio/highschool7/",
     "heroImage": "assets/portfolio/highschool-7.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -381,7 +381,7 @@
   },
   {
     "title": "High School Sketch 8",
-    "url": "/Creation_notes/portfolio/highschool8/",
+    "url": "/portfolio/highschool8/",
     "heroImage": "assets/portfolio/highschool-8.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -391,7 +391,7 @@
   },
   {
     "title": "High School Sketch 9",
-    "url": "/Creation_notes/portfolio/highschool9/",
+    "url": "/portfolio/highschool9/",
     "heroImage": "assets/portfolio/highschool-9.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -401,7 +401,7 @@
   },
   {
     "title": "高中时期的素描和绘画",
-    "url": "/Creation_notes/zh/portfolio/HighSchool_Sketch/",
+    "url": "/zh/portfolio/HighSchool_Sketch/",
     "heroImage": "assets/portfolio/Featured6-sketching.webp",
     "heroImagePosition": "50% 20%",
     "heroImageWidth": "101%",
@@ -411,7 +411,7 @@
   },
   {
     "title": "精选作品详情",
-    "url": "/Creation_notes/zh/portfolio/portfolio1-featured/",
+    "url": "/zh/portfolio/portfolio1-featured/",
     "heroImage": "assets/portfolio/Featured1-character_design.webp",
     "heroImagePosition": "70% 16%",
     "heroImageWidth": "120%",
@@ -421,7 +421,7 @@
   },
   {
     "title": "临界步",
-    "url": "/Creation_notes/zh/portfolio/featured1/",
+    "url": "/zh/portfolio/featured1/",
     "heroImage": "assets/portfolio/Featured1-character_design.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -431,7 +431,7 @@
   },
   {
     "title": "塞斯 - 不羁的科学家",
-    "url": "/Creation_notes/zh/portfolio/featured2/",
+    "url": "/zh/portfolio/featured2/",
     "heroImage": "assets/portfolio/Featured2-character_design.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -441,7 +441,7 @@
   },
   {
     "title": "夏戈尔（废弃草稿）",
-    "url": "/Creation_notes/zh/portfolio/featured3/",
+    "url": "/zh/portfolio/featured3/",
     "heroImage": "assets/portfolio/Featured3-character_design.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -451,7 +451,7 @@
   },
   {
     "title": "光影静物组合",
-    "url": "/Creation_notes/zh/portfolio/featured4/",
+    "url": "/zh/portfolio/featured4/",
     "heroImage": "assets/portfolio/Featured4-painting.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -461,7 +461,7 @@
   },
   {
     "title": "石膏雕塑静物组合",
-    "url": "/Creation_notes/zh/portfolio/featured5/",
+    "url": "/zh/portfolio/featured5/",
     "heroImage": "assets/portfolio/Featured5-painting.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -471,7 +471,7 @@
   },
   {
     "title": "荷马石膏像素描",
-    "url": "/Creation_notes/zh/portfolio/featured6/",
+    "url": "/zh/portfolio/featured6/",
     "heroImage": "assets/portfolio/Featured6-sketching.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -481,7 +481,7 @@
   },
   {
     "title": "塞内卡石膏像素描",
-    "url": "/Creation_notes/zh/portfolio/featured7/",
+    "url": "/zh/portfolio/featured7/",
     "heroImage": "assets/portfolio/Featured7-sketching.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -491,7 +491,7 @@
   },
   {
     "title": "The Field Within a Circle",
-    "url": "/Creation_notes/zh/portfolio/featured8/",
+    "url": "/zh/portfolio/featured8/",
     "heroImage": "assets/portfolio/Featured8-sketching.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -501,7 +501,7 @@
   },
   {
     "title": "高中素描 10",
-    "url": "/Creation_notes/zh/portfolio/highschool10/",
+    "url": "/zh/portfolio/highschool10/",
     "heroImage": "assets/portfolio/highschool-10.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -511,7 +511,7 @@
   },
   {
     "title": "高中素描 11",
-    "url": "/Creation_notes/zh/portfolio/highschool11/",
+    "url": "/zh/portfolio/highschool11/",
     "heroImage": "assets/portfolio/highschool-11.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -521,7 +521,7 @@
   },
   {
     "title": "高中素描 12",
-    "url": "/Creation_notes/zh/portfolio/highschool12/",
+    "url": "/zh/portfolio/highschool12/",
     "heroImage": "assets/portfolio/highschool-12.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -531,7 +531,7 @@
   },
   {
     "title": "高中素描 13",
-    "url": "/Creation_notes/zh/portfolio/highschool13/",
+    "url": "/zh/portfolio/highschool13/",
     "heroImage": "assets/portfolio/highschool-13.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -541,7 +541,7 @@
   },
   {
     "title": "高中素描 16",
-    "url": "/Creation_notes/zh/portfolio/highschool16/",
+    "url": "/zh/portfolio/highschool16/",
     "heroImage": "assets/portfolio/highschool-16.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -551,7 +551,7 @@
   },
   {
     "title": "高中素描 17",
-    "url": "/Creation_notes/zh/portfolio/highschool17/",
+    "url": "/zh/portfolio/highschool17/",
     "heroImage": "assets/portfolio/highschool-17.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -561,7 +561,7 @@
   },
   {
     "title": "高中素描 18",
-    "url": "/Creation_notes/zh/portfolio/highschool18/",
+    "url": "/zh/portfolio/highschool18/",
     "heroImage": "assets/portfolio/highschool-18.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -571,7 +571,7 @@
   },
   {
     "title": "高中素描 19",
-    "url": "/Creation_notes/zh/portfolio/highschool19/",
+    "url": "/zh/portfolio/highschool19/",
     "heroImage": "assets/portfolio/highschool-19.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -581,7 +581,7 @@
   },
   {
     "title": "高中素描 2",
-    "url": "/Creation_notes/zh/portfolio/highschool2/",
+    "url": "/zh/portfolio/highschool2/",
     "heroImage": "assets/portfolio/highschool-2.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -591,7 +591,7 @@
   },
   {
     "title": "高中素描 20",
-    "url": "/Creation_notes/zh/portfolio/highschool20/",
+    "url": "/zh/portfolio/highschool20/",
     "heroImage": "assets/portfolio/highschool-20.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -601,7 +601,7 @@
   },
   {
     "title": "高中素描 21",
-    "url": "/Creation_notes/zh/portfolio/highschool21/",
+    "url": "/zh/portfolio/highschool21/",
     "heroImage": "assets/portfolio/highschool-21.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -611,7 +611,7 @@
   },
   {
     "title": "高中素描 22",
-    "url": "/Creation_notes/zh/portfolio/highschool22/",
+    "url": "/zh/portfolio/highschool22/",
     "heroImage": "assets/portfolio/highschool-22.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -621,7 +621,7 @@
   },
   {
     "title": "高中素描 26",
-    "url": "/Creation_notes/zh/portfolio/highschool26/",
+    "url": "/zh/portfolio/highschool26/",
     "heroImage": "assets/portfolio/highschool-26.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -631,7 +631,7 @@
   },
   {
     "title": "高中素描 27",
-    "url": "/Creation_notes/zh/portfolio/highschool27/",
+    "url": "/zh/portfolio/highschool27/",
     "heroImage": "assets/portfolio/highschool-27.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -641,7 +641,7 @@
   },
   {
     "title": "高中素描 28",
-    "url": "/Creation_notes/zh/portfolio/highschool28/",
+    "url": "/zh/portfolio/highschool28/",
     "heroImage": "assets/portfolio/highschool-28.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -651,7 +651,7 @@
   },
   {
     "title": "高中素描 29",
-    "url": "/Creation_notes/zh/portfolio/highschool29/",
+    "url": "/zh/portfolio/highschool29/",
     "heroImage": "assets/portfolio/highschool-29.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -661,7 +661,7 @@
   },
   {
     "title": "高中素描 3",
-    "url": "/Creation_notes/zh/portfolio/highschool3/",
+    "url": "/zh/portfolio/highschool3/",
     "heroImage": "assets/portfolio/highschool-3.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -671,7 +671,7 @@
   },
   {
     "title": "高中素描 5",
-    "url": "/Creation_notes/zh/portfolio/highschool5/",
+    "url": "/zh/portfolio/highschool5/",
     "heroImage": "assets/portfolio/highschool-5.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -681,7 +681,7 @@
   },
   {
     "title": "高中素描 6",
-    "url": "/Creation_notes/zh/portfolio/highschool6/",
+    "url": "/zh/portfolio/highschool6/",
     "heroImage": "assets/portfolio/highschool-6.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -691,7 +691,7 @@
   },
   {
     "title": "高中素描 7",
-    "url": "/Creation_notes/zh/portfolio/highschool7/",
+    "url": "/zh/portfolio/highschool7/",
     "heroImage": "assets/portfolio/highschool-7.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -701,7 +701,7 @@
   },
   {
     "title": "高中素描 8",
-    "url": "/Creation_notes/zh/portfolio/highschool8/",
+    "url": "/zh/portfolio/highschool8/",
     "heroImage": "assets/portfolio/highschool-8.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -711,7 +711,7 @@
   },
   {
     "title": "高中素描 9",
-    "url": "/Creation_notes/zh/portfolio/highschool9/",
+    "url": "/zh/portfolio/highschool9/",
     "heroImage": "assets/portfolio/highschool-9.webp",
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -721,7 +721,7 @@
   },
   {
     "title": "text",
-    "url": "/Creation_notes/text/",
+    "url": "/text/",
     "heroImage": null,
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -731,7 +731,7 @@
   },
   {
     "title": "text",
-    "url": "/Creation_notes/zh/text/",
+    "url": "/zh/text/",
     "heroImage": null,
     "heroImagePosition": null,
     "heroImageWidth": null,
@@ -741,7 +741,7 @@
   },
   {
     "title": "Webpage Production Log",
-    "url": "/Creation_notes/website-log/",
+    "url": "/website-log/",
     "heroImage": "assets/blog-placeholder-1.webp",
     "heroImagePosition": "50% 50%",
     "heroImageWidth": "101%",
@@ -751,7 +751,7 @@
   },
   {
     "title": "网页制作日志",
-    "url": "/Creation_notes/zh/website-log/",
+    "url": "/zh/website-log/",
     "heroImage": "assets/blog-placeholder-1.webp",
     "heroImagePosition": "50% 50%",
     "heroImageWidth": "101%",
